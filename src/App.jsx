@@ -116,7 +116,7 @@ function PageTitle({ sub, title }) {
 }
 
 /* ─── Mobile Pill Nav ────────────────────────────────────────────── */
-function PillNav({ view, setView }) {
+function PillNav({ view, setView, darkMode }) {
   return (
     <div style={{ position:"fixed", bottom:24, left:"50%", transform:"translateX(-50%)", zIndex:200, display:"flex", alignItems:"center", background:"rgba(18,18,18,0.92)", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderRadius:50, padding:"6px 8px", gap:2, boxShadow:"0 8px 32px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.15)", border:"1px solid rgba(255,255,255,0.08)" }}>
       {NAV.map(item => {
@@ -142,16 +142,12 @@ const FULL_NAV = [
   { key:"ai",        icon:"◆",  label:"IA" },
   { key:"settings",  icon:"◎",  label:"Paramètres" },
 ];
-function Sidebar({ view, setView }) {
+function Sidebar({ view, setView, darkMode }) {
   return (
     <div style={{ width:220, minHeight:"100vh", background:C.bg2, borderRight:`1px solid ${C.border}`, flexDirection:"column", position:"fixed", left:0, top:0, padding:"28px 0", zIndex:50, display:"flex" }}>
       <div style={{ padding:"0 20px 24px", borderBottom:`1px solid ${C.border}` }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
-          <div style={{ width:38, height:38, borderRadius:10, background:"#111", border:"1px solid #2a2a2a", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><svg width="28" height="28" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="10,8 56,8 50,22 10,22" fill="#f0ede8"/>
-              <polygon points="10,29 46,29 40,43 10,43" fill="#f0ede8"/>
-              <polygon points="10,50 30,50 24,64 10,64" fill="#f0ede8"/>
-            </svg></div>
+          <img src={darkMode?"/fyltra_logo_white.svg":"/fyltra_logo_black.svg"} style={{width:42,height:42,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
           <div>
             <div style={{ fontFamily:"'Barlow',sans-serif", fontWeight:600, fontSize:18, letterSpacing:"0.2em", color:C.white, lineHeight:1, textTransform:"uppercase" }}>FYLTRA</div>
             <div style={{ fontSize:8, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
@@ -2173,14 +2169,10 @@ export default function App() {
         <div style={{ minHeight:"100vh", paddingBottom:100 }}>
           <div style={{ padding:"16px 20px", background:`linear-gradient(180deg,${C.bg2},${C.bg})`, borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:50, backdropFilter:"blur(16px)", flexWrap:"wrap" }}>
             <div style={{ display:"flex", alignItems:"center", gap:9 }}>
-              <div style={{ width:34, height:34, borderRadius:9, background:"#111", border:"1px solid #2a2a2a", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}><svg width="26" height="26" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <polygon points="10,8 56,8 50,22 10,22" fill="#f0ede8"/>
-                <polygon points="10,29 46,29 40,43 10,43" fill="#f0ede8"/>
-                <polygon points="10,50 30,50 24,64 10,64" fill="#f0ede8"/>
-              </svg></div>
+              <img src={darkMode?"/fyltra_logo_white.svg":"/fyltra_logo_black.svg"} style={{width:38,height:38,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
               <div>
-                <div style={{ fontFamily:"'Barlow',sans-serif", fontWeight:600, fontSize:17, letterSpacing:"0.2em", color:C.white, lineHeight:1, textTransform:"uppercase" }}>FYLTRA</div>
-                <div style={{ fontSize:7, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Trading Journal</div>
+                <img src={darkMode?"/fyltra_wordmark_white.svg":"/fyltra_wordmark_black.svg"} style={{height:16,display:"block"}} alt="FYLTRA"/>
+                <div style={{ fontSize:7, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
               </div>
             </div>
             <button onClick={()=>showMenu?closeMenu():setShowMenu(true)} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",color:C.gray1,cursor:"pointer",display:"flex",flexDirection:"column",gap:"4px",alignItems:"center",justifyContent:"center"}}>
@@ -2328,12 +2320,12 @@ export default function App() {
               </div>
             </div>
           )}
-          <PillNav view={view} setView={setView} />
+          <PillNav view={view} setView={setView} darkMode={darkMode} />
         </div>
       ) : (
         /* ── DESKTOP ── */
         <div style={{ display:"flex", minHeight:"100vh" }}>
-          <Sidebar view={view} setView={setView} />
+          <Sidebar view={view} setView={setView} darkMode={darkMode} />
           <div style={{ marginLeft:220, flex:1, display:"flex", flexDirection:"column" }}>
             <div style={{ padding:"20px 36px 18px", borderBottom:`1px solid ${C.border}`, background:C.bg, position:"sticky", top:0, zIndex:40, backdropFilter:"blur(12px)" }}>
               <div style={{ fontSize:11, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", marginBottom:2, fontFamily:"'Josefin Sans',sans-serif" }}>{FULL_NAV.find(n => n.key === view)?.label}</div>
