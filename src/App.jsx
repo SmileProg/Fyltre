@@ -451,8 +451,8 @@ export default function App() {
       const rr  = savedTS.rrFixed.enabled && savedTS.rrFixed.value ? savedTS.rrFixed.value : form.rr;
       const sz  = savedTS.sizeFixed.enabled && savedTS.sizeFixed.value ? savedTS.sizeFixed.value : form.size;
       const szu = savedTS.sizeFixed.enabled && savedTS.sizeFixed.value ? savedTS.sizeFixed.unit : form.sizeUnit;
-      const pnl = form.result === "WIN" ? (tp ?? parseFloat(pnlRaw) || 0)
-                : form.result === "LOSS" ? -(sl ?? parseFloat(pnlRaw) || 0)
+      const pnl = form.result === "WIN" ? ((tp ?? 0) || parseFloat(pnlRaw) || 0)
+                : form.result === "LOSS" ? -((sl ?? 0) || parseFloat(pnlRaw) || 0)
                 : 0;
       setTrades(prev => [{ ...form, pnl, rr, size:sz, sizeUnit:szu, id:Date.now() }, ...prev]);
     } else {
