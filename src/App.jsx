@@ -98,7 +98,7 @@ function ChipGroup({ options, value, onChange }) {
 
 function StatCard({ label, value, color, small }) {
   return (
-    <div style={{ background:C.bg2, border:`1px solid ${C.border}`, borderTop:`2px solid ${color||C.accent}`, borderRadius:8, padding:small ? "16px 18px" : "20px 18px", position:"relative", overflow:"hidden" }}>
+    <div style={{ background:C.bg2, border:`1px solid ${C.border}`, borderTop:`2px solid ${color||C.accent}`, borderRadius:10, padding:small ? (!isMobile?"20px 22px":"16px 18px") : (!isMobile?"28px 24px":"20px 18px"), position:"relative", overflow:"hidden" }}>
       <div style={{ position:"absolute", inset:0, background:"radial-gradient(ellipse at top left,rgba(0,0,0,0.02),transparent 70%)", pointerEvents:"none" }} />
       <div style={{ fontSize:9, color:C.dim, textTransform:"uppercase", letterSpacing:"0.18em", fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, marginBottom:6 }}>{label}</div>
       <div style={{ fontSize:small ? 16 : 24, fontWeight:300, color:color||C.white, fontFamily:"'Josefin Sans',sans-serif", lineHeight:1, letterSpacing:"0.05em" }}>{value}</div>
@@ -154,7 +154,7 @@ function Sidebar({ view, setView }) {
             </svg></div>
           <div>
             <div style={{ fontFamily:"'Barlow',sans-serif", fontWeight:600, fontSize:18, letterSpacing:"0.2em", color:C.white, lineHeight:1, textTransform:"uppercase" }}>FYLTRA</div>
-            <div style={{ fontSize:8, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Trading Journal</div>
+            <div style={{ fontSize:8, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
           </div>
         </div>
 
@@ -412,17 +412,8 @@ export default function App() {
   // Pre-fill fixed values when switching to add view
   useEffect(() => {
     if (view === "add") {
-      setForm(f => ({
-        ...f,
-        rr: savedTS.rrFixed.enabled && savedTS.rrFixed.value ? savedTS.rrFixed.value : f.rr,
-        entry: tradeSettings.slFixed.enabled && tradeSettings.slFixed.value ? f.entry : f.entry,
-      }));
       setPnlRaw("");
-      setForm(f => ({
-        ...f,
-        size: savedTS.sizeFixed.enabled && savedTS.sizeFixed.value ? savedTS.sizeFixed.value : f.size,
-        sizeUnit: savedTS.sizeFixed.enabled ? savedTS.sizeFixed.unit : f.sizeUnit,
-      }));
+      setForm(f => ({ ...f, entry:"", exit:"", rr:"", size:"", notes:"", accountIds:[], strategyId:null }));
     }
   }, [view]);
 
@@ -440,9 +431,8 @@ export default function App() {
 
   const computedPnl = () => {
     if (tradeFixedMode === "fixe") {
-      // Always valid — actual values come from savedTS at save time
-      if (form.result === "WIN")  return parseFloat(savedTS.tpFixed.value)||0;
-      if (form.result === "LOSS") return -(parseFloat(savedTS.slFixed.value)||0);
+      if (form.result === "WIN")  return savedTS.tpFixed.enabled && savedTS.tpFixed.value ? parseFloat(savedTS.tpFixed.value) : 0;
+      if (form.result === "LOSS") return savedTS.slFixed.enabled && savedTS.slFixed.value ? -Math.abs(parseFloat(savedTS.slFixed.value)) : 0;
       return 0;
     }
     const a = parseFloat(pnlRaw);
@@ -456,12 +446,14 @@ export default function App() {
     const p = computedPnl();
     if (p === null) return;
     if (tradeFixedMode === "fixe") {
-      const tp  = parseFloat(savedTS.tpFixed.value) || 0;
-      const sl  = parseFloat(savedTS.slFixed.value) || 0;
-      const rr  = savedTS.rrFixed.value  || form.rr;
-      const sz  = savedTS.sizeFixed.value || form.size;
-      const szu = savedTS.sizeFixed.value ? savedTS.sizeFixed.unit : form.sizeUnit;
-      const pnl = form.result === "WIN" ? tp : form.result === "LOSS" ? -Math.abs(sl) : 0;
+      const tp  = savedTS.tpFixed.enabled && savedTS.tpFixed.value ? parseFloat(savedTS.tpFixed.value) : null;
+      const sl  = savedTS.slFixed.enabled && savedTS.slFixed.value ? Math.abs(parseFloat(savedTS.slFixed.value)) : null;
+      const rr  = savedTS.rrFixed.enabled && savedTS.rrFixed.value ? savedTS.rrFixed.value : form.rr;
+      const sz  = savedTS.sizeFixed.enabled && savedTS.sizeFixed.value ? savedTS.sizeFixed.value : form.size;
+      const szu = savedTS.sizeFixed.enabled && savedTS.sizeFixed.value ? savedTS.sizeFixed.unit : form.sizeUnit;
+      const pnl = form.result === "WIN" ? (tp ?? parseFloat(pnlRaw) || 0)
+                : form.result === "LOSS" ? -(sl ?? parseFloat(pnlRaw) || 0)
+                : 0;
       setTrades(prev => [{ ...form, pnl, rr, size:sz, sizeUnit:szu, id:Date.now() }, ...prev]);
     } else {
       setTrades(prev => [{ ...form, pnl:p, id:Date.now() }, ...prev]);
@@ -683,7 +675,7 @@ export default function App() {
       </Field>
       <Divider />
       <Field label="Direction"><ChipGroup options={["LONG","SHORT"]} value={form.direction} onChange={v => set("direction", v)} /></Field>
-      <Field label="Résultat"><ChipGroup options={["WIN","LOSS","BREAKEVEN"]} value={form.result} onChange={v => { set("result", v); setBeSign(1); }} /></Field>
+      <Field label="Résultat"><ChipGroup options={["WIN","LOSS","BREAKEVEN"]} value={form.result} onChange={v => { set("result", v); setBeSign(1); if (v === "BREAKEVEN") setTradeFixedMode("variable"); }} /></Field>
       <Divider />
       <Field label="Session"><ChipGroup options={SESSIONS} value={form.session} onChange={v => set("session", v)} /></Field>
       {(tradeMode==="swing" || scalpFields.emotion) && (
@@ -714,16 +706,16 @@ export default function App() {
         <div style={{marginBottom:14,padding:"12px 14px",borderRadius:8,background:C.bg2,border:`1px solid ${C.border}`}}>
           <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:8}}>Valeurs fixes appliquées</div>
           <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-            {savedTS.tpFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>WIN : </span><strong style={{color:"#2a6e3a"}}>+{savedTS.tpFixed.value}{currency}</strong></div>}
-            {savedTS.slFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>LOSS : </span><strong style={{color:"#c0392b"}}>-{savedTS.slFixed.value}{currency}</strong></div>}
-            {savedTS.rrFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>R/R : </span><strong style={{color:C.white}}>{savedTS.rrFixed.value}:1</strong></div>}
-            {savedTS.sizeFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>Taille : </span><strong style={{color:C.white}}>{savedTS.sizeFixed.value} {savedTS.sizeFixed.unit}</strong></div>}
-            {!savedTS.tpFixed.value&&!savedTS.slFixed.value&&!savedTS.rrFixed.value&&!savedTS.sizeFixed.value&&<span style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif"}}>Aucune valeur fixe définie dans les paramètres</span>}
+            {savedTS.tpFixed.enabled&&savedTS.tpFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>WIN : </span><strong style={{color:"#2a6e3a"}}>+{savedTS.tpFixed.value}{currency}</strong></div>}
+            {savedTS.slFixed.enabled&&savedTS.slFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>LOSS : </span><strong style={{color:"#c0392b"}}>-{savedTS.slFixed.value}{currency}</strong></div>}
+            {savedTS.rrFixed.enabled&&savedTS.rrFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>R/R : </span><strong style={{color:C.white}}>{savedTS.rrFixed.value}:1</strong></div>}
+            {savedTS.sizeFixed.enabled&&savedTS.sizeFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>Taille : </span><strong style={{color:C.white}}>{savedTS.sizeFixed.value} {savedTS.sizeFixed.unit}</strong></div>}
+            {!savedTS.tpFixed.enabled&&!savedTS.slFixed.enabled&&!savedTS.rrFixed.enabled&&!savedTS.sizeFixed.enabled&&<span style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif"}}>Aucun champ activé dans les paramètres</span>}
           </div>
         </div>
       )}
       <Divider />
-      {tradeFixedMode==="variable" && <Field label={`P&L — ${form.result === "LOSS" ? "montant perte" : form.result === "WIN" ? "montant gain" : "breakeven"}`}>
+      {(tradeFixedMode==="variable" || !(savedTS.tpFixed.enabled&&savedTS.tpFixed.value&&savedTS.slFixed.enabled&&savedTS.slFixed.value)) && <Field label={`P&L — ${form.result === "LOSS" ? "montant perte" : form.result === "WIN" ? "montant gain" : "breakeven"}`}>
         <input type="text" inputMode="decimal" placeholder="" value={pnlRaw} onChange={e => { const v = e.target.value.replace(/,/g,".").replace(/[^0-9.]/g, ""); setPnlRaw(v); }} style={{ ...iStyle, fontSize:18, fontFamily:"'Josefin Sans',sans-serif", fontWeight:300, color:"#1a1a1a" }} />
         {/* Breakeven sign toggle — always visible in BE mode */}
         {form.result === "BREAKEVEN" && (
@@ -746,10 +738,8 @@ export default function App() {
         <>
           <Field label="Prix d'entrée"><input type="text" inputMode="decimal" placeholder="" value={form.entry} onChange={e => set("entry", e.target.value)} style={iStyle} /></Field>
           <Field label="Prix de sortie"><input type="text" inputMode="decimal" placeholder="" value={form.exit} onChange={e => set("exit", e.target.value)} style={iStyle} /></Field>
-          {tradeFixedMode==="variable" && (!savedTS.rrFixed.enabled
-            ? <Field label="Risk / Reward"><input type="text" inputMode="decimal" placeholder="" value={form.rr} onChange={e => set("rr", e.target.value)} style={iStyle}/></Field>
-            : null)}
-          {tradeFixedMode==="variable" && (
+          {!(tradeFixedMode==="fixe" && savedTS.rrFixed.enabled && savedTS.rrFixed.value) && <Field label="Risk / Reward"><input type="text" inputMode="decimal" placeholder="" value={form.rr} onChange={e => set("rr", e.target.value)} style={iStyle}/></Field>}
+          {!(tradeFixedMode==="fixe" && savedTS.sizeFixed.enabled && savedTS.sizeFixed.value) && (
             <div style={{marginBottom:4}}>
               <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.18em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:6,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <span>Taille de position</span>
@@ -759,7 +749,7 @@ export default function App() {
                   ))}
                 </div>
               </div>
-              <input type="text" inputMode="decimal" placeholder={`ex: 1 ${form.sizeUnit}`} value={form.size} onChange={e=>set("size",e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,""))} style={iStyle}/>
+              <input type="text" inputMode="decimal" placeholder="" value={form.size} onChange={e=>set("size",e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,""))} style={iStyle}/>
             </div>
           )}
         </>
@@ -769,11 +759,11 @@ export default function App() {
           <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             {[
               {k:"entry", label:"Prix entrée/sortie"},
-              {k:"rr", label:"R/R"},
+              {k:"rr", label:"R/R", hideInFixe: true},
               {k:"emotion", label:"Émotion"},
               {k:"notes", label:"Note"},
-              {k:"size", label:"Taille"},
-            ].map(f => (
+              {k:"size", label:"Taille", hideInFixe: true},
+            ].filter(f => !(f.hideInFixe && tradeFixedMode==="fixe" && ((f.k==="rr" && savedTS.rrFixed.enabled && savedTS.rrFixed.value)||(f.k==="size" && savedTS.sizeFixed.enabled && savedTS.sizeFixed.value)))).map(f => (
               <button key={f.k} onClick={()=>toggleScalp(f.k)} style={{padding:"6px 12px",borderRadius:6,border:`1px solid ${scalpFields[f.k]?C.accent:C.border}`,background:scalpFields[f.k]?"rgba(255,255,255,0.06)":"transparent",color:scalpFields[f.k]?C.white:C.gray2,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",fontWeight:scalpFields[f.k]?400:300,letterSpacing:"0.1em",cursor:"pointer",transition:"all 0.18s",display:"flex",alignItems:"center",gap:6}}>
                 <div style={{width:6,height:6,borderRadius:"50%",background:scalpFields[f.k]?C.accent:C.gray3,transition:"background 0.18s"}}/>
                 {f.label}
@@ -786,8 +776,8 @@ export default function App() {
               <Field label="Prix de sortie"><input type="text" inputMode="decimal" placeholder="" value={form.exit} onChange={e => set("exit", e.target.value)} style={iStyle}/></Field>
             </div>
           )}
-          {tradeFixedMode==="variable" && scalpFields.rr && <Field label="Risk / Reward"><input type="text" inputMode="decimal" placeholder="" value={form.rr} onChange={e => set("rr", e.target.value)} style={iStyle}/></Field>}
-          {tradeFixedMode==="variable" && scalpFields.size && (
+          {scalpFields.rr && !(tradeFixedMode==="fixe" && savedTS.rrFixed.enabled && savedTS.rrFixed.value) && <Field label="Risk / Reward"><input type="text" inputMode="decimal" placeholder="" value={form.rr} onChange={e => set("rr", e.target.value)} style={iStyle}/></Field>}
+          {scalpFields.size && !(tradeFixedMode==="fixe" && savedTS.sizeFixed.enabled && savedTS.sizeFixed.value) && (
             <Field label={<div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"space-between",width:"100%"}}>
               <span>Taille</span>
               <div style={{display:"flex",borderRadius:5,border:`1px solid ${C.border}`,overflow:"hidden"}}>
@@ -796,14 +786,14 @@ export default function App() {
                 ))}
               </div>
             </div>}>
-              <input type="text" inputMode="decimal" placeholder="ex: 1" value={form.size} onChange={e=>set("size",e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,""))} style={iStyle}/>
+              <input type="text" inputMode="decimal" placeholder="" value={form.size} onChange={e=>set("size",e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,""))} style={iStyle}/>
             </Field>
           )}
         </div>
       )}
       {(tradeMode==="swing" || scalpFields.notes) && (
         <Field label="Notes">
-          <textarea rows={3} placeholder="ex: Je n'ai pas attendu la confirmation" value={form.notes} onChange={e => set("notes", e.target.value)} style={{ ...iStyle, resize:"vertical", lineHeight:1.6 }} />
+          <textarea rows={3} placeholder="ex: Parfaite exécution, j'ai suivi mon plan à la lettre." value={form.notes} onChange={e => set("notes", e.target.value)} style={{ ...iStyle, resize:"vertical", lineHeight:1.6 }} />
         </Field>
       )}
 
@@ -1282,7 +1272,7 @@ export default function App() {
         const alerts = getPfAlerts(pf);
         const isInDanger = alerts.some(a=>a.type==="danger");
         return (
-          <div key={pf.id} style={{background:C.bg2,border:`1px solid ${isInDanger?"rgba(192,57,43,0.3)":C.border}`,borderRadius:8,padding:"18px 16px",marginBottom:14,cursor:editingPf?.id===pf.id?"default":"pointer"}} onClick={()=>{ if(!editingPf) setSelectedPf(pf); }}>
+          <div key={pf.id} style={{background:C.bg2,border:`1px solid ${isInDanger?"rgba(192,57,43,0.3)":C.border}`,borderRadius:8,padding:!isMobile?"24px 20px":"18px 16px",marginBottom:!isMobile?18:14,cursor:editingPf?.id===pf.id?"default":"pointer"}} onClick={()=>{ if(!editingPf) setSelectedPf(pf); }}>
             {/* Header */}
             {editingPf?.id === pf.id ? (
               <div style={{marginBottom:12}}>
@@ -1504,9 +1494,9 @@ export default function App() {
     const alerts = getPfAlerts(pf);
 
     const MiniCard = ({label, value, color, sub}) => (
-      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:10,padding:desktop?"20px 20px":"12px 14px"}}>
-        <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:desktop?10:6}}>{label}</div>
-        <div style={{fontSize:desktop?28:20,fontWeight:300,color:color||C.white,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1}}>{value}</div>
+      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:10,padding:!isMobile?"20px 20px":"12px 14px"}}>
+        <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:!isMobile?10:6}}>{label}</div>
+        <div style={{fontSize:!isMobile?28:20,fontWeight:300,color:color||C.white,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1}}>{value}</div>
         {sub && <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:6}}>{sub}</div>}
       </div>
     );
@@ -1542,7 +1532,7 @@ export default function App() {
 
         {/* ── PROGRESS BARS (prop firm) ── */}
         {pf.type==="propfirm" && (
-          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
             <div style={{marginBottom:10}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                 <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Profit Target</span>
@@ -1582,7 +1572,7 @@ export default function App() {
         )}
 
         {/* ── TODAY CARD ── */}
-        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:pf.hasConsistency&&pf.consistencyPct&&pf.target?10:0}}>
             <div>
               <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Aujourd'hui</div>
@@ -1638,7 +1628,7 @@ export default function App() {
         {/* ── WIN/LOSS + DIRECTION ── */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
           {/* Win/Loss gauge */}
-          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:10,padding:desktop?"24px":"14px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:10,padding:!isMobile?"30px 24px":"14px",display:"flex",flexDirection:"column",alignItems:"center"}}>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4,alignSelf:"flex-start"}}>Winrate · Aujourd'hui</div>
             {(() => { const tw=statsTrades.filter(t=>t.result==="WIN").length; const tl=statsTrades.filter(t=>t.result==="LOSS").length; const tt=statsTrades.length; return tt>0 ? (((wins, losses, total, size=130) => {
               const r=46, cx=size/2, cy=size*0.52, sw=13, PI=Math.PI;
@@ -1699,15 +1689,15 @@ export default function App() {
         </div>
 
         {/* ── EQUITY CURVE ── */}
-        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"16px 14px 10px",marginBottom:12}}>
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:!isMobile?"24px 20px 14px":"16px 14px 10px",marginBottom:!isMobile?16:12}}>
           <div style={{fontSize:9,color:C.dim,letterSpacing:"0.2em",textTransform:"uppercase",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:10}}>Courbe d'équité</div>
-          {(acctView==="global"?acctTrades:todayTrades).length>1 ? <PnlChart filtered={acctView==="global"?acctTrades:todayTrades} capital={pf.capital} pnlSum={acctView==="global"?allPnl:todayTrades.reduce((s,t)=>s+(t.pnl||0),0)} height={desktop?260:160} cur={currency}/>
+          {(acctView==="global"?acctTrades:todayTrades).length>1 ? <PnlChart filtered={acctView==="global"?acctTrades:todayTrades} capital={pf.capital} pnlSum={acctView==="global"?allPnl:todayTrades.reduce((s,t)=>s+(t.pnl||0),0)} height={!isMobile?260:160} cur={currency}/>
           : <div style={{textAlign:"center",padding:"32px 0",color:C.gray2,fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}>Aucun trade</div>}
         </div>
 
         {/* ── SESSIONS today only ── */}
         {(() => { const todaySessions = SESSIONS.map(s=>{const st=(acctView==="global"?acctTrades:todayTrades).filter(t=>t.session===s);const wr=st.length?Math.round(st.filter(t=>t.result==="WIN").length/st.length*100):0;return{name:s,count:st.length,wr,pnl:st.reduce((a,t)=>a+(t.pnl||0),0)};}).filter(s=>s.count>0); return todaySessions.length>0 && (
-          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:12}}>Sessions · {acctView==="global"?"Global":"Aujourd'hui"}</div>
             {todaySessions.map(s=>(
               <div key={s.name} style={{marginBottom:10}}>
@@ -1726,7 +1716,7 @@ export default function App() {
 
         {/* ── INSTRUMENTS today only ── */}
         {(() => { const todayInstr = (() => { const byI={}; (acctView==="global"?acctTrades:todayTrades).forEach(t=>{ if(!byI[t.instrument]) byI[t.instrument]={count:0,wins:0,pnl:0}; byI[t.instrument].count++; if(t.result==="WIN") byI[t.instrument].wins++; byI[t.instrument].pnl+=t.pnl||0; }); return Object.entries(byI).map(([name,v])=>({name,count:v.count,wr:Math.round(v.wins/v.count*100),pnl:v.pnl})); })(); return todayInstr.length>0 && (
-          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:12}}>Instruments · {acctView==="global"?"Global":"Aujourd'hui"}</div>
             {todayInstr.map(i=>(
               <div key={i.name} style={{marginBottom:10}}>
@@ -1751,7 +1741,7 @@ export default function App() {
             return { name:e, count:et.length, wr, pnl:et.reduce((a,t)=>a+(t.pnl||0),0) };
           }).filter(e=>e.count>0);
           return todayEmotions.length>0 ? (
-            <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+            <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
               <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:12}}>Émotions · {acctView==="global"?"Global":"Aujourd'hui"}</div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                 {todayEmotions.map(e=>(
@@ -2115,27 +2105,41 @@ export default function App() {
       {/* ── TRADE SETTINGS ── */}
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"18px 16px",marginBottom:12}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:8}}>Réglages de trade</div>
-        <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginBottom:16,letterSpacing:"0.04em",lineHeight:1.7}}>Ces valeurs s'appliquent en mode <strong style={{color:C.white}}>Fixe</strong> dans l'onglet Trade.</div>
+        <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginBottom:16,letterSpacing:"0.04em",lineHeight:1.7}}>Activez les champs à appliquer en mode <strong style={{color:C.white}}>Fixe</strong> dans l'onglet Trade.</div>
         {[
           {k:"tpFixed", label:"TP fixe", placeholder:"ex: 150"},
           {k:"slFixed", label:"SL fixe", placeholder:"ex: 75"},
           {k:"rrFixed", label:"R/R fixe", placeholder:"ex: 2"},
         ].map(f => (
-          <div key={f.k} style={{marginBottom:12}}>
-            <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:6}}>{f.label}</div>
-            <input type="text" inputMode="decimal" placeholder={f.placeholder} value={tradeSettings[f.k].value} onChange={e=>setTS(f.k,{value:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")})} style={{...iStyle,fontSize:13}}/>
+          <div key={f.k} style={{marginBottom:14}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:tradeSettings[f.k].enabled?8:0}}>
+              <span style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em"}}>{f.label}</span>
+              <button onClick={()=>setTS(f.k,{enabled:!tradeSettings[f.k].enabled})} style={{width:40,height:22,borderRadius:11,border:"none",background:tradeSettings[f.k].enabled?C.accent:"rgba(255,255,255,0.1)",cursor:"pointer",position:"relative",transition:"background 0.22s",flexShrink:0}}>
+                <div style={{position:"absolute",top:2,left:tradeSettings[f.k].enabled?20:2,width:18,height:18,borderRadius:9,background:tradeSettings[f.k].enabled?(darkMode?"#111":"#fff"):"#ccc",transition:"left 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
+              </button>
+            </div>
+            {tradeSettings[f.k].enabled && (
+              <input type="text" inputMode="decimal" placeholder={f.placeholder} value={tradeSettings[f.k].value} onChange={e=>setTS(f.k,{value:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")})} style={{...iStyle,fontSize:13}}/>
+            )}
           </div>
         ))}
         <div style={{marginBottom:16}}>
-          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:6,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <span>Taille fixe</span>
-            <div style={{display:"flex",borderRadius:5,border:`1px solid ${C.border}`,overflow:"hidden"}}>
-              {["contrats","lots"].map(u=>(
-                <button key={u} onClick={()=>setTS("sizeFixed",{unit:u})} style={{padding:"3px 10px",border:"none",background:tradeSettings.sizeFixed.unit===u?C.accent:"transparent",color:tradeSettings.sizeFixed.unit===u?(darkMode?"#111":"#fff"):C.gray1,fontSize:9,fontFamily:"'Josefin Sans',sans-serif",fontWeight:tradeSettings.sizeFixed.unit===u?600:300,cursor:"pointer",letterSpacing:"0.08em",transition:"all 0.18s"}}>{u}</button>
-              ))}
-            </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:tradeSettings.sizeFixed.enabled?8:0}}>
+            <span style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em"}}>Taille fixe</span>
+            <button onClick={()=>setTS("sizeFixed",{enabled:!tradeSettings.sizeFixed.enabled})} style={{width:40,height:22,borderRadius:11,border:"none",background:tradeSettings.sizeFixed.enabled?C.accent:"rgba(255,255,255,0.1)",cursor:"pointer",position:"relative",transition:"background 0.22s",flexShrink:0}}>
+              <div style={{position:"absolute",top:2,left:tradeSettings.sizeFixed.enabled?20:2,width:18,height:18,borderRadius:9,background:tradeSettings.sizeFixed.enabled?(darkMode?"#111":"#fff"):"#ccc",transition:"left 0.2s",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
+            </button>
           </div>
-          <input type="text" inputMode="decimal" placeholder={`ex: 1 ${tradeSettings.sizeFixed.unit}`} value={tradeSettings.sizeFixed.value} onChange={e=>setTS("sizeFixed",{value:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")})} style={{...iStyle,fontSize:13}}/>
+          {tradeSettings.sizeFixed.enabled && (
+            <div>
+              <div style={{display:"flex",borderRadius:6,border:`1px solid ${C.border}`,overflow:"hidden",marginBottom:8,alignSelf:"flex-start",width:"fit-content"}}>
+                {["contrats","lots"].map(u=>(
+                  <button key={u} onClick={()=>setTS("sizeFixed",{unit:u})} style={{padding:"4px 12px",border:"none",background:tradeSettings.sizeFixed.unit===u?C.accent:"transparent",color:tradeSettings.sizeFixed.unit===u?(darkMode?"#111":"#fff"):C.gray1,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",fontWeight:tradeSettings.sizeFixed.unit===u?600:300,cursor:"pointer",letterSpacing:"0.08em",transition:"all 0.18s"}}>{u}</button>
+                ))}
+              </div>
+              <input type="text" inputMode="decimal" placeholder={`ex: 1 ${tradeSettings.sizeFixed.unit}`} value={tradeSettings.sizeFixed.value} onChange={e=>setTS("sizeFixed",{value:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")})} style={{...iStyle,fontSize:13}}/>
+            </div>
+          )}
         </div>
         <button onClick={saveTS} style={{width:"100%",padding:"12px",borderRadius:6,border:`1px solid ${C.border}`,background:tsSaved?C.accent:"transparent",color:tsSaved?(darkMode?"#111":"#fff"):C.dim,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.18em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.3s"}}>
           {tsSaved?"✓ Sauvegardé":"Sauvegarder →"}
