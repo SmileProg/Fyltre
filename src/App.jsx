@@ -188,7 +188,7 @@ function Sidebar({ view, setView }) {
 }
 
 /* ─── Calendar ───────────────────────────────────────────────────── */
-function Calendar({ filtered, calMonth, calYear, onPrev, onNext, onDayClick }) {
+function Calendar({ filtered, calMonth, calYear, onPrev, onNext, onDayClick, cur }) {
   const now = new Date();
   const m = calMonth;
   const yr = calYear;
@@ -235,7 +235,7 @@ function Calendar({ filtered, calMonth, calYear, onPrev, onNext, onDayClick }) {
               const bg = hasTrade ? (pnl >= 0 ? `rgba(42,110,58,${intensity})` : `rgba(192,57,43,${intensity})`) : "transparent";
               const isToday = now.getDate() === day && now.getMonth() === m && now.getFullYear() === yr;
               return (
-                <div key={day} onClick={()=>{ if(onDayClick&&!isToday&&hasTrade){onDayClick({day,month:m,year:yr,pnl});}}} title={hasTrade ? `${pnl >= 0 ? "+" : ""}${pnl.toFixed(0)}{currency}` : ""} style={{ aspectRatio:"1", borderRadius:4, background:bg, border:isToday ? `1px solid ${C.accent}` : `1px solid ${hasTrade ? bg : C.gray3}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:hasTrade&&!isToday?"pointer":"default" }}>
+                <div key={day} onClick={()=>{ if(onDayClick&&!isToday&&hasTrade){onDayClick({day,month:m,year:yr,pnl});}}} title={hasTrade ? `${pnl >= 0 ? "+" : ""}${pnl.toFixed(0)}${cur||"€"}` : ""} style={{ aspectRatio:"1", borderRadius:4, background:bg, border:isToday ? `1px solid ${C.accent}` : `1px solid ${hasTrade ? bg : C.gray3}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:hasTrade&&!isToday?"pointer":"default" }}>
                   <span style={{ fontSize:9, color:hasTrade ? "#fff" : C.gray1, fontFamily:"'Josefin Sans',sans-serif", lineHeight:1, fontWeight:hasTrade ? 600 : 300 }}>{day}</span>
                   {hasTrade && <span style={{ fontSize:7, color:"rgba(255,255,255,0.9)", lineHeight:1, marginTop:1 }}>{pnl >= 0 ? "+" : ""}{Math.round(pnl)}</span>}
                 </div>
@@ -314,6 +314,16 @@ export default function App() {
   const [extraEmotions, setExtraEmotions] = useState(() => load('fyltra_emotions_v1', []));
   const [customEmotion, setCustomEmotion] = useState('');
   const [beSign, setBeSign] = useState(1);
+  const [tradeMode, setTradeMode] = useState("swing");
+  const [tradeFixedMode, setTradeFixedMode] = useState("variable"); // "variable" | "fixe"
+  const defaultTS = { tpFixed:{enabled:false,value:""}, slFixed:{enabled:false,value:""}, rrFixed:{enabled:false,value:""}, sizeFixed:{enabled:false,value:"",unit:"contrats"} };
+  const [tradeSettings, setTradeSettings] = useState(() => load("fyltra_trade_settings_v1", defaultTS));
+  const [savedTS, setSavedTS] = useState(() => load("fyltra_trade_settings_v1", defaultTS));
+  const [scalpFields, setScalpFields] = useState({entry:false, rr:false, emotion:false, notes:false, size:false});
+  const setTS = (key, changes) => setTradeSettings(p => ({...p, [key]:{...p[key],...changes}}));
+  const [tsSaved, setTsSaved] = useState(false);
+  const saveTS = () => { save("fyltra_trade_settings_v1", tradeSettings); setSavedTS(tradeSettings); setTsSaved(true); setTimeout(()=>setTsSaved(false),2000); };
+  const toggleScalp = k => setScalpFields(p => ({...p, [k]:!p[k]}));
   const [showCustomEmotion, setShowCustomEmotion] = useState(false);
   const [strategies,  setStrategies]  = useState(() => {
     const saved = load(KEYS.strategies, null);
@@ -381,7 +391,7 @@ export default function App() {
   const [pfCalMonth, setPfCalMonth] = useState(now0.getMonth());
   const [calYear,  setCalYear]  = useState(now0.getFullYear());
   const [pfCalYear,  setPfCalYear]  = useState(now0.getFullYear());
-  const [form, setForm] = useState({ date:new Date().toISOString().split("T")[0], instrument:"MNQ", direction:"LONG", result:"WIN", session:"New York", emotion:"Neutre", entry:"", exit:"", rr:"", notes:"", accountIds:[], strategyId:null });
+  const [form, setForm] = useState({ date:new Date().toISOString().split("T")[0], instrument:"MNQ", direction:"LONG", result:"WIN", session:"New York", emotion:"Neutre", entry:"", exit:"", rr:"", size:"", sizeUnit:"contrats", notes:"", accountIds:[], strategyId:null });
 
   const instruments = [...BASE_INSTRUMENTS, ...extraInstr, "Autre"];
   const availableYears = Array.from({ length:now0.getFullYear() - 2019 }, (_, i) => now0.getFullYear() - i);
@@ -398,7 +408,23 @@ export default function App() {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]:v }));
   // Scroll to top on view change
-  useEffect(() => { window.scrollTo(0,0); }, [view, selectedPf]);
+  useEffect(() => { window.scrollTo(0,0); if (view !== "settings") setTradeSettings(savedTS); }, [view, selectedPf]);
+  // Pre-fill fixed values when switching to add view
+  useEffect(() => {
+    if (view === "add") {
+      setForm(f => ({
+        ...f,
+        rr: savedTS.rrFixed.enabled && savedTS.rrFixed.value ? savedTS.rrFixed.value : f.rr,
+        entry: tradeSettings.slFixed.enabled && tradeSettings.slFixed.value ? f.entry : f.entry,
+      }));
+      setPnlRaw("");
+      setForm(f => ({
+        ...f,
+        size: savedTS.sizeFixed.enabled && savedTS.sizeFixed.value ? savedTS.sizeFixed.value : f.size,
+        sizeUnit: savedTS.sizeFixed.enabled ? savedTS.sizeFixed.unit : f.sizeUnit,
+      }));
+    }
+  }, [view]);
 
   const handleInstrument = v => {
     if (v === "Autre") { setShowCustom(true); set("instrument", "Autre"); }
@@ -413,6 +439,12 @@ export default function App() {
   };
 
   const computedPnl = () => {
+    if (tradeFixedMode === "fixe") {
+      // Always valid — actual values come from savedTS at save time
+      if (form.result === "WIN")  return parseFloat(savedTS.tpFixed.value)||0;
+      if (form.result === "LOSS") return -(parseFloat(savedTS.slFixed.value)||0);
+      return 0;
+    }
     const a = parseFloat(pnlRaw);
     if (isNaN(a) || pnlRaw === "") return null;
     if (form.result === "LOSS") return -Math.abs(a);
@@ -423,8 +455,18 @@ export default function App() {
   const addTrade = () => {
     const p = computedPnl();
     if (p === null) return;
-    setTrades(prev => [{ ...form, pnl:p, id:Date.now() }, ...prev]);
-    setPnlRaw(""); setForm(f => ({ ...f, entry:"", exit:"", rr:"", notes:"", accountIds:[], strategyId:null }));
+    if (tradeFixedMode === "fixe") {
+      const tp  = parseFloat(savedTS.tpFixed.value) || 0;
+      const sl  = parseFloat(savedTS.slFixed.value) || 0;
+      const rr  = savedTS.rrFixed.value  || form.rr;
+      const sz  = savedTS.sizeFixed.value || form.size;
+      const szu = savedTS.sizeFixed.value ? savedTS.sizeFixed.unit : form.sizeUnit;
+      const pnl = form.result === "WIN" ? tp : form.result === "LOSS" ? -Math.abs(sl) : 0;
+      setTrades(prev => [{ ...form, pnl, rr, size:sz, sizeUnit:szu, id:Date.now() }, ...prev]);
+    } else {
+      setTrades(prev => [{ ...form, pnl:p, id:Date.now() }, ...prev]);
+    }
+    setPnlRaw(""); setForm(f => ({ ...f, entry:"", exit:"", rr:"", size:"", notes:"", accountIds:[], strategyId:null }));
     setSaved(true); setTimeout(() => setSaved(false), 2500);
   };
 
@@ -524,7 +566,7 @@ export default function App() {
       {!desktop && <PageTitle sub="Tableau de bord" title={total === 0 ? "Aucun trade" : "Performance"} />}
       <div style={{ display:"grid", gridTemplateColumns:desktop ? "repeat(4,1fr)" : "1fr 1fr", gap:10, marginBottom:20 }}>
         <StatCard label="Win Rate"  value={`${winRate}%`}                              color={winRate >= 50 ? C.accent : C.gray1} small={desktop} />
-        <StatCard label="P&L Total" value={`${pnlSum >= 0 ? "+" : ""}${pnlSum.toFixed(0)}{currency}`} color={pnlSum >= 0 ? C.accent : C.gray1} small={desktop} />
+        <StatCard label="P&L Total" value={`${pnlSum >= 0 ? "+" : ""}${pnlSum.toFixed(0)}${currency}`} color={pnlSum >= 0 ? C.accent : C.gray1} small={desktop} />
         <StatCard label="RR Moyen"  value={`${avgRR}:1`}                               color={C.dim}   small={desktop} />
         <StatCard label="Bilan" value={`${wins}W / ${total - wins}L`} color={C.accent} small={desktop} />
       </div>
@@ -607,6 +649,25 @@ export default function App() {
   const addTradeContent = (
     <div>
       <PageTitle sub="Enregistrer" title="Nouveau Trade" />
+
+      {/* ── MODE SWITCH ── */}
+      <div style={{display:"flex",gap:8,marginBottom:20,padding:4,background:C.bg2,borderRadius:12,border:`1px solid ${C.border}`}}>
+        {[
+          {k:"swing", label:"Swing / Day"},
+          {k:"scalping", label:"Scalping"},
+        ].map(m => (
+          <button key={m.k} onClick={()=>setTradeMode(m.k)} style={{flex:1,padding:"10px 12px",borderRadius:9,border:"none",background:tradeMode===m.k?C.accent:"transparent",color:tradeMode===m.k?(darkMode?"#111":"#fff"):C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:tradeMode===m.k?600:300,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.22s",position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            {m.label}
+            {m.k==="scalping" && tradeMode==="scalping" && (
+              <span style={{background:"linear-gradient(135deg,rgba(210,180,120,0.2),rgba(210,180,120,0.06))",border:"1px solid rgba(210,180,120,0.3)",color:"rgba(210,180,120,0.9)",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.2em",padding:"2px 7px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>Saisie rapide</span>
+            )}
+            {m.k==="scalping" && tradeMode!=="scalping" && (
+              <span style={{background:"rgba(210,180,120,0.12)",border:"1px solid rgba(210,180,120,0.35)",color:"rgba(210,180,120,0.8)",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:400,letterSpacing:"0.18em",padding:"2px 8px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>Saisie rapide</span>
+            )}
+          </button>
+        ))}
+      </div>
+
       <Field label="Date"><input type="date" value={form.date} onChange={e => set("date", e.target.value)} style={iStyle} /></Field>
       <Field label="Instrument">
         <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
@@ -625,22 +686,44 @@ export default function App() {
       <Field label="Résultat"><ChipGroup options={["WIN","LOSS","BREAKEVEN"]} value={form.result} onChange={v => { set("result", v); setBeSign(1); }} /></Field>
       <Divider />
       <Field label="Session"><ChipGroup options={SESSIONS} value={form.session} onChange={v => set("session", v)} /></Field>
-      <Field label="État émotionnel">
-        <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-          {[...EMOTIONS, ...extraEmotions].map(e => (
-            <Chip key={e} label={e} active={form.emotion===e} onClick={()=>set("emotion",e)}/>
-          ))}
-          <Chip label="+ Autre" active={showCustomEmotion} onClick={()=>setShowCustomEmotion(v=>!v)}/>
-        </div>
-        {showCustomEmotion && (
-          <div style={{display:"flex",gap:8,marginTop:8}}>
-            <input type="text" placeholder="ex: Déterminé" value={customEmotion} onChange={e=>setCustomEmotion(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&customEmotion.trim()){setExtraEmotions(p=>[...p,customEmotion.trim()]);set("emotion",customEmotion.trim());setCustomEmotion('');setShowCustomEmotion(false);}}} style={{...iStyle,flex:1,fontSize:13}} autoFocus/>
-            <button onClick={()=>{if(customEmotion.trim()){setExtraEmotions(p=>[...p,customEmotion.trim()]);set("emotion",customEmotion.trim());setCustomEmotion('');setShowCustomEmotion(false);}}} style={{background:C.accent,border:"none",borderRadius:6,padding:"0 14px",color:darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,cursor:"pointer"}}>OK</button>
+      {(tradeMode==="swing" || scalpFields.emotion) && (
+        <Field label="État émotionnel">
+          <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
+            {[...EMOTIONS, ...extraEmotions].map(e => (
+              <Chip key={e} label={e} active={form.emotion===e} onClick={()=>set("emotion",e)}/>
+            ))}
+            <Chip label="+ Autre" active={showCustomEmotion} onClick={()=>setShowCustomEmotion(v=>!v)}/>
           </div>
-        )}
-      </Field>
+          {showCustomEmotion && (
+            <div style={{display:"flex",gap:8,marginTop:8}}>
+              <input type="text" placeholder="ex: Déterminé" value={customEmotion} onChange={e=>setCustomEmotion(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&customEmotion.trim()){setExtraEmotions(p=>[...p,customEmotion.trim()]);set("emotion",customEmotion.trim());setCustomEmotion('');setShowCustomEmotion(false);}}} style={{...iStyle,flex:1,fontSize:13}} autoFocus/>
+              <button onClick={()=>{if(customEmotion.trim()){setExtraEmotions(p=>[...p,customEmotion.trim()]);set("emotion",customEmotion.trim());setCustomEmotion('');setShowCustomEmotion(false);}}} style={{background:C.accent,border:"none",borderRadius:6,padding:"0 14px",color:darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,cursor:"pointer"}}>OK</button>
+            </div>
+          )}
+        </Field>
+      )}
+      {/* ── VARIABLE / FIXE SWITCH — after emotion ── */}
+      <div style={{display:"flex",gap:6,margin:"14px 0",padding:3,background:C.bg2,borderRadius:10,border:`1px solid ${C.border}`}}>
+        {[{k:"variable",l:"Variable"},{k:"fixe",l:"Fixe"}].map(opt=>(
+          <button key={opt.k} onClick={()=>setTradeFixedMode(opt.k)} style={{flex:1,padding:"8px",borderRadius:8,border:"none",background:tradeFixedMode===opt.k?C.accent:"transparent",color:tradeFixedMode===opt.k?(darkMode?"#111":"#fff"):C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:tradeFixedMode===opt.k?600:300,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.2s"}}>
+            {opt.l}
+          </button>
+        ))}
+      </div>
+      {tradeFixedMode==="fixe" && (
+        <div style={{marginBottom:14,padding:"12px 14px",borderRadius:8,background:C.bg2,border:`1px solid ${C.border}`}}>
+          <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:8}}>Valeurs fixes appliquées</div>
+          <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+            {savedTS.tpFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>WIN : </span><strong style={{color:"#2a6e3a"}}>+{savedTS.tpFixed.value}{currency}</strong></div>}
+            {savedTS.slFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>LOSS : </span><strong style={{color:"#c0392b"}}>-{savedTS.slFixed.value}{currency}</strong></div>}
+            {savedTS.rrFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>R/R : </span><strong style={{color:C.white}}>{savedTS.rrFixed.value}:1</strong></div>}
+            {savedTS.sizeFixed.value&&<div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{color:C.dim}}>Taille : </span><strong style={{color:C.white}}>{savedTS.sizeFixed.value} {savedTS.sizeFixed.unit}</strong></div>}
+            {!savedTS.tpFixed.value&&!savedTS.slFixed.value&&!savedTS.rrFixed.value&&!savedTS.sizeFixed.value&&<span style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif"}}>Aucune valeur fixe définie dans les paramètres</span>}
+          </div>
+        </div>
+      )}
       <Divider />
-      <Field label={`P&L — ${form.result === "LOSS" ? "montant perte" : form.result === "WIN" ? "montant gain" : "breakeven"}`}>
+      {tradeFixedMode==="variable" && <Field label={`P&L — ${form.result === "LOSS" ? "montant perte" : form.result === "WIN" ? "montant gain" : "breakeven"}`}>
         <input type="text" inputMode="decimal" placeholder="" value={pnlRaw} onChange={e => { const v = e.target.value.replace(/,/g,".").replace(/[^0-9.]/g, ""); setPnlRaw(v); }} style={{ ...iStyle, fontSize:18, fontFamily:"'Josefin Sans',sans-serif", fontWeight:300, color:"#1a1a1a" }} />
         {/* Breakeven sign toggle — always visible in BE mode */}
         {form.result === "BREAKEVEN" && (
@@ -658,13 +741,71 @@ export default function App() {
             {form.result === "LOSS" && <span style={{color:"#c0392b"}}>{`✗ Perte : −${parseFloat(pnlRaw).toFixed(2)} ${currency}`}</span>}
           </div>
         )}
-      </Field>
-      <Field label="Prix d'entrée"><input type="text" inputMode="decimal" placeholder="" value={form.entry} onChange={e => set("entry", e.target.value)} style={iStyle} /></Field>
-      <Field label="Prix de sortie"><input type="text" inputMode="decimal" placeholder="" value={form.exit} onChange={e => set("exit", e.target.value)} style={iStyle} /></Field>
-      <Field label="Risk / Reward"><input type="text" inputMode="decimal" placeholder="" value={form.rr} onChange={e => set("rr", e.target.value)} style={iStyle} /></Field>
-      <Field label="Notes">
-        <textarea rows={3} placeholder="ex: Je n'ai pas attendu la confirmation" value={form.notes} onChange={e => set("notes", e.target.value)} style={{ ...iStyle, resize:"vertical", lineHeight:1.6 }} />
-      </Field>
+      </Field>}
+      {tradeMode==="swing" ? (
+        <>
+          <Field label="Prix d'entrée"><input type="text" inputMode="decimal" placeholder="" value={form.entry} onChange={e => set("entry", e.target.value)} style={iStyle} /></Field>
+          <Field label="Prix de sortie"><input type="text" inputMode="decimal" placeholder="" value={form.exit} onChange={e => set("exit", e.target.value)} style={iStyle} /></Field>
+          {tradeFixedMode==="variable" && (!savedTS.rrFixed.enabled
+            ? <Field label="Risk / Reward"><input type="text" inputMode="decimal" placeholder="" value={form.rr} onChange={e => set("rr", e.target.value)} style={iStyle}/></Field>
+            : null)}
+          {tradeFixedMode==="variable" && (
+            <div style={{marginBottom:4}}>
+              <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.18em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:6,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span>Taille de position</span>
+                <div style={{display:"flex",borderRadius:5,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+                  {["contrats","lots"].map(u=>(
+                    <button key={u} onClick={()=>set("sizeUnit",u)} style={{padding:"2px 10px",border:"none",background:form.sizeUnit===u?C.accent:"transparent",color:form.sizeUnit===u?(darkMode?"#111":"#fff"):C.gray1,fontSize:9,fontFamily:"'Josefin Sans',sans-serif",fontWeight:form.sizeUnit===u?600:300,cursor:"pointer",letterSpacing:"0.08em",transition:"all 0.18s"}}>{u}</button>
+                  ))}
+                </div>
+              </div>
+              <input type="text" inputMode="decimal" placeholder={`ex: 1 ${form.sizeUnit}`} value={form.size} onChange={e=>set("size",e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,""))} style={iStyle}/>
+            </div>
+          )}
+        </>
+      ) : (
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:4}}>
+          {/* Scalping optional toggles */}
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {[
+              {k:"entry", label:"Prix entrée/sortie"},
+              {k:"rr", label:"R/R"},
+              {k:"emotion", label:"Émotion"},
+              {k:"notes", label:"Note"},
+              {k:"size", label:"Taille"},
+            ].map(f => (
+              <button key={f.k} onClick={()=>toggleScalp(f.k)} style={{padding:"6px 12px",borderRadius:6,border:`1px solid ${scalpFields[f.k]?C.accent:C.border}`,background:scalpFields[f.k]?"rgba(255,255,255,0.06)":"transparent",color:scalpFields[f.k]?C.white:C.gray2,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",fontWeight:scalpFields[f.k]?400:300,letterSpacing:"0.1em",cursor:"pointer",transition:"all 0.18s",display:"flex",alignItems:"center",gap:6}}>
+                <div style={{width:6,height:6,borderRadius:"50%",background:scalpFields[f.k]?C.accent:C.gray3,transition:"background 0.18s"}}/>
+                {f.label}
+              </button>
+            ))}
+          </div>
+          {scalpFields.entry && (
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              <Field label="Prix d'entrée"><input type="text" inputMode="decimal" placeholder="" value={form.entry} onChange={e => set("entry", e.target.value)} style={iStyle}/></Field>
+              <Field label="Prix de sortie"><input type="text" inputMode="decimal" placeholder="" value={form.exit} onChange={e => set("exit", e.target.value)} style={iStyle}/></Field>
+            </div>
+          )}
+          {tradeFixedMode==="variable" && scalpFields.rr && <Field label="Risk / Reward"><input type="text" inputMode="decimal" placeholder="" value={form.rr} onChange={e => set("rr", e.target.value)} style={iStyle}/></Field>}
+          {tradeFixedMode==="variable" && scalpFields.size && (
+            <Field label={<div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"space-between",width:"100%"}}>
+              <span>Taille</span>
+              <div style={{display:"flex",borderRadius:5,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+                {["contrats","lots"].map(u=>(
+                  <button key={u} onClick={()=>set("sizeUnit",u)} style={{padding:"2px 8px",border:"none",background:form.sizeUnit===u?C.accent:"transparent",color:form.sizeUnit===u?(darkMode?"#111":"#fff"):C.gray1,fontSize:9,fontFamily:"'Josefin Sans',sans-serif",cursor:"pointer",transition:"all 0.18s"}}>{u}</button>
+                ))}
+              </div>
+            </div>}>
+              <input type="text" inputMode="decimal" placeholder="ex: 1" value={form.size} onChange={e=>set("size",e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,""))} style={iStyle}/>
+            </Field>
+          )}
+        </div>
+      )}
+      {(tradeMode==="swing" || scalpFields.notes) && (
+        <Field label="Notes">
+          <textarea rows={3} placeholder="ex: Je n'ai pas attendu la confirmation" value={form.notes} onChange={e => set("notes", e.target.value)} style={{ ...iStyle, resize:"vertical", lineHeight:1.6 }} />
+        </Field>
+      )}
 
       {propfirms.length > 0 && (
         <Field label="Compte(s) concerné(s)">
@@ -1045,18 +1186,18 @@ export default function App() {
           <Divider/>
           <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:6,marginBottom:8}}>
             <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em"}}>Saisir en</span>
-            <button onClick={()=>{setPfPctMode(false);setPfPctValues({target:"",maxLoss:"",dailyLoss:""});}} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${!pfPctMode?C.accent:C.border}`,background:!pfPctMode?"rgba(0,0,0,0.08)":"transparent",color:!pfPctMode?C.accent:C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:!pfPctMode?600:300,cursor:"pointer"}}>€</button>
-            <button onClick={()=>{setPfPctMode(true);setPfPctValues({target:"",maxLoss:"",dailyLoss:""});}} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${pfPctMode?C.accent:C.border}`,background:pfPctMode?"rgba(0,0,0,0.08)":"transparent",color:pfPctMode?C.accent:C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:pfPctMode?600:300,cursor:"pointer"}}>%</button>
+            <button onClick={()=>{setPfPctMode(false);setPfPctValues({target:"",maxLoss:"",dailyLoss:""});}} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${!pfPctMode?C.accent:C.border}`,background:!pfPctMode?C.bg3:"transparent",color:!pfPctMode?C.white:C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:!pfPctMode?600:300,cursor:"pointer"}}>{currency}</button>
+            <button onClick={()=>{setPfPctMode(true);setPfPctValues({target:"",maxLoss:"",dailyLoss:""});}} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${pfPctMode?C.accent:C.border}`,background:pfPctMode?C.bg3:"transparent",color:pfPctMode?C.white:C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:pfPctMode?600:300,cursor:"pointer"}}>%</button>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
             <Field label="Capital *">
               <input type="text" inputMode="numeric" placeholder="" value={pfForm.capital} onChange={e=>pfSet("capital",e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,""))} style={iStyle}/>
             </Field>
-            <Field label={pfPctMode?"Profit Target * (%)":"Profit Target * (€)"}>
+            <Field label={pfPctMode?"Profit Target * (%)":`Profit Target * (${currency})`}>
               <input type="text" inputMode="numeric" placeholder="" value={pfPctMode?pfPctValues.target:pfForm.target} onChange={e=>{const v=e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"");if(pfPctMode){setPfPctValues(p=>({...p,target:v}));pfSet("target",pfForm.capital?String((parseFloat(pfForm.capital)*(parseFloat(v)||0)/100).toFixed(0)):"");}else pfSet("target",v);}} style={iStyle}/>
               {pfPctMode&&pfPctValues.target&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.target)||0)/100).toFixed(0)}{currency}</div>}
             </Field>
-            <Field label={pfPctMode?"Max Drawdown * (%)":"Max Drawdown * (€)"}>
+            <Field label={pfPctMode?"Max Drawdown * (%)":`Max Drawdown * (${currency})`}>
               <input type="text" inputMode="numeric" placeholder="" value={pfPctMode?pfPctValues.maxLoss:pfForm.maxLoss} onChange={e=>{const v=e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"");if(pfPctMode){setPfPctValues(p=>({...p,maxLoss:v}));pfSet("maxLoss",pfForm.capital?String((parseFloat(pfForm.capital)*(parseFloat(v)||0)/100).toFixed(0)):"");}else pfSet("maxLoss",v);}} style={iStyle}/>
               {pfPctMode&&pfPctValues.maxLoss&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.maxLoss)||0)/100).toFixed(0)}{currency}</div>}
             </Field>
@@ -1269,7 +1410,7 @@ export default function App() {
                             <div style={{width:gaugePct+"%",height:"100%",borderRadius:2,background:isOver?"rgba(192,57,43,0.7)":gaugePct>=80?"rgba(180,120,0,0.6)":C.accent,transition:"width 0.5s"}}/>
                           </div>
                           <div style={{fontSize:10,color:isOver?"rgba(192,57,43,0.8)":C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>
-                            {isOver ? "Limite de consistance atteinte" : `${(maxD-todayGain).toFixed(0)}{currency} restants`}
+                            {isOver ? "Limite de consistance atteinte" : `${(maxD-todayGain).toFixed(0)}${currency} restants`}
                           </div>
                         </div>
                       );
@@ -1459,7 +1600,7 @@ export default function App() {
                   <div style={{width:120,height:6,background:C.gray3,borderRadius:3,marginLeft:"auto",marginBottom:4}}>
                     <div style={{width:gp+"%",height:"100%",borderRadius:3,background:over?"rgba(192,57,43,0.8)":gp>=80?"rgba(180,120,0,0.6)":"#2a6e3a",transition:"width 0.5s"}}/>
                   </div>
-                  <div style={{fontSize:10,color:over?"rgba(192,57,43,0.8)":C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{over?"🔴 Limite atteinte":`${(maxD-g).toFixed(0)}{currency} restants`}</div>
+                  <div style={{fontSize:10,color:over?"rgba(192,57,43,0.8)":C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{over?"🔴 Limite atteinte":`${(maxD-g).toFixed(0)}${currency} restants`}</div>
                 </div>
               );
             })()}
@@ -1632,7 +1773,7 @@ export default function App() {
 
         {/* ── CALENDAR ── */}
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"16px 14px",marginBottom:12}}>
-          <Calendar filtered={acctTrades} calMonth={pfCalMonth} calYear={pfCalYear} onPrev={prevPfMonth} onNext={nextPfMonth} onDayClick={({day,month,year})=>{
+          <Calendar filtered={acctTrades} calMonth={pfCalMonth} calYear={pfCalYear} onPrev={prevPfMonth} onNext={nextPfMonth} cur={currency} onDayClick={({day,month,year})=>{
               const dateStr=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
               const dayTrades=acctTrades.filter(t=>t.date===dateStr);
               const dayPnl=dayTrades.reduce((s,t)=>s+(t.pnl||0),0);
@@ -1812,7 +1953,7 @@ export default function App() {
     const summary = todayTrades.map(t=>`${t.instrument}|${t.direction}|${t.session}|${t.emotion}|RR:${t.rr||"—"}|P&L:${t.pnl}€|${t.result}${t.notes?`|"${t.notes}"`:""}`).join("\n");
     const todayPnl = todayTrades.reduce((s,t)=>s+(t.pnl||0),0);
     const systemMsg = "Tu es un coach de trading direct et exigeant. Fais un debriefing de fin de journée. Analyse : 1) ✅ Ce qui s'est bien passé 2) ❌ Ce qui doit être amélioré 3) 📌 1 règle à appliquer demain. Sois court, direct, sans blabla. Réponds en français.";
-    const userMsg = `Compte: ${pf.firm}${pf.name?" "+pf.name:""}\nP&L du jour: ${todayPnl>=0?"+":""}${todayPnl.toFixed(0)}{currency}\n${todayTrades.length} trades:\n${summary}`;
+    const userMsg = `Compte: ${pf.firm}${pf.name?" "+pf.name:""}\nP&L du jour: ${todayPnl>=0?"+":""}${todayPnl.toFixed(0)}${currency}\n${todayTrades.length} trades:\n${summary}`;
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:600,system:systemMsg,messages:[{role:"user",content:userMsg}]})});
       if(!res.ok){const e=await res.json().catch(()=>({}));setEodText("Erreur: "+(e?.error?.message||"inconnue"));setEodLoading(false);return;}
@@ -1970,6 +2111,36 @@ export default function App() {
           </button>
         </div>
       </div>
+
+      {/* ── TRADE SETTINGS ── */}
+      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"18px 16px",marginBottom:12}}>
+        <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:8}}>Réglages de trade</div>
+        <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginBottom:16,letterSpacing:"0.04em",lineHeight:1.7}}>Ces valeurs s'appliquent en mode <strong style={{color:C.white}}>Fixe</strong> dans l'onglet Trade.</div>
+        {[
+          {k:"tpFixed", label:"TP fixe", placeholder:"ex: 150"},
+          {k:"slFixed", label:"SL fixe", placeholder:"ex: 75"},
+          {k:"rrFixed", label:"R/R fixe", placeholder:"ex: 2"},
+        ].map(f => (
+          <div key={f.k} style={{marginBottom:12}}>
+            <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:6}}>{f.label}</div>
+            <input type="text" inputMode="decimal" placeholder={f.placeholder} value={tradeSettings[f.k].value} onChange={e=>setTS(f.k,{value:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")})} style={{...iStyle,fontSize:13}}/>
+          </div>
+        ))}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:6,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <span>Taille fixe</span>
+            <div style={{display:"flex",borderRadius:5,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+              {["contrats","lots"].map(u=>(
+                <button key={u} onClick={()=>setTS("sizeFixed",{unit:u})} style={{padding:"3px 10px",border:"none",background:tradeSettings.sizeFixed.unit===u?C.accent:"transparent",color:tradeSettings.sizeFixed.unit===u?(darkMode?"#111":"#fff"):C.gray1,fontSize:9,fontFamily:"'Josefin Sans',sans-serif",fontWeight:tradeSettings.sizeFixed.unit===u?600:300,cursor:"pointer",letterSpacing:"0.08em",transition:"all 0.18s"}}>{u}</button>
+              ))}
+            </div>
+          </div>
+          <input type="text" inputMode="decimal" placeholder={`ex: 1 ${tradeSettings.sizeFixed.unit}`} value={tradeSettings.sizeFixed.value} onChange={e=>setTS("sizeFixed",{value:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")})} style={{...iStyle,fontSize:13}}/>
+        </div>
+        <button onClick={saveTS} style={{width:"100%",padding:"12px",borderRadius:6,border:`1px solid ${C.border}`,background:tsSaved?C.accent:"transparent",color:tsSaved?(darkMode?"#111":"#fff"):C.dim,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.18em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.3s"}}>
+          {tsSaved?"✓ Sauvegardé":"Sauvegarder →"}
+        </button>
+      </div>
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:8,padding:"18px 16px"}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Version</div>
         <div style={{fontSize:13,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>FYLTRA v1.0 · Trading Journal</div>
@@ -2100,17 +2271,18 @@ export default function App() {
                     </div>
                   );
                 })()}
-                {selectedDay.trades.length>1&&(()=>{
+                {selectedDay.trades.length>=1&&(()=>{
                   let c2=0;
-                  const pd=[{v:0},...[...selectedDay.trades].sort((a,b)=>a.date.localeCompare(b.date)).map(t=>{c2+=t.pnl||0;return{v:c2};})];
+                  const pd=[{label:"0",v:0},...[...selectedDay.trades].sort((a,b)=>(a.id||0)-(b.id||0)).map((t,i)=>{c2+=t.pnl||0;return{label:String(i+1),v:parseFloat(c2.toFixed(2)),pnl:t.pnl||0,instrument:t.instrument||""};})];
                   const dayTotalPnl=pd[pd.length-1]?.v||0;
                   return(
                     <div style={{marginBottom:12,background:"rgba(255,255,255,0.04)",borderRadius:10,padding:"10px 12px"}}>
                       <div style={{fontSize:7,color:"rgba(255,255,255,0.3)",textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:6}}>Courbe du jour</div>
-                      <ResponsiveContainer width="100%" height={60}>
-                        <LineChart data={pd} margin={{top:2,right:2,left:0,bottom:0}}>
-                          <ReferenceLine y={0} stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3"/>
-                          <Line type="monotone" dataKey="v" stroke={dayTotalPnl>=0?"#4caf6e":"#e05a5a"} strokeWidth={2} dot={false}/>
+                      <ResponsiveContainer width="100%" height={70}>
+                        <LineChart data={pd} margin={{top:4,right:4,left:0,bottom:0}}>
+                          <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1}/>
+                          <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${v.toFixed(0)}${currency}`,"Cumulé"]} labelFormatter={l=>pd.find(d=>d.label===l)?.instrument||""}/>
+                          <Line type="monotone" dataKey="v" stroke={dayTotalPnl>=0?"#4caf6e":"#e05a5a"} strokeWidth={2} dot={{r:2,fill:dayTotalPnl>=0?"#4caf6e":"#e05a5a",strokeWidth:0}} activeDot={{r:4,fill:dayTotalPnl>=0?"#4caf6e":"#e05a5a",strokeWidth:0}}/>
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -2232,7 +2404,7 @@ export default function App() {
                           ))}
                         </div>
                       </div>
-                      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
                         {[{l:"Profit Factor",v:dPF==="—"||dPF==="∞"?dPF:dPF+"x",c:parseFloat(dPF)>=1||dPF==="∞"?"#4caf6e":"#e05a5a"},{l:"RR Moyen",v:dRR==="—"?"—":dRR+":1",c:"rgba(255,255,255,0.5)"},{l:"Nb Trades",v:dT,c:"rgba(255,255,255,0.7)"}].map(s=>(
                           <div key={s.l} style={{background:"rgba(255,255,255,0.05)",borderRadius:8,padding:"10px 12px"}}>
                             <div style={{fontSize:8,color:"rgba(255,255,255,0.3)",textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:4}}>{s.l}</div>
@@ -2240,6 +2412,24 @@ export default function App() {
                           </div>
                         ))}
                       </div>
+                      {/* Equity curve */}
+                      {(()=>{
+                        let dc=0;
+                        const dpd=[{label:"0",v:0},...selectedDay.trades.sort((a,b)=>(a.id||0)-(b.id||0)).map((t,i)=>{dc+=t.pnl||0;return{label:String(i+1),v:parseFloat(dc.toFixed(2)),pnl:t.pnl||0,instrument:t.instrument||""};})];
+                        const dtPnl=dpd[dpd.length-1]?.v||0;
+                        return (
+                          <div style={{background:"rgba(255,255,255,0.03)",borderRadius:10,padding:"10px 12px",marginBottom:4}}>
+                            <div style={{fontSize:7,color:"rgba(255,255,255,0.3)",textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:6}}>Courbe du jour</div>
+                            <ResponsiveContainer width="100%" height={80}>
+                              <LineChart data={dpd} margin={{top:4,right:4,left:0,bottom:0}}>
+                                <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" strokeWidth={1}/>
+                                <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${v.toFixed(0)}${currency}`,"Cumulé"]} labelFormatter={l=>dpd.find(d=>d.label===l)?.instrument||""}/>
+                                <Line type="monotone" dataKey="v" stroke={dtPnl>=0?"#4caf6e":"#e05a5a"} strokeWidth={2} dot={{r:3,fill:dtPnl>=0?"#4caf6e":"#e05a5a",strokeWidth:0}} activeDot={{r:5,strokeWidth:0}}/>
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        );
+                      })()}
                     </div>
                   );
                 })()}
