@@ -443,6 +443,7 @@ function AuthScreen() {
 function MT5Connect({ user, darkMode, onTradesImported }) {
   const isDark = darkMode;
   const [mt5Form, setMt5Form] = useState({ login:"", password:"", server:"", name:"", platform:"mt5" });
+  const [showMt5Pwd, setShowMt5Pwd] = useState(false);
   const [mt5Account, setMt5Account] = useState(null);
   const [mt5Loading, setMt5Loading] = useState(false);
   const [mt5Syncing, setMt5Syncing] = useState(false);
@@ -526,7 +527,16 @@ function MT5Connect({ user, darkMode, onTradesImported }) {
             ))}
           </div>
           <input placeholder="Numéro de compte (login)" value={mt5Form.login} onChange={e=>f("login",e.target.value)} style={fieldStyle}/>
-          <input type="password" placeholder="Mot de passe investisseur" value={mt5Form.password} onChange={e=>f("password",e.target.value)} style={fieldStyle}/>
+          <div style={{position:"relative"}}>
+            <input type={showMt5Pwd?"text":"password"} placeholder="Mot de passe investisseur" value={mt5Form.password} onChange={e=>f("password",e.target.value)} style={{...fieldStyle, paddingRight:46}}/>
+            <button onClick={()=>setShowMt5Pwd(v=>!v)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,0.35)",lineHeight:1,padding:0}}>
+              {showMt5Pwd?(
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              ):(
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              )}
+            </button>
+          </div>
           <input placeholder="Serveur broker (ex: ICMarkets-Live)" value={mt5Form.server} onChange={e=>f("server",e.target.value)} style={fieldStyle}/>
           <input placeholder="Nom du compte (optionnel)" value={mt5Form.name} onChange={e=>f("name",e.target.value)} style={fieldStyle}/>
           <button onClick={connectMT5} disabled={mt5Loading} style={{width:"100%",padding:"12px",borderRadius:8,border:"none",background:mt5Loading?"#333":C.accent,color:mt5Loading?"#888":darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5Loading?"not-allowed":"pointer",transition:"all 0.2s",marginTop:4}}>
