@@ -439,6 +439,111 @@ function AuthScreen() {
   );
 }
 
+/* ─── MT5 CONNECT ────────────────────────────────────────────────── */
+function MT5Connect({ user, darkMode, onTradesImported }) {
+  const isDark = darkMode;
+  const [mt5Form, setMt5Form] = useState({ login:"", password:"", server:"", name:"", platform:"mt5" });
+  const [mt5Account, setMt5Account] = useState(null);
+  const [mt5Loading, setMt5Loading] = useState(false);
+  const [mt5Syncing, setMt5Syncing] = useState(false);
+  const [mt5Status, setMt5Status] = useState("");
+  const [mt5Error, setMt5Error] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("mt5_accounts").select("*").eq("user_id", user.id).single()
+      .then(({ data }) => { if (data) setMt5Account(data); });
+  }, [user]);
+
+  const connectMT5 = async () => {
+    if (!mt5Form.login || !mt5Form.password || !mt5Form.server) { setMt5Error("Remplis tous les champs."); return; }
+    setMt5Loading(true); setMt5Error(""); setMt5Status("");
+    try {
+      const res = await fetch("/api/connect-mt5", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(mt5Form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erreur connexion");
+      const { data: saved } = await supabase.from("mt5_accounts").upsert({
+        user_id: user.id, metaapi_id: data.accountId,
+        broker_server: mt5Form.server, login: mt5Form.login,
+        name: mt5Form.name || `Compte ${mt5Form.login}`, connected: true,
+      }).select().single();
+      if (saved) setMt5Account(saved);
+      setMt5Status("Compte connecté ! La synchronisation initiale peut prendre 2-3 minutes.");
+    } catch(e) { setMt5Error(e.message); }
+    setMt5Loading(false);
+  };
+
+  const syncTrades = async () => {
+    if (!mt5Account) return;
+    setMt5Syncing(true); setMt5Error(""); setMt5Status("");
+    try {
+      const res = await fetch("/api/sync-trades", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ accountId: mt5Account.metaapi_id }),
+      });
+      const data = await res.json();
+      if (res.status === 202) { setMt5Status(data.message); setMt5Syncing(false); return; }
+      if (!res.ok) throw new Error(data.error || "Erreur sync");
+      if (data.trades?.length > 0 && onTradesImported) onTradesImported(data.trades);
+      setMt5Status(`${data.total} trades importés avec succès.`);
+    } catch(e) { setMt5Error(e.message); }
+    setMt5Syncing(false);
+  };
+
+  const f = (k,v) => setMt5Form(p => ({...p, [k]:v}));
+  const fieldStyle = { width:"100%", background:C.bg3, border:`1px solid ${C.border}`, borderRadius:8, padding:"11px 14px", color:C.white, fontSize:13, fontFamily:"'Josefin Sans',sans-serif", fontWeight:300, outline:"none" };
+
+  return (
+    <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
+      <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:14}}>Compte MT4 / MT5</div>
+
+      {mt5Account ? (
+        <div>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+            <div style={{width:8,height:8,borderRadius:4,background:"#4caf6e",flexShrink:0}}/>
+            <div>
+              <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif"}}>{mt5Account.name}</div>
+              <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em"}}>{mt5Account.broker_server} · #{mt5Account.login}</div>
+            </div>
+          </div>
+          <button onClick={syncTrades} disabled={mt5Syncing} style={{width:"100%",padding:"11px",borderRadius:8,border:"none",background:mt5Syncing?"#333":C.accent,color:mt5Syncing?"#888":darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5Syncing?"not-allowed":"pointer",transition:"all 0.2s"}}>
+            {mt5Syncing ? "Synchronisation..." : "Synchroniser les trades →"}
+          </button>
+          <button onClick={()=>setMt5Account(null)} style={{width:"100%",marginTop:8,padding:"8px",borderRadius:8,border:`1px solid ${C.border}`,background:"transparent",color:C.gray2,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>
+            Changer de compte
+          </button>
+        </div>
+      ) : (
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{display:"flex",gap:6,marginBottom:4,background:C.bg3,borderRadius:8,padding:3}}>
+            {["mt5","mt4"].map(p=>(
+              <button key={p} onClick={()=>f("platform",p)} style={{flex:1,padding:"7px",borderRadius:6,border:"none",background:mt5Form.platform===p?C.accent:"transparent",color:mt5Form.platform===p?(darkMode?"#111":"#fff"):C.gray1,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.2s"}}>
+                {p.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          <input placeholder="Numéro de compte (login)" value={mt5Form.login} onChange={e=>f("login",e.target.value)} style={fieldStyle}/>
+          <input type="password" placeholder="Mot de passe investisseur" value={mt5Form.password} onChange={e=>f("password",e.target.value)} style={fieldStyle}/>
+          <input placeholder="Serveur broker (ex: ICMarkets-Live)" value={mt5Form.server} onChange={e=>f("server",e.target.value)} style={fieldStyle}/>
+          <input placeholder="Nom du compte (optionnel)" value={mt5Form.name} onChange={e=>f("name",e.target.value)} style={fieldStyle}/>
+          <button onClick={connectMT5} disabled={mt5Loading} style={{width:"100%",padding:"12px",borderRadius:8,border:"none",background:mt5Loading?"#333":C.accent,color:mt5Loading?"#888":darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5Loading?"not-allowed":"pointer",transition:"all 0.2s",marginTop:4}}>
+            {mt5Loading ? "Connexion..." : "Connecter →"}
+          </button>
+          <div style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5}}>
+            Utilise ton <strong style={{color:C.gray1}}>mot de passe investisseur</strong> (lecture seule) — jamais le mot de passe principal.
+          </div>
+        </div>
+      )}
+
+      {mt5Status && <div style={{marginTop:12,fontSize:11,color:"#4caf6e",fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5}}>{mt5Status}</div>}
+      {mt5Error && <div style={{marginTop:12,fontSize:11,color:"#e05a5a",fontFamily:"'Josefin Sans',sans-serif"}}>{mt5Error}</div>}
+    </div>
+  );
+}
+
 /* ─── MAIN APP ───────────────────────────────────────────────────── */
 export default function App() {
   const isMobile = useIsMobile();
@@ -2328,6 +2433,14 @@ export default function App() {
           {tsSaved?"✓ Sauvegardé":"Sauvegarder →"}
         </button>
       </div>
+      {/* ── MT5 CONNECT ── */}
+      <MT5Connect user={user} darkMode={darkMode} onTradesImported={async (imported) => {
+        for (const t of imported) {
+          const { data } = await supabase.from("trades").insert(tradeToDb(t)).select().single();
+          if (data) setTrades(prev => [dbToTrade(data), ...prev]);
+        }
+      }} />
+
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px"}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Version</div>
         <div style={{fontSize:13,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>FYLTRA v1.0 · Trading Journal</div>
