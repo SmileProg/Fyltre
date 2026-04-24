@@ -699,19 +699,32 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── Load trades from DB when user logs in ──
+  // ── Load trades + settings from DB when user logs in ──
   useEffect(() => {
     if (!user) return;
     supabase.from("trades").select("*").eq("user_id", user.id).order("created_at", { ascending:false })
       .then(({ data }) => { if (data) setTrades(data.map(dbToTrade)); });
+    supabase.from("user_settings").select("*").eq("user_id", user.id).single()
+      .then(({ data }) => {
+        if (!data) return;
+        if (data.propfirms) setPropfirms(data.propfirms);
+        if (data.strategies) setStrategies(data.strategies);
+        if (data.capital !== undefined && data.capital !== null) setCapital(data.capital);
+        if (data.extra_instruments) setExtraInstr(data.extra_instruments);
+      });
   }, [user]);
 
+  const saveUserSettings = async (patch) => {
+    if (!user) return;
+    await supabase.from("user_settings").upsert({ user_id: user.id, ...patch, updated_at: new Date().toISOString() });
+  };
+
   useEffect(() => { if (!user) save(KEYS.trades, trades); }, [trades]);
-  useEffect(() => { save(KEYS.instruments, extraInstr);}, [extraInstr]);
+  useEffect(() => { save(KEYS.instruments, extraInstr); if (user) saveUserSettings({ extra_instruments: extraInstr }); }, [extraInstr]);
   useEffect(() => { save('fyltra_emotions_v1', extraEmotions); }, [extraEmotions]);
-  useEffect(() => { save(KEYS.strategies,  strategies); }, [strategies]);
-  useEffect(() => { save(KEYS.capital,     capital);   }, [capital]);
-  useEffect(() => { save(KEYS.propfirms,   propfirms); }, [propfirms]);
+  useEffect(() => { save(KEYS.strategies, strategies); if (user) saveUserSettings({ strategies }); }, [strategies]);
+  useEffect(() => { save(KEYS.capital, capital); if (user) saveUserSettings({ capital }); }, [capital]);
+  useEffect(() => { save(KEYS.propfirms, propfirms); if (user) saveUserSettings({ propfirms }); }, [propfirms]);
   useEffect(() => { localStorage.setItem("fyltra_currency", currency); }, [currency]);
   useEffect(() => { localStorage.setItem("fyltra_dark", darkMode); document.documentElement.style.setProperty("--bg", darkMode?"#0f0f0f":"#f8f7f5"); document.body.style.background = darkMode?"#0f0f0f":"#f8f7f5"; document.body.style.color = darkMode?"#f0ede8":"#1a1a1a"; C = darkMode ? DARK_THEME : LIGHT_THEME; }, [darkMode]);
   useEffect(() => { localStorage.setItem("fyltra_lang", lang); }, [lang]);
