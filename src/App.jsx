@@ -2444,12 +2444,13 @@ export default function App() {
         </button>
       </div>
       {/* ── MT5 CONNECT ── */}
-      <MT5Connect user={user} darkMode={darkMode} onTradesImported={async (imported) => {
-        for (const t of imported) {
-          const { data } = await supabase.from("trades").insert(tradeToDb(t)).select().single();
-          if (data) setTrades(prev => [dbToTrade(data), ...prev]);
-        }
-      }} />
+      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12,opacity:0.6}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>Compte MT4 / MT5</div>
+          <span style={{background:"linear-gradient(135deg,rgba(210,180,120,0.2),rgba(210,180,120,0.06))",border:"1px solid rgba(210,180,120,0.3)",color:"rgba(210,180,120,0.9)",fontSize:8,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.22em",padding:"3px 8px",borderRadius:4,textTransform:"uppercase"}}>bientôt</span>
+        </div>
+        <div style={{fontSize:12,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.6}}>Connecte ton compte MT4/MT5 pour importer tes trades automatiquement.</div>
+      </div>
 
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px"}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Version</div>
