@@ -49,9 +49,6 @@ const FONTS = `
   @keyframes slideOutAccount{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(-24px);}}
   @keyframes fadeOutDown{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(20px);}}
   @keyframes tabFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-  @keyframes ledSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-  .led-pill{position:relative;}
-  .led-pill::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:conic-gradient(from 0deg,transparent 0%,transparent 91%,rgba(0,210,255,0.04) 93%,rgba(0,210,255,0.7) 95.5%,rgba(255,255,255,1) 97%,rgba(0,210,255,0.7) 98.5%,rgba(0,210,255,0.04) 99.5%,transparent 100%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ledSpin var(--led-dur,4s) linear infinite;animation-delay:var(--led-delay,0s);filter:drop-shadow(0 0 2px rgba(0,210,255,1)) drop-shadow(0 0 6px rgba(0,210,255,0.7)) drop-shadow(0 0 12px rgba(0,210,255,0.4));pointer-events:none;z-index:10;}
 `;
 
 /* ─── Utils ──────────────────────────────────────────────────────── */
@@ -703,7 +700,6 @@ export default function App() {
   const [accountLeaving, setAccountLeaving] = useState(false);
   const closeAccount = () => { setAccountLeaving(true); setTimeout(()=>{ setSelectedPf(null); setConfirmDeletePf(false); setAccountLeaving(false); setAcctView("today"); }, 260); }; // null = list, pf = detail
   const [acctCustomizing, setAcctCustomizing] = useState(false);
-  const [ledMode, setLedMode] = useState(() => localStorage.getItem("fyltra_led")==="true");
   const [acctLayout, setAcctLayout] = useState(() => load('fyltra_layout_v1', ['progress','today','stats','calendar','trades']));
   const [acctDragOver, setAcctDragOver] = useState(null);
   const [view,        setView]        = useState("propfirm");
@@ -799,7 +795,6 @@ export default function App() {
   useEffect(() => { save('fyltra_layout_v1', acctLayout); if (user) saveUserSettings({ acct_layout: acctLayout }); }, [acctLayout]);
   useEffect(() => { localStorage.setItem("fyltra_trade_mode", tradeMode); if (user) saveUserSettings({ trade_mode: tradeMode }); }, [tradeMode]);
   useEffect(() => { localStorage.setItem("fyltra_trade_fixed_mode", tradeFixedMode); if (user) saveUserSettings({ trade_fixed_mode: tradeFixedMode }); }, [tradeFixedMode]);
-  useEffect(() => { localStorage.setItem("fyltra_led", ledMode); }, [ledMode]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]:v }));
   // Scroll to top on view change
@@ -1951,14 +1946,9 @@ export default function App() {
 
     const alerts = getPfAlerts(pf);
 
-    const LED_DURS  = [3.8, 5.3, 4.1, 6.2, 3.3, 5.7, 4.6, 3.0, 5.1, 4.4, 6.5, 3.6];
-    const LED_DELAYS= [-1.2,-3.5,-0.7,-4.8,-2.1,-1.8,-3.9,-0.4,-2.6,-4.2,-1.5,-3.1];
-    const lp = (i) => ledMode ? { className:"led-pill", style:{"--led-dur":`${LED_DURS[i%LED_DURS.length]}s`,"--led-delay":`${LED_DELAYS[i%LED_DELAYS.length]}s`} } : { className:"", style:{} };
-
-    const MiniCard = ({label, value, color, sub, li=0}) => {
-      const l = lp(li);
+    const MiniCard = ({label, value, color, sub}) => {
       return (
-        <div className={l.className} style={{...l.style, background:C.bg2,border:`1px solid ${C.border}`,borderRadius:14,boxShadow:"0 6px 32px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.1), 0 -2px 28px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.36)",padding:!isMobile?"20px 20px":"12px 14px"}}>
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:14,boxShadow:"0 6px 32px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.1), 0 -2px 28px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.36)",padding:!isMobile?"20px 20px":"12px 14px"}}>
           <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:!isMobile?10:6}}>{label}</div>
           <div style={{fontSize:!isMobile?28:20,fontWeight:300,color:color||C.white,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1}}>{value}</div>
           {sub && <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:6}}>{sub}</div>}
@@ -2006,7 +1996,7 @@ export default function App() {
     };
 
     const sectionProgress = pf.type==="propfirm" ? (
-      <div {...lp(4)} style={{...lp(4).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
+      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
         <div style={{marginBottom:10}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
             <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Profit Target</span>
@@ -2046,7 +2036,7 @@ export default function App() {
     ) : null;
 
     const sectionToday = (
-      <div {...lp(5)} style={{...lp(5).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
+      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:pf.hasConsistency&&pf.consistencyPct&&pf.target?10:0}}>
           <div>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Aujourd'hui</div>
@@ -2097,7 +2087,7 @@ export default function App() {
           );
         })()}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
-          <div {...lp(6)} style={{...lp(6).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:14,boxShadow:"0 6px 32px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.1), 0 -2px 28px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.36)",padding:!isMobile?"30px 24px":"14px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:14,boxShadow:"0 6px 32px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.1), 0 -2px 28px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.36)",padding:!isMobile?"30px 24px":"14px",display:"flex",flexDirection:"column",alignItems:"center"}}>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4,alignSelf:"flex-start"}}>Winrate · {acctView==="global"?"Global":"Aujourd'hui"}</div>
             {(() => { const tw=statsTrades.filter(t=>t.result==="WIN").length; const tl=statsTrades.filter(t=>t.result==="LOSS").length; const tt=statsTrades.length; return tt>0 ? (((wins, losses, total, size=130) => {
               const r=46, cx=size/2, cy=size*0.52, sw=13, PI=Math.PI;
@@ -2128,7 +2118,7 @@ export default function App() {
               );
             })(tw,tl,tt,140)) : <div style={{padding:"20px 0",color:C.gray2,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>Aucun trade{acctView==="today"?" aujourd'hui":""}</div>; })()}
           </div>
-          <div {...lp(7)} style={{...lp(7).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"14px"}}>
+          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"14px"}}>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:10}}>Direction · {acctView==="global"?"Global":"Aujourd'hui"}</div>
             {[{d:"LONG",color:"#2a6e3a"},{d:"SHORT",color:"#c0392b"}].map(({d,color})=>{
               const dt=(acctView==="global"?acctTrades:todayTrades).filter(t=>t.direction===d);
@@ -2150,7 +2140,7 @@ export default function App() {
             })}
           </div>
         </div>
-        <div {...lp(8)} style={{...lp(8).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"24px 20px 14px":"16px 14px 10px",marginBottom:!isMobile?16:12}}>
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"24px 20px 14px":"16px 14px 10px",marginBottom:!isMobile?16:12}}>
           <div style={{fontSize:9,color:C.dim,letterSpacing:"0.2em",textTransform:"uppercase",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:10}}>Courbe d'équité</div>
           {(acctView==="global"?acctTrades:todayTrades).length>1 ? <PnlChart filtered={acctView==="global"?acctTrades:todayTrades} capital={pf.capital} pnlSum={acctView==="global"?allPnl:todayTrades.reduce((s,t)=>s+(t.pnl||0),0)} height={!isMobile?260:160} cur={currency}/>
           : <div style={{textAlign:"center",padding:"32px 0",color:C.gray2,fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}>Aucun trade</div>}
@@ -2219,7 +2209,7 @@ export default function App() {
     );
 
     const sectionCalendar = (
-      <div {...lp(9)} style={{...lp(9).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"16px 14px",marginBottom:12}}>
+      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"16px 14px",marginBottom:12}}>
         <Calendar filtered={acctTrades} calMonth={pfCalMonth} calYear={pfCalYear} onPrev={prevPfMonth} onNext={nextPfMonth} cur={currency} onDayClick={({day,month,year})=>{
             const dateStr=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
             const dayTrades=acctTrades.filter(t=>t.date===dateStr);
@@ -2235,7 +2225,7 @@ export default function App() {
         {(acctView==="global"?acctTrades:todayTrades).length===0?<div style={{padding:"12px 0",color:C.gray2,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>Aucun trade aujourd'hui</div>:[...(acctView==="global"?acctTrades:todayTrades)].sort((a,b)=>b.date.localeCompare(a.date)).map(t=>{
           const pnl=t.pnl||0;
           return (
-            <div key={t.id} {...lp(10)} style={{...lp(10).style,background:C.bg2,border:`1px solid ${C.border}`,borderLeft:`3px solid ${t.result==="WIN"?"#2a6e3a":t.result==="LOSS"?"#c0392b":C.gray3}`,borderRadius:6,padding:"10px 14px",marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div key={t.id} style={{background:C.bg2,border:`1px solid ${C.border}`,borderLeft:`3px solid ${t.result==="WIN"?"#2a6e3a":t.result==="LOSS"?"#c0392b":C.gray3}`,borderRadius:6,padding:"10px 14px",marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
                 <span style={{fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,fontSize:13,color:C.white}}>{t.instrument}</span>
                 <span style={{marginLeft:6,fontSize:9,color:t.direction==="LONG"?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.06em"}}>{t.direction}</span>
@@ -2601,15 +2591,6 @@ export default function App() {
           </div>
           <button onClick={()=>setDarkMode(d=>!d)} style={{width:52,height:28,borderRadius:14,border:"none",background:darkMode?"#f0ede8":"#ccc",cursor:"pointer",position:"relative",transition:"background 0.3s",flexShrink:0}}>
             <div style={{position:"absolute",top:3,left:darkMode?26:3,width:22,height:22,borderRadius:11,background:darkMode?"#111":"#fff",transition:"left 0.25s",boxShadow:"0 1px 4px rgba(0,0,0,0.2)"}}/>
-          </button>
-        </div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div>
-            <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Effet LED comptes</div>
-            <div style={{fontSize:13,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{ledMode?"Activé — faisceau lumineux":"Désactivé"}</div>
-          </div>
-          <button onClick={()=>setLedMode(v=>!v)} style={{width:52,height:28,borderRadius:14,border:"none",background:ledMode?"rgba(255,210,60,0.85)":"rgba(255,255,255,0.1)",cursor:"pointer",position:"relative",transition:"background 0.3s",flexShrink:0}}>
-            <div style={{position:"absolute",top:3,left:ledMode?26:3,width:22,height:22,borderRadius:11,background:ledMode?"#111":"#888",transition:"left 0.25s",boxShadow:"0 1px 4px rgba(0,0,0,0.2)"}}/>
           </button>
         </div>
       </div>
