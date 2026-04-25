@@ -706,6 +706,7 @@ export default function App() {
   const [aiText,      setAiText]      = useState("");
   const [aiLoading,   setAiLoading]   = useState(false);
   const [aiError,     setAiError]     = useState("");
+  const [coachInstructions, setCoachInstructions] = useState(() => localStorage.getItem("fyltra_coach_instr") || "");
   const [saved,       setSaved]       = useState(false);
   const [stratSaved,  setStratSaved]  = useState(false);
   const [pnlRaw,      setPnlRaw]      = useState("");
@@ -931,7 +932,7 @@ export default function App() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ summary, stratCtx, tradeCount: trades.length }),
+        body: JSON.stringify({ summary, stratCtx, tradeCount: trades.length, coachInstructions }),
       });
       const data = await res.json();
       if (!res.ok) { setAiError(data.error || "Erreur inconnue"); setAiLoading(false); return; }
@@ -1478,6 +1479,19 @@ export default function App() {
           <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.06em",marginBottom:3}}>Coach IA</div>
           <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em",lineHeight:1.6}}>Analyse tes {trades.length} trades et génère 3 règles concrètes pour demain.</div>
         </div>
+      </div>
+
+      {/* Coach instructions */}
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:6}}>Instructions du coach</div>
+        <textarea
+          rows={3}
+          placeholder={"Ex: Je trade principalement le MNQ en scalping. Je dois travailler ma discipline sur les stops. Sois très direct et sans pitié sur mes erreurs."}
+          value={coachInstructions}
+          onChange={e => { setCoachInstructions(e.target.value); localStorage.setItem("fyltra_coach_instr", e.target.value); }}
+          style={{...iStyle, resize:"vertical", lineHeight:1.6, fontSize:13}}
+        />
+        <div style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",marginTop:5,letterSpacing:"0.05em"}}>Personnalise le comportement du coach. Il en tiendra compte dans chaque analyse.</div>
       </div>
 
       {/* Trigger button */}
