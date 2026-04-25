@@ -50,10 +50,8 @@ const FONTS = `
   @keyframes fadeOutDown{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(20px);}}
   @keyframes tabFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
   @keyframes ledSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-  .led-card{position:relative;}
-  .led-card::before{content:'';position:absolute;inset:-1px;border-radius:9px;padding:1px;background:conic-gradient(from 0deg,transparent 0%,transparent 82%,rgba(255,210,60,0) 86%,rgba(255,210,60,0.55) 90%,rgba(255,245,180,0.95) 93%,rgba(255,255,255,1) 94.5%,rgba(255,245,180,0.95) 96%,rgba(255,210,60,0.55) 98%,transparent 100%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ledSpin 4s linear infinite;pointer-events:none;z-index:10;}
-  .led-card-b::before{animation-duration:5.5s;animation-delay:-1.8s;}
-  .led-card-c::before{animation-duration:3.2s;animation-delay:-3.1s;}
+  .led-pill{position:relative;}
+  .led-pill::before{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:conic-gradient(from 0deg,transparent 0%,transparent 82%,rgba(255,210,60,0) 86%,rgba(255,210,60,0.55) 90%,rgba(255,245,180,0.95) 93%,rgba(255,255,255,1) 94.5%,rgba(255,245,180,0.95) 96%,rgba(255,210,60,0.55) 98%,transparent 100%);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:ledSpin var(--led-dur,4s) linear infinite;animation-delay:var(--led-delay,0s);pointer-events:none;z-index:10;}
 `;
 
 /* ─── Utils ──────────────────────────────────────────────────────── */
@@ -1721,7 +1719,7 @@ export default function App() {
         </div>
       )}
 
-      {pfView==="list" && propfirms.map((pf, pfIdx) => {
+      {pfView==="list" && propfirms.map((pf) => {
         const cap = parseFloat(pf.capital)||0;
         const target = parseFloat(pf.target)||0;
         const maxLoss = parseFloat(pf.maxLoss)||0;
@@ -1731,9 +1729,8 @@ export default function App() {
         const ddProgress = Math.min(100, (drawdown/maxLoss)*100);
         const alerts = getPfAlerts(pf);
         const isInDanger = alerts.some(a=>a.type==="danger");
-        const ledClass = ledMode && !isInDanger ? ["led-card","led-card led-card-b","led-card led-card-c"][pfIdx%3] : "";
         return (
-          <div key={pf.id} className={ledClass} style={{background:C.bg2,border:`1px solid ${isInDanger?"rgba(192,57,43,0.3)":C.border}`,borderRadius:8,padding:!isMobile?"24px 20px":"18px 16px",marginBottom:!isMobile?18:14,cursor:editingPf?.id===pf.id?"default":"pointer"}} onClick={()=>{ if(!editingPf) setSelectedPf(pf); }}>
+          <div key={pf.id} style={{background:C.bg2,border:`1px solid ${isInDanger?"rgba(192,57,43,0.3)":C.border}`,borderRadius:8,padding:!isMobile?"24px 20px":"18px 16px",marginBottom:!isMobile?18:14,cursor:editingPf?.id===pf.id?"default":"pointer"}} onClick={()=>{ if(!editingPf) setSelectedPf(pf); }}>
             {/* Header */}
             {editingPf?.id === pf.id ? (
               <div style={{marginBottom:12}}>
@@ -1954,13 +1951,20 @@ export default function App() {
 
     const alerts = getPfAlerts(pf);
 
-    const MiniCard = ({label, value, color, sub}) => (
-      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:14,boxShadow:"0 6px 32px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.1), 0 -2px 28px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.36)",padding:!isMobile?"20px 20px":"12px 14px"}}>
-        <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:!isMobile?10:6}}>{label}</div>
-        <div style={{fontSize:!isMobile?28:20,fontWeight:300,color:color||C.white,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1}}>{value}</div>
-        {sub && <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:6}}>{sub}</div>}
-      </div>
-    );
+    const LED_DURS  = [3.8, 5.3, 4.1, 6.2, 3.3, 5.7, 4.6, 3.0, 5.1, 4.4, 6.5, 3.6];
+    const LED_DELAYS= [-1.2,-3.5,-0.7,-4.8,-2.1,-1.8,-3.9,-0.4,-2.6,-4.2,-1.5,-3.1];
+    const lp = (i) => ledMode ? { className:"led-pill", style:{"--led-dur":`${LED_DURS[i%LED_DURS.length]}s`,"--led-delay":`${LED_DELAYS[i%LED_DELAYS.length]}s`} } : { className:"", style:{} };
+
+    const MiniCard = ({label, value, color, sub, li=0}) => {
+      const l = lp(li);
+      return (
+        <div className={l.className} style={{...l.style, background:C.bg2,border:`1px solid ${C.border}`,borderRadius:14,boxShadow:"0 6px 32px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.1), 0 -2px 28px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.36)",padding:!isMobile?"20px 20px":"12px 14px"}}>
+          <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:!isMobile?10:6}}>{label}</div>
+          <div style={{fontSize:!isMobile?28:20,fontWeight:300,color:color||C.white,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1}}>{value}</div>
+          {sub && <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:6}}>{sub}</div>}
+        </div>
+      );
+    };
 
     const SECTION_LABELS = { progress:"Progression", today:"Aujourd'hui", stats:"Statistiques", calendar:"Calendrier", trades:"Trades" };
 
@@ -2002,7 +2006,7 @@ export default function App() {
     };
 
     const sectionProgress = pf.type==="propfirm" ? (
-      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
+      <div {...lp(4)} style={{...lp(4).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
         <div style={{marginBottom:10}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
             <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Profit Target</span>
@@ -2042,7 +2046,7 @@ export default function App() {
     ) : null;
 
     const sectionToday = (
-      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
+      <div {...lp(5)} style={{...lp(5).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"22px 20px":"14px 16px",marginBottom:!isMobile?16:12}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:pf.hasConsistency&&pf.consistencyPct&&pf.target?10:0}}>
           <div>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Aujourd'hui</div>
@@ -2083,17 +2087,17 @@ export default function App() {
             <div style={{marginBottom:12}}>
               <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:8}}>Statistiques · {acctView==="global"?"Global":"Aujourd'hui"}</div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8}}>
-                <MiniCard label="Profit Factor" value={todayPF==="—"||todayPF==="∞"?todayPF:todayPF+"x"} color={parseFloat(todayPF)>=1||todayPF==="∞"?"#2a6e3a":"#c0392b"}/>
-                <MiniCard label="RR Moyen" value={todayRR==="—"?"—":todayRR+":1"} color={C.dim}/>
+                <MiniCard label="Profit Factor" value={todayPF==="—"||todayPF==="∞"?todayPF:todayPF+"x"} color={parseFloat(todayPF)>=1||todayPF==="∞"?"#2a6e3a":"#c0392b"} li={0}/>
+                <MiniCard label="RR Moyen" value={todayRR==="—"?"—":todayRR+":1"} color={C.dim} li={1}/>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr",gap:8}}>
-                <MiniCard label="Nb Trades" value={todayTotal||"—"} color={C.white}/>
+                <MiniCard label="Nb Trades" value={todayTotal||"—"} color={C.white} li={2}/>
               </div>
             </div>
           );
         })()}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
-          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:14,boxShadow:"0 6px 32px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.1), 0 -2px 28px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.36)",padding:!isMobile?"30px 24px":"14px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+          <div {...lp(6)} style={{...lp(6).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:14,boxShadow:"0 6px 32px rgba(0,0,0,0.65), 0 2px 8px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.1), 0 -2px 28px rgba(255,255,255,0.07), inset 0 1px 0 rgba(255,255,255,0.36)",padding:!isMobile?"30px 24px":"14px",display:"flex",flexDirection:"column",alignItems:"center"}}>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4,alignSelf:"flex-start"}}>Winrate · {acctView==="global"?"Global":"Aujourd'hui"}</div>
             {(() => { const tw=statsTrades.filter(t=>t.result==="WIN").length; const tl=statsTrades.filter(t=>t.result==="LOSS").length; const tt=statsTrades.length; return tt>0 ? (((wins, losses, total, size=130) => {
               const r=46, cx=size/2, cy=size*0.52, sw=13, PI=Math.PI;
@@ -2124,7 +2128,7 @@ export default function App() {
               );
             })(tw,tl,tt,140)) : <div style={{padding:"20px 0",color:C.gray2,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>Aucun trade{acctView==="today"?" aujourd'hui":""}</div>; })()}
           </div>
-          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"14px"}}>
+          <div {...lp(7)} style={{...lp(7).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"14px"}}>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:10}}>Direction · {acctView==="global"?"Global":"Aujourd'hui"}</div>
             {[{d:"LONG",color:"#2a6e3a"},{d:"SHORT",color:"#c0392b"}].map(({d,color})=>{
               const dt=(acctView==="global"?acctTrades:todayTrades).filter(t=>t.direction===d);
@@ -2146,7 +2150,7 @@ export default function App() {
             })}
           </div>
         </div>
-        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"24px 20px 14px":"16px 14px 10px",marginBottom:!isMobile?16:12}}>
+        <div {...lp(8)} style={{...lp(8).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"24px 20px 14px":"16px 14px 10px",marginBottom:!isMobile?16:12}}>
           <div style={{fontSize:9,color:C.dim,letterSpacing:"0.2em",textTransform:"uppercase",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:10}}>Courbe d'équité</div>
           {(acctView==="global"?acctTrades:todayTrades).length>1 ? <PnlChart filtered={acctView==="global"?acctTrades:todayTrades} capital={pf.capital} pnlSum={acctView==="global"?allPnl:todayTrades.reduce((s,t)=>s+(t.pnl||0),0)} height={!isMobile?260:160} cur={currency}/>
           : <div style={{textAlign:"center",padding:"32px 0",color:C.gray2,fontSize:11,fontFamily:"'Josefin Sans',sans-serif"}}>Aucun trade</div>}
@@ -2215,7 +2219,7 @@ export default function App() {
     );
 
     const sectionCalendar = (
-      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"16px 14px",marginBottom:12}}>
+      <div {...lp(9)} style={{...lp(9).style,background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"16px 14px",marginBottom:12}}>
         <Calendar filtered={acctTrades} calMonth={pfCalMonth} calYear={pfCalYear} onPrev={prevPfMonth} onNext={nextPfMonth} cur={currency} onDayClick={({day,month,year})=>{
             const dateStr=`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
             const dayTrades=acctTrades.filter(t=>t.date===dateStr);
@@ -2231,7 +2235,7 @@ export default function App() {
         {(acctView==="global"?acctTrades:todayTrades).length===0?<div style={{padding:"12px 0",color:C.gray2,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>Aucun trade aujourd'hui</div>:[...(acctView==="global"?acctTrades:todayTrades)].sort((a,b)=>b.date.localeCompare(a.date)).map(t=>{
           const pnl=t.pnl||0;
           return (
-            <div key={t.id} style={{background:C.bg2,border:`1px solid ${C.border}`,borderLeft:`3px solid ${t.result==="WIN"?"#2a6e3a":t.result==="LOSS"?"#c0392b":C.gray3}`,borderRadius:6,padding:"10px 14px",marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div key={t.id} {...lp(10)} style={{...lp(10).style,background:C.bg2,border:`1px solid ${C.border}`,borderLeft:`3px solid ${t.result==="WIN"?"#2a6e3a":t.result==="LOSS"?"#c0392b":C.gray3}`,borderRadius:6,padding:"10px 14px",marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
                 <span style={{fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,fontSize:13,color:C.white}}>{t.instrument}</span>
                 <span style={{marginLeft:6,fontSize:9,color:t.direction==="LONG"?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.06em"}}>{t.direction}</span>
