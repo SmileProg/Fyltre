@@ -731,7 +731,7 @@ export default function App() {
     result:r.result, pnl:r.pnl, session:r.session, emotion:r.emotion,
     notes:r.notes, tags:r.tags||[], rr:r.rr, tradeMode:r.trade_mode,
     size:r.size, entry:r.entry, exit:r.exit, sizeUnit:r.size_unit,
-    accountIds:(r.account_ids||[]).map(Number), strategyId:r.strategy_id,
+    accountIds:(r.account_ids||[]).map(Number), strategyId:r.strategy_id ? Number(r.strategy_id) : null,
   });
   const tradeToDb = t => ({
     user_id:user.id, date:t.date, instrument:t.instrument, direction:t.direction,
