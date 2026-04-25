@@ -146,7 +146,6 @@ function PillNav({ view, setView, darkMode }) {
         const isHovered = hovered === item.key && !active;
         return (
           <button key={item.key} onClick={() => setView(item.key)} onMouseEnter={() => setHovered(item.key)} onMouseLeave={() => setHovered(null)} style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:2, padding:"8px 14px", borderRadius:44, border:"none", cursor:"pointer", background:active ? "radial-gradient(ellipse 90% 90% at 50% 50%, rgba(252,252,252,0.93) 0%, rgba(225,225,225,0.85) 55%, rgba(200,200,200,0.75) 100%)" : isHovered ? "rgba(255,255,255,0.05)" : "transparent", boxShadow:active ? "0 0 26px 8px rgba(255,255,255,0.22), 0 0 50px 16px rgba(255,255,255,0.09), 0 6px 20px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3)" : "none", transform:"translateY(0)", transition:"all 0.25s cubic-bezier(.4,0,.2,1)", minWidth:52, position:"relative", zIndex:1 }}>
-            {item.key==="ai" && <span style={{position:"absolute",top:3,right:4,background:"linear-gradient(135deg,rgba(210,180,120,0.18),rgba(210,180,120,0.06))",border:"1px solid rgba(210,180,120,0.3)",color:"rgba(210,180,120,0.9)",fontSize:6,fontFamily:"'Josefin Sans',sans-serif",fontWeight:400,letterSpacing:"0.22em",padding:"2px 5px",borderRadius:4,textTransform:"uppercase",lineHeight:1.4,backdropFilter:"blur(4px)"}}>bientôt</span>}
             <span style={{ fontSize:16, lineHeight:1, color:active ? "#111" : "rgba(255,255,255,0.4)", transition:"color 0.2s" }}>{item.icon}</span>
             <span style={{ fontSize:8, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", color:active ? "#222" : "rgba(255,255,255,0.35)", transition:"color 0.2s" }}>{item.label}</span>
           </button>
@@ -185,7 +184,6 @@ function Sidebar({ view, setView, darkMode }) {
       }}>
         <span style={{ fontSize:17, color:active ? "#111" : "rgba(255,255,255,0.4)", lineHeight:1, width:22, textAlign:"center", transition:"color 0.25s" }}>{item.icon}</span>
         <span style={{ fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight: active ? 700 : 300, letterSpacing:"0.1em", textTransform:"uppercase", color:active ? "#222" : "rgba(255,255,255,0.4)", transition:"color 0.25s", whiteSpace:"nowrap" }}>{item.label}</span>
-        {item.key==="ai" && <span style={{marginLeft:"auto",background:"linear-gradient(135deg,rgba(210,180,120,0.15),rgba(210,180,120,0.05))",border:"1px solid rgba(210,180,120,0.25)",color:"rgba(210,180,120,0.85)",fontSize:8,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.22em",padding:"3px 8px",borderRadius:4,textTransform:"uppercase",backdropFilter:"blur(4px)"}}>bientôt</span>}
       </button>
     );
   };
@@ -929,17 +927,15 @@ export default function App() {
     const summary = trades.slice(0, 20).map(t => `${t.date}|${t.instrument}|${t.direction}|${t.session}|${t.emotion}|RR:${t.rr||"—"}|P&L:${t.pnl}€|${t.result}${t.notes ? `|"${t.notes}"` : ""}`).join("\n");
     const strat = strategies[0] || {};
     const stratCtx = [strat.description && "Description: " + strat.description, strat.steps && strat.steps.length > 0 && "Étapes: " + strat.steps.map((s,i)=>`${i+1}. ${s}`).join("\n"), strat.rules && "Règles: " + strat.rules, strat.notes && "Notes: " + strat.notes].filter(Boolean).join("\n");
-    const systemMsg = "Tu es un coach de trading professionnel et exigeant.\n" + (stratCtx ? "\nSTRATÉGIE DU TRADER:\n" + stratCtx + "\n" : "") + "\nAnalyse le journal. Donne:\n1) Ce qui fonctionne\n2) Erreurs récurrentes" + (stratCtx ? " (déviations de la stratégie aussi)" : "") + "\n3) 3 règles concrètes pour demain\nSoyez direct, sans fioritures. Répondez en français.";
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "anthropic-dangerous-direct-browser-access": "true" },
-        body: JSON.stringify({ model:"claude-sonnet-4-5", max_tokens:1024, system:systemMsg, messages:[{ role:"user", content:`${trades.length} trades:\n\n${summary}` }] }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ summary, stratCtx, tradeCount: trades.length }),
       });
-      if (!res.ok) { const e = await res.json().catch(() => ({})); setAiError(`Erreur ${res.status}: ${e?.error?.message || "inconnue"}`); setAiLoading(false); return; }
       const data = await res.json();
-      const text = data.content?.find(b => b.type === "text")?.text;
-      if (text) setAiText(text); else setAiError("Réponse vide. Réessaie.");
+      if (!res.ok) { setAiError(data.error || "Erreur inconnue"); setAiLoading(false); return; }
+      if (data.text) setAiText(data.text); else setAiError("Réponse vide. Réessaie.");
     } catch (e) { setAiError(`Erreur réseau: ${e.message}`); }
     setAiLoading(false);
   };
