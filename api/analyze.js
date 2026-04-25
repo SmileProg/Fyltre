@@ -5,15 +5,17 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { summary, stratCtx, tradeCount } = req.body;
+  const { summary, stratCtx, tradeCount, customSystem } = req.body;
   if (!summary) return res.status(400).json({ error: "summary requis" });
 
   const KEY = process.env.GROQ_API_KEY;
-  const systemMsg = "Tu es un coach de trading professionnel et exigeant.\n"
+  const systemMsg = customSystem || (
+    "Tu es un coach de trading professionnel et exigeant.\n"
     + (stratCtx ? "\nSTRATÉGIE DU TRADER:\n" + stratCtx + "\n" : "")
     + "\nAnalyse le journal de trading. Donne:\n1) Ce qui fonctionne\n2) Erreurs récurrentes"
     + (stratCtx ? " (déviations de la stratégie aussi)" : "")
-    + "\n3) 3 règles concrètes pour demain\nSois direct, sans fioritures. Réponds en français.";
+    + "\n3) 3 règles concrètes pour demain\nSois direct, sans fioritures. Réponds en français."
+  );
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -24,7 +26,7 @@ module.exports = async function handler(req, res) {
         max_tokens: 1024,
         messages: [
           { role: "system", content: systemMsg },
-          { role: "user", content: `${tradeCount} trades:\n\n${summary}` }
+          { role: "user", content: tradeCount ? `${tradeCount} trades:\n\n${summary}` : summary }
         ]
       })
     });

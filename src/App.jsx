@@ -42,7 +42,6 @@ const FONTS = `
   ::-webkit-scrollbar-track{background:var(--bg, #f8f7f5);}
   ::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px;}
   textarea{font-family:'Josefin Sans',sans-serif !important;}
-  input, textarea, select{color:#1a1a1a !important;}
   @keyframes slideFromRight{from{opacity:0;transform:translateX(40px);}to{opacity:1;transform:translateX(0);}}
   @keyframes slideToRight{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(40px);}}
   @keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
@@ -731,7 +730,7 @@ export default function App() {
     result:r.result, pnl:r.pnl, session:r.session, emotion:r.emotion,
     notes:r.notes, tags:r.tags||[], rr:r.rr, tradeMode:r.trade_mode,
     size:r.size, entry:r.entry, exit:r.exit, sizeUnit:r.size_unit,
-    accountIds:r.account_ids||[], strategyId:r.strategy_id,
+    accountIds:(r.account_ids||[]).map(Number), strategyId:r.strategy_id,
   });
   const tradeToDb = t => ({
     user_id:user.id, date:t.date, instrument:t.instrument, direction:t.direction,
@@ -792,7 +791,7 @@ export default function App() {
   useEffect(() => {
     if (view === "add") {
       setPnlRaw("");
-      setForm(f => ({ ...f, entry:"", exit:"", rr:"", size:"", notes:"", accountIds:[], strategyId:null }));
+      setForm(f => ({ ...f, entry:"", exit:"", rr:"", size:"", notes:"", accountIds: selectedPf ? [selectedPf.id] : [], strategyId:null }));
     }
   }, [view]);
 
@@ -839,7 +838,8 @@ export default function App() {
       newTrade = { ...form, pnl:p };
     }
     if (user) {
-      const { data } = await supabase.from("trades").insert(tradeToDb(newTrade)).select().single();
+      const { data, error } = await supabase.from("trades").insert(tradeToDb(newTrade)).select().single();
+      if (error) { console.error("Supabase insert error:", error); return; }
       if (data) setTrades(prev => [dbToTrade(data), ...prev]);
     } else {
       setTrades(prev => [{ ...newTrade, id:Date.now() }, ...prev]);
@@ -1470,22 +1470,44 @@ export default function App() {
   const aiContent = (
     <div>
       <PageTitle sub="Intelligence" title="Analyse IA" />
-      <div style={{textAlign:"center",padding:"40px 20px 20px",display:"flex",flexDirection:"column",alignItems:"center",gap:20}}>
-        <div style={{width:64,height:64,borderRadius:16,background:"linear-gradient(135deg,rgba(210,180,120,0.12),rgba(210,180,120,0.04))",border:"1px solid rgba(210,180,120,0.2)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(210,180,120,0.7)",fontSize:24}}>◆</div>
+
+      {/* Header card */}
+      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:14}}>
+        <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,rgba(210,180,120,0.18),rgba(210,180,120,0.06))",border:"1px solid rgba(210,180,120,0.25)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(210,180,120,0.85)",fontSize:20,flexShrink:0}}>◆</div>
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:300,color:C.white,marginBottom:10}}>Bientôt disponible</div>
-          <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",lineHeight:1.9,maxWidth:320,margin:"0 auto"}}>L'analyse IA croisera vos trades avec votre stratégie pour détecter chaque déviation de votre plan.</div>
+          <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.06em",marginBottom:3}}>Coach IA</div>
+          <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em",lineHeight:1.6}}>Analyse tes {trades.length} trades et génère 3 règles concrètes pour demain.</div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:8,width:"100%",maxWidth:340}}>
-          {["Détection des déviations de stratégie","Debriefing automatique fin de journée","3 règles concrètes pour demain"].map((f,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 16px",borderRadius:8,background:C.bg2,border:`1px solid ${C.border}`}}>
-              <div style={{width:5,height:5,borderRadius:"50%",background:"rgba(210,180,120,0.45)",flexShrink:0}}/>
-              <span style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em"}}>{f}</span>
-            </div>
-          ))}
-        </div>
-        <span style={{background:"linear-gradient(135deg,rgba(210,180,120,0.15),rgba(210,180,120,0.05))",border:"1px solid rgba(210,180,120,0.25)",color:"rgba(210,180,120,0.85)",fontSize:9,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.28em",padding:"6px 18px",borderRadius:6,textTransform:"uppercase",marginTop:4}}>Bientôt</span>
       </div>
+
+      {/* Trigger button */}
+      <button onClick={analyzeAI} disabled={aiLoading} style={{width:"100%",padding:"14px",borderRadius:8,border:"none",background:aiLoading?"rgba(210,180,120,0.12)":"linear-gradient(135deg,rgba(210,180,120,0.25),rgba(210,180,120,0.1))",color:aiLoading?"rgba(210,180,120,0.5)":"rgba(210,180,120,0.95)",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",cursor:aiLoading?"not-allowed":"pointer",border:"1px solid rgba(210,180,120,0.3)",marginBottom:20,transition:"all 0.2s"}}>
+        {aiLoading ? "Analyse en cours…" : "Lancer l'analyse"}
+      </button>
+
+      {/* Error */}
+      {aiError && (
+        <div style={{padding:"14px 16px",borderRadius:8,background:"rgba(192,57,43,0.1)",border:"1px solid rgba(192,57,43,0.3)",color:"#e74c3c",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",marginBottom:16}}>
+          {aiError}
+        </div>
+      )}
+
+      {/* Result */}
+      {aiText && (
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px 18px"}}>
+          <div style={{fontSize:10,color:"rgba(210,180,120,0.7)",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:14}}>Analyse</div>
+          <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,lineHeight:1.9,whiteSpace:"pre-wrap",letterSpacing:"0.03em"}}>
+            {aiText}
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!aiText && !aiError && !aiLoading && (
+        <div style={{textAlign:"center",padding:"32px 0",color:C.gray2,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em"}}>
+          Lance l'analyse pour recevoir ton debriefing
+        </div>
+      )}
     </div>
   );
 
@@ -2390,11 +2412,10 @@ export default function App() {
     const systemMsg = "Tu es un coach de trading direct et exigeant. Fais un debriefing de fin de journée. Analyse : 1) ✅ Ce qui s'est bien passé 2) ❌ Ce qui doit être amélioré 3) 📌 1 règle à appliquer demain. Sois court, direct, sans blabla. Réponds en français.";
     const userMsg = `Compte: ${pf.firm}${pf.name?" "+pf.name:""}\nP&L du jour: ${todayPnl>=0?"+":""}${todayPnl.toFixed(0)}${currency}\n${todayTrades.length} trades:\n${summary}`;
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:600,system:systemMsg,messages:[{role:"user",content:userMsg}]})});
-      if(!res.ok){const e=await res.json().catch(()=>({}));setEodText("Erreur: "+(e?.error?.message||"inconnue"));setEodLoading(false);return;}
+      const res = await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({summary:userMsg,customSystem:systemMsg})});
+      if(!res.ok){const e=await res.json().catch(()=>({}));setEodText("Erreur: "+(e?.error||"inconnue"));setEodLoading(false);return;}
       const data=await res.json();
-      const text=data.content?.find(b=>b.type==="text")?.text;
-      if(text) setEodText(text); else setEodText("Réponse vide.");
+      if(data.text) setEodText(data.text); else setEodText("Réponse vide.");
     } catch(e){setEodText("Erreur réseau: "+e.message);}
     setEodLoading(false);
   };
