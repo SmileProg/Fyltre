@@ -138,7 +138,7 @@ function SpotlightCard({ children, style, ...props }) {
       {...props}
     >
       {children}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit', background: pos.show ? `radial-gradient(300px circle at ${pos.x}px ${pos.y}px, ${C.bg === "#0f0f0f" ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.07)"}, transparent 70%)` : 'none' }} />
+      {C.bg === "#0f0f0f" && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit', background: pos.show ? `radial-gradient(300px circle at ${pos.x}px ${pos.y}px, rgba(255,255,255,0.13), transparent 70%)` : 'none' }} />}
     </div>
   );
 }
@@ -1742,7 +1742,7 @@ export default function App() {
         const alerts = getPfAlerts(pf);
         const isInDanger = alerts.some(a=>a.type==="danger");
         return (
-          <SpotlightCard key={pf.id} style={{background:C.bg2,border:`1px solid ${isInDanger?"rgba(192,57,43,0.3)":C.border}`,borderRadius:8,padding:!isMobile?"24px 20px":"18px 16px",marginBottom:!isMobile?18:14,cursor:editingPf?.id===pf.id?"default":"pointer"}} onClick={()=>{ if(!editingPf) setSelectedPf(pf); }}>
+          <SpotlightCard key={pf.id} style={{background:C.bg2,border:`1px solid ${isInDanger?"rgba(192,57,43,0.3)":C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"24px 20px":"18px 16px",marginBottom:!isMobile?18:14,cursor:editingPf?.id===pf.id?"default":"pointer"}} onClick={()=>{ if(!editingPf) setSelectedPf(pf); }}>
             {/* Header */}
             {editingPf?.id === pf.id ? (
               <div style={{marginBottom:12}}>
