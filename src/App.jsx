@@ -138,7 +138,7 @@ function SpotlightCard({ children, style, ...props }) {
       {...props}
     >
       {children}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit', background: pos.show ? `radial-gradient(300px circle at ${pos.x}px ${pos.y}px, rgba(255,255,255,0.13), transparent 70%)` : 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: 'inherit', background: pos.show ? `radial-gradient(300px circle at ${pos.x}px ${pos.y}px, ${C.bg === "#0f0f0f" ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.07)"}, transparent 70%)` : 'none' }} />
     </div>
   );
 }
@@ -1742,7 +1742,7 @@ export default function App() {
         const alerts = getPfAlerts(pf);
         const isInDanger = alerts.some(a=>a.type==="danger");
         return (
-          <div key={pf.id} style={{background:C.bg2,border:`1px solid ${isInDanger?"rgba(192,57,43,0.3)":C.border}`,borderRadius:8,padding:!isMobile?"24px 20px":"18px 16px",marginBottom:!isMobile?18:14,cursor:editingPf?.id===pf.id?"default":"pointer"}} onClick={()=>{ if(!editingPf) setSelectedPf(pf); }}>
+          <SpotlightCard key={pf.id} style={{background:C.bg2,border:`1px solid ${isInDanger?"rgba(192,57,43,0.3)":C.border}`,borderRadius:8,padding:!isMobile?"24px 20px":"18px 16px",marginBottom:!isMobile?18:14,cursor:editingPf?.id===pf.id?"default":"pointer"}} onClick={()=>{ if(!editingPf) setSelectedPf(pf); }}>
             {/* Header */}
             {editingPf?.id === pf.id ? (
               <div style={{marginBottom:12}}>
@@ -1837,19 +1837,19 @@ export default function App() {
               const todayPnl = todayTrades.reduce((s,t)=>s+(t.pnl||0),0);
               return (
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10,marginTop:4}}>
-                  <div style={{background:C.bg3,borderRadius:6,padding:"8px 10px"}}>
+                  <SpotlightCard style={{background:C.bg3,borderRadius:6,padding:"8px 10px"}}>
                     <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:3}}>Trades</div>
                     <div style={{fontSize:14,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300}}>{acctTrades.length}</div>
-                  </div>
-                  <div style={{background:C.bg3,borderRadius:6,padding:"8px 10px"}}>
+                  </SpotlightCard>
+                  <SpotlightCard style={{background:C.bg3,borderRadius:6,padding:"8px 10px"}}>
                     <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:3}}>Win Rate</div>
                     <div style={{fontSize:14,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300}}>{acctWr}%</div>
-                  </div>
-                  <div style={{background:C.bg3,borderRadius:6,padding:"8px 10px"}}>
+                  </SpotlightCard>
+                  <SpotlightCard style={{background:C.bg3,borderRadius:6,padding:"8px 10px"}}>
                     <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:3}}>RR Moy.</div>
                     <div style={{fontSize:14,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300}}>{acctAvgRR}</div>
-                  </div>
-                  <div style={{background:C.bg3,borderRadius:6,padding:"8px 10px",gridColumn:"1/-1"}}>
+                  </SpotlightCard>
+                  <SpotlightCard style={{background:C.bg3,borderRadius:6,padding:"8px 10px",gridColumn:"1/-1"}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:3}}>
                       <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif"}}>Aujourd'hui</div>
                       {pf.hasConsistency && pf.consistencyPct && pf.target && (
@@ -1875,7 +1875,7 @@ export default function App() {
                         </div>
                       );
                     })()}
-                  </div>
+                  </SpotlightCard>
                 </div>
               );
             })()}
@@ -1891,7 +1891,7 @@ export default function App() {
                 <div style={{fontSize:12,color:C.white,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5}}>{a.msg}</div>
               </div>
             ))}
-          </div>
+          </SpotlightCard>
         );
       })}
     </div>
