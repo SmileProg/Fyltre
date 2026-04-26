@@ -2209,25 +2209,33 @@ ${recentTrades}`;
             {(()=>{
               const srcTrades = acctView==="global"?acctTrades:todayTrades;
               const total = srcTrades.length;
-              return [{d:"LONG",color:"#2a6e3a"},{d:"SHORT",color:"#c0392b"}].map(({d,color})=>{
+              const barColor = C.bg === "#0f0f0f" ? "#ffffff" : "#111111";
+              const dirs = [{d:"LONG"},{d:"SHORT"}].map(({d})=>{
                 const dt=srcTrades.filter(t=>t.direction===d);
                 const dw=dt.filter(t=>t.result==="WIN").length;
                 const dpnl=dt.reduce((s,t)=>s+(t.pnl||0),0);
                 const dwr=dt.length?Math.round(dw/dt.length*100):0;
                 const usagePct=total?Math.round(dt.length/total*100):0;
-                return (
-                  <div key={d} style={{marginBottom:10}}>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                      <span style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{d}</span>
-                      <span style={{fontSize:11,color:dpnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{dpnl>=0?"+":""}{dpnl.toFixed(0)}{currency} · WR {dwr}%</span>
-                    </div>
-                    <div style={{height:4,background:C.gray3,borderRadius:2}}>
-                      <div style={{width:usagePct+"%",height:"100%",borderRadius:2,background:color,transition:"width 0.5s"}}/>
-                    </div>
-                    <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{dt.length} trade{dt.length!==1?"s":""} · {usagePct}% des trades</div>
-                  </div>
-                );
+                return {d,dt,dpnl,dwr,usagePct};
               });
+              const maxPct = Math.max(...dirs.map(x=>x.usagePct), 1);
+              return (
+                <div style={{display:"flex",gap:12,alignItems:"flex-end",height:100,marginTop:4}}>
+                  {dirs.map(({d,dt,dpnl,dwr,usagePct})=>{
+                    const barH = Math.round((usagePct/maxPct)*72);
+                    return (
+                      <div key={d} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                        <span style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>WR {dwr}%</span>
+                        <div style={{width:"100%",display:"flex",alignItems:"flex-end",height:72}}>
+                          <div style={{width:"100%",height:barH,borderRadius:"4px 4px 2px 2px",background:barColor,opacity:usagePct===0?0.15:1,transition:"height 0.5s cubic-bezier(.4,0,.2,1)"}}/>
+                        </div>
+                        <span style={{fontSize:10,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.06em"}}>{d}</span>
+                        <span style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{usagePct}% · {dt.length}T</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
             })()}
           </div>
         </div>
