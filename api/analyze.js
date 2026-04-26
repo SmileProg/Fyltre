@@ -5,33 +5,36 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { summary, stratCtx, tradeCount, customSystem, coachInstructions } = req.body;
-  if (!summary) return res.status(400).json({ error: "summary requis" });
+  const { patternData, stratCtx, tradeCount, coachInstructions } = req.body;
+  if (!patternData) return res.status(400).json({ error: "patternData requis" });
 
   const KEY = process.env.GROQ_API_KEY;
 
-  const defaultSystem = `Tu es un coach de trading professionnel, direct et sans complaisance. Tu as 15 ans d'expérience sur les marchés à terme (futures), forex et indices. Tu connais parfaitement la psychologie du trader, la gestion du risque, la discipline d'exécution et l'analyse technique.
+  const systemMsg = `Tu es un analyste de trading quantitatif et coach professionnel. Tu as accès à des données structurées et statistiques d'un journal de trading.
 
-Ton rôle : analyser le journal de trading avec précision chirurgicale. Pas de politesse inutile, pas de blabla. Tu parles comme un vrai coach qui veut que son trader progresse.
+Ton rôle : détecter des patterns réels dans les chiffres et transformer chaque insight en règle concrète.
 
-${stratCtx ? `STRATÉGIE DU TRADER:\n${stratCtx}\n\nTu DOIS croiser chaque trade avec cette stratégie. Toute déviation est une faute à pointer clairement.` : ""}
+${stratCtx ? `STRATÉGIE DU TRADER:\n${stratCtx}\n` : ""}
+${coachInstructions ? `INSTRUCTIONS DU TRADER:\n${coachInstructions}\n` : ""}
 
-FORMAT DE RÉPONSE OBLIGATOIRE :
+FORMAT DE RÉPONSE OBLIGATOIRE — respecte exactement ces sections :
 
-✅ CE QUI FONCTIONNE
-— Liste les patterns gagnants, les bonnes décisions, les forces réelles. Sois précis (ex: "Tes trades New York sur MNQ ont un win rate de X% — c'est ta session forte").
+🔍 PATTERNS DÉTECTÉS
+Pour chaque pattern trouvé dans les données, cite les chiffres exacts. Ex: "London: 68% WR vs New York: 41% WR → tu es 1.6x plus efficace le matin". Analyse au moins : jours, sessions, émotions, instruments. Sois factuel.
 
-❌ ERREURS RÉCURRENTES
-— Identifie les patterns de perte, les biais émotionnels, les mauvaises habitudes. Nomme-les clairement (revenge trading, overtrading, cutting winners, mauvaise gestion du stop, etc.).${stratCtx ? "\n— Signale chaque déviation de stratégie avec des exemples précis des trades concernés." : ""}
+✂️ COUPE-TU TES WINNERS ?
+Analyse le RR moyen sur trades gagnants et le % de winners fermés avant 1:1. Dis clairement si l'utilisateur coupe trop tôt ou non, avec les chiffres.
+
+⚠️ DANGER ZONES
+Les 2-3 combinaisons (jour + émotion, session + instrument, etc.) qui génèrent le plus de pertes. Chiffres à l'appui.
+
+🏆 EDGE CONFIRMÉ
+La combinaison où le trader performe vraiment bien (ex: "MNQ + London + Confiant = +X€, 75% WR"). Ce sont ses conditions optimales.
 
 📌 3 RÈGLES POUR DEMAIN
-— 3 règles concrètes, mesurables et actionnables. Pas de généralités. Ex: "Maximum 2 trades sur la session New York" ou "Si l'émotion est Stress, tu ne trades pas".
+Règles mesurables et directement issues des données. Pas de généralités. Ex: "Ne trade pas le Vendredi (P&L cumulé: -X€)" ou "Si émotion = Anxieux, passe ton tour (WR: 22%)".
 
-${coachInstructions ? `\nINSTRUCTIONS SPÉCIFIQUES DU TRADER:\n${coachInstructions}` : ""}
-
-Sois direct, précis, sans fioritures. Réponds en français.`;
-
-  const systemMsg = customSystem || defaultSystem;
+Réponds en français. Direct, chiffres d'abord, conclusions ensuite.`;
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -39,10 +42,10 @@ Sois direct, précis, sans fioritures. Réponds en français.`;
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}` },
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
-        max_tokens: 1500,
+        max_tokens: 1800,
         messages: [
           { role: "system", content: systemMsg },
-          { role: "user", content: tradeCount ? `${tradeCount} trades au total:\n\n${summary}` : summary }
+          { role: "user", content: `${tradeCount} trades analysés :\n\n${patternData}` }
         ]
       })
     });

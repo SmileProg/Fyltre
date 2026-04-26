@@ -933,17 +933,84 @@ export default function App() {
   };
   const disciplineScore = calcDisciplineScore();
 
+  const buildPatternData = () => {
+    const DAYS = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+    const group = (keyFn) => {
+      const m = {};
+      trades.forEach(t => {
+        const k = keyFn(t); if (!k) return;
+        if (!m[k]) m[k] = { pnl:0, count:0, wins:0 };
+        m[k].pnl += t.pnl || 0; m[k].count++;
+        if (t.result === "WIN") m[k].wins++;
+      });
+      return m;
+    };
+    const fmt = (m) => Object.entries(m)
+      .sort((a,b) => b[1].pnl - a[1].pnl)
+      .map(([k,v]) => `  ${k}: ${v.count} trades | WR ${v.count ? Math.round(v.wins/v.count*100) : 0}% | P&L ${v.pnl >= 0 ? "+" : ""}${v.pnl.toFixed(0)}${currency}`)
+      .join("\n");
+
+    const byDay     = group(t => DAYS[new Date(t.date+"T12:00:00").getDay()]);
+    const bySession = group(t => t.session);
+    const byEmotion = group(t => t.emotion);
+    const byInstr   = group(t => t.instrument);
+    const byDir     = group(t => t.direction);
+
+    const winners = trades.filter(t => t.result === "WIN" && parseFloat(t.rr) > 0);
+    const avgWinRR = winners.length ? (winners.reduce((s,t) => s + (parseFloat(t.rr)||0), 0) / winners.length).toFixed(2) : null;
+    const cutWinners = winners.filter(t => parseFloat(t.rr) < 1).length;
+    const losers = trades.filter(t => t.result === "LOSS" && parseFloat(t.rr) > 0);
+    const avgLossRR = losers.length ? (losers.reduce((s,t) => s + (parseFloat(t.rr)||0), 0) / losers.length).toFixed(2) : null;
+
+    const sorted = [...trades].sort((a,b) => a.date.localeCompare(b.date));
+    let maxLoseStreak = 0, curLoseStreak = 0, maxWinStreak = 0, curWinStreak = 0;
+    sorted.forEach(t => {
+      if (t.result === "LOSS") { curLoseStreak++; maxLoseStreak = Math.max(maxLoseStreak, curLoseStreak); curWinStreak = 0; }
+      else if (t.result === "WIN") { curWinStreak++; maxWinStreak = Math.max(maxWinStreak, curWinStreak); curLoseStreak = 0; }
+      else { curLoseStreak = 0; curWinStreak = 0; }
+    });
+
+    const recentTrades = [...trades].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 40).reverse()
+      .map(t => `${t.date}|${t.instrument}|${t.direction}|${t.session||"—"}|${t.emotion||"—"}|RR:${t.rr||"—"}|${t.pnl >= 0 ? "+" : ""}${(t.pnl||0).toFixed(0)}${currency}|${t.result}`)
+      .join("\n");
+
+    return `📅 PAR JOUR DE LA SEMAINE:
+${fmt(byDay)}
+
+⏰ PAR SESSION:
+${fmt(bySession)}
+
+🧠 PAR ÉMOTION:
+${fmt(byEmotion)}
+
+📊 PAR INSTRUMENT:
+${fmt(byInstr)}
+
+↕️ PAR DIRECTION:
+${fmt(byDir)}
+
+✂️ ANALYSE WINNERS (${winners.length} trades gagnants avec RR):
+  RR moyen winners: ${avgWinRR || "—"}
+  RR moyen losers: ${avgLossRR || "—"}
+  Winners fermés avant 1:1 RR: ${cutWinners}/${winners.length}${winners.length ? ` (${Math.round(cutWinners/winners.length*100)}%)` : ""}
+
+📉 SÉRIES: max ${maxLoseStreak} pertes consécutives | max ${maxWinStreak} gains consécutifs
+
+DERNIERS 40 TRADES (date|instrument|direction|session|émotion|RR|P&L|résultat):
+${recentTrades}`;
+  };
+
   const analyzeAI = async () => {
     if (trades.length < 3) { setAiText("Ajoute au moins 3 trades pour obtenir une analyse."); return; }
     setAiLoading(true); setAiText(""); setAiError("");
-    const summary = trades.slice(0, 20).reverse().map(t => `${t.date}|${t.instrument}|${t.direction}|${t.session}|${t.emotion}|RR:${t.rr||"—"}|P&L:${t.pnl}€|${t.result}${t.notes ? `|"${t.notes}"` : ""}`).join("\n");
+    const patternData = buildPatternData();
     const strat = strategies[0] || {};
-    const stratCtx = [strat.description && "Description: " + strat.description, strat.steps && strat.steps.length > 0 && "Étapes: " + strat.steps.map((s,i)=>`${i+1}. ${s}`).join("\n"), strat.rules && "Règles: " + strat.rules, strat.notes && "Notes: " + strat.notes].filter(Boolean).join("\n");
+    const stratCtx = [strat.description && "Description: " + strat.description, strat.steps && strat.steps.length > 0 && "Étapes: " + strat.steps.map((s,i) => `${i+1}. ${s}`).join("\n"), strat.rules && "Règles: " + strat.rules, strat.notes && "Notes: " + strat.notes].filter(Boolean).join("\n");
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ summary, stratCtx, tradeCount: trades.length, coachInstructions }),
+        body: JSON.stringify({ patternData, stratCtx, tradeCount: trades.length, coachInstructions }),
       });
       const data = await res.json();
       if (!res.ok) { setAiError(data.error || "Erreur inconnue"); setAiLoading(false); return; }
@@ -1488,7 +1555,7 @@ export default function App() {
         <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,rgba(210,180,120,0.18),rgba(210,180,120,0.06))",border:"1px solid rgba(210,180,120,0.25)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(210,180,120,0.85)",fontSize:20,flexShrink:0}}>◆</div>
         <div>
           <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.06em",marginBottom:3}}>Coach IA</div>
-          <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em",lineHeight:1.6}}>Analyse tes {trades.length} trades et génère 3 règles concrètes pour demain.</div>
+          <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em",lineHeight:1.6}}>Détecte les patterns dans tes {trades.length} trades — jours, sessions, émotions, instruments, winners coupés.</div>
         </div>
       </div>
 
@@ -1520,10 +1587,29 @@ export default function App() {
       {/* Result */}
       {aiText && (
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px 18px"}}>
-          <div style={{fontSize:10,color:"rgba(210,180,120,0.7)",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:14}}>Analyse</div>
-          <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,lineHeight:1.9,whiteSpace:"pre-wrap",letterSpacing:"0.03em"}}>
-            {aiText}
-          </div>
+          <div style={{fontSize:10,color:"rgba(210,180,120,0.7)",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:16}}>Analyse IA</div>
+          {aiText.split(/\n(?=🔍|✂️|⚠️|🏆|📌)/).map((section, i) => {
+            const isPatterns = section.startsWith("🔍");
+            const isCut      = section.startsWith("✂️");
+            const isDanger   = section.startsWith("⚠️");
+            const isEdge     = section.startsWith("🏆");
+            const isRules    = section.startsWith("📌");
+            const accent = isRules ? "rgba(210,180,120,0.85)" : isEdge ? "#2a6e3a" : isDanger ? "#c0392b" : isCut ? "rgba(180,140,255,0.85)" : "rgba(210,180,120,0.5)";
+            const bg     = isRules ? "rgba(210,180,120,0.06)" : isEdge ? "rgba(42,110,58,0.06)" : isDanger ? "rgba(192,57,43,0.06)" : "transparent";
+            const border = isRules ? "rgba(210,180,120,0.2)" : isEdge ? "rgba(42,110,58,0.2)" : isDanger ? "rgba(192,57,43,0.2)" : C.border;
+            return (
+              <div key={i} style={{background:bg, border:`1px solid ${border}`, borderRadius:8, padding:"14px 16px", marginBottom:10}}>
+                {section.split("\n").map((line, j) => {
+                  const isTitle = j === 0;
+                  return (
+                    <div key={j} style={{fontSize: isTitle ? 13 : 12, fontWeight: isTitle ? 600 : 300, color: isTitle ? accent : C.white, fontFamily:"'Josefin Sans',sans-serif", lineHeight:1.8, letterSpacing:"0.02em", marginBottom: isTitle ? 8 : 0}}>
+                      {line}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
       )}
 
