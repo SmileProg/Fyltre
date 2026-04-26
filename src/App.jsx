@@ -2206,24 +2206,29 @@ ${recentTrades}`;
           </div>
           <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"14px"}}>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:10}}>Direction · {acctView==="global"?"Global":"Aujourd'hui"}</div>
-            {[{d:"LONG",color:"#2a6e3a"},{d:"SHORT",color:"#c0392b"}].map(({d,color})=>{
-              const dt=(acctView==="global"?acctTrades:todayTrades).filter(t=>t.direction===d);
-              const dw=dt.filter(t=>t.result==="WIN").length;
-              const dpnl=dt.reduce((s,t)=>s+(t.pnl||0),0);
-              const dwr=dt.length?Math.round(dw/dt.length*100):0;
-              return (
-                <div key={d} style={{marginBottom:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                    <span style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{d}</span>
-                    <span style={{fontSize:11,color:dpnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{dpnl>=0?"+":""}{dpnl.toFixed(0)}{currency} · {dwr}%</span>
+            {(()=>{
+              const srcTrades = acctView==="global"?acctTrades:todayTrades;
+              const total = srcTrades.length;
+              return [{d:"LONG",color:"#2a6e3a"},{d:"SHORT",color:"#c0392b"}].map(({d,color})=>{
+                const dt=srcTrades.filter(t=>t.direction===d);
+                const dw=dt.filter(t=>t.result==="WIN").length;
+                const dpnl=dt.reduce((s,t)=>s+(t.pnl||0),0);
+                const dwr=dt.length?Math.round(dw/dt.length*100):0;
+                const usagePct=total?Math.round(dt.length/total*100):0;
+                return (
+                  <div key={d} style={{marginBottom:10}}>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                      <span style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{d}</span>
+                      <span style={{fontSize:11,color:dpnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{dpnl>=0?"+":""}{dpnl.toFixed(0)}{currency} · WR {dwr}%</span>
+                    </div>
+                    <div style={{height:4,background:C.gray3,borderRadius:2}}>
+                      <div style={{width:usagePct+"%",height:"100%",borderRadius:2,background:color,transition:"width 0.5s"}}/>
+                    </div>
+                    <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{dt.length} trade{dt.length!==1?"s":""} · {usagePct}% des trades</div>
                   </div>
-                  <div style={{height:4,background:C.gray3,borderRadius:2}}>
-                    <div style={{width:dwr+"%",height:"100%",borderRadius:2,background:color,transition:"width 0.5s"}}/>
-                  </div>
-                  <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{dt.length} trade{dt.length!==1?"s":""}</div>
-                </div>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
         </div>
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:!isMobile?"24px 20px 14px":"16px 14px 10px",marginBottom:!isMobile?16:12}}>
