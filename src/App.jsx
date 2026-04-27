@@ -122,6 +122,50 @@ function ChipGroup({ options, value, onChange }) {
   return <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{options.map(o => <Chip key={o} label={o} active={value===o} onClick={() => onChange(o)} />)}</div>;
 }
 
+function DatePicker({ value, onChange }) {
+  const isDark = C.bg === "#0f0f0f";
+  return (
+    <input
+      type="date"
+      value={value || ""}
+      onChange={e => onChange(e.target.value)}
+      style={{
+        width:"100%", boxSizing:"border-box",
+        background: isDark ? "rgba(255,255,255,0.06)" : C.bg3,
+        border: `1px solid ${C.border}`,
+        borderRadius:10, padding:"10px 14px",
+        color: C.white, fontSize:14,
+        fontFamily:"'Josefin Sans',sans-serif",
+        fontWeight:300, letterSpacing:"0.04em",
+        outline:"none", cursor:"pointer",
+        colorScheme: isDark ? "dark" : "light",
+      }}
+    />
+  );
+}
+
+function TimePicker({ value, onChange }) {
+  const isDark = C.bg === "#0f0f0f";
+  return (
+    <input
+      type="time"
+      value={value || ""}
+      onChange={e => onChange(e.target.value)}
+      style={{
+        width:"100%", boxSizing:"border-box",
+        background: isDark ? "rgba(255,255,255,0.06)" : C.bg3,
+        border: `1px solid ${C.border}`,
+        borderRadius:10, padding:"10px 14px",
+        color: C.white, fontSize:14,
+        fontFamily:"'Josefin Sans',sans-serif",
+        fontWeight:300, letterSpacing:"0.04em",
+        outline:"none", cursor:"pointer",
+        colorScheme: isDark ? "dark" : "light",
+      }}
+    />
+  );
+}
+
 function StatCard({ label, value, color, small }) {
   const isDark = C.bg === "#0f0f0f";
   return (
