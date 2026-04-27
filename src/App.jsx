@@ -36,7 +36,7 @@ const FONTS = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Josefin+Sans:wght@300;400;600&family=Barlow:wght@500;600;700&display=swap');
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg, #f8f7f5);overflow-x:hidden;transition:background 0.3s;}
-  input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.4);opacity:0.5;}
+  input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-calendar-picker-indicator{filter:invert(0.4);opacity:0.5;}
   ::selection{background:#111;color:#fff;}
   ::-webkit-scrollbar{width:4px;}
   ::-webkit-scrollbar-track{background:var(--bg, #f8f7f5);}
@@ -720,7 +720,7 @@ export default function App() {
   const [pfCalMonth, setPfCalMonth] = useState(now0.getMonth());
   const [calYear,  setCalYear]  = useState(now0.getFullYear());
   const [pfCalYear,  setPfCalYear]  = useState(now0.getFullYear());
-  const [form, setForm] = useState({ date:new Date().toISOString().split("T")[0], instrument:"MNQ", direction:"LONG", result:"WIN", session:"New York", emotion:"Neutre", entry:"", exit:"", rr:"", size:"", sizeUnit:"contrats", notes:"", accountIds:[], strategyId:null });
+  const [form, setForm] = useState({ date:new Date().toISOString().split("T")[0], time:new Date().toTimeString().slice(0,5), instrument:"MNQ", direction:"LONG", result:"WIN", session:"New York", emotion:"Neutre", entry:"", exit:"", rr:"", size:"", sizeUnit:"contrats", notes:"", accountIds:[], strategyId:null });
 
   const instruments = [...BASE_INSTRUMENTS, ...extraInstr, "Autre"];
   const availableYears = Array.from({ length:now0.getFullYear() - 2019 }, (_, i) => now0.getFullYear() - i);
@@ -1128,7 +1128,10 @@ ${recentTrades}`;
         ))}
       </div>
 
-      <Field label="Date"><input type="date" value={form.date} onChange={e => set("date", e.target.value)} style={iStyle} /></Field>
+      <div style={{display:"flex",gap:8}}>
+        <Field label="Date"><input type="date" value={form.date} onChange={e => set("date", e.target.value)} style={iStyle} /></Field>
+        <Field label="Heure"><input type="time" value={form.time||""} onChange={e => set("time", e.target.value)} style={iStyle} /></Field>
+      </div>
       <Field label="Instrument">
         <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
           {instruments.map(o => <Chip key={o} label={o} active={form.instrument === o && !(o === "Autre" && showCustom) || (o === "Autre" && showCustom)} onClick={() => handleInstrument(o)} />)}
@@ -1456,7 +1459,7 @@ ${recentTrades}`;
               ].map(m=>(
                 <div key={m.l} style={{...cardS,padding:"14px 12px"}}>
                   <div style={lbl}>{m.l}</div>
-                  <div style={{fontSize:22,fontFamily:"'Cormorant Garamond',serif",fontWeight:600,color:m.c,marginTop:4,letterSpacing:"-0.01em"}}>{m.v}</div>
+                  <div style={{fontSize:22,fontFamily:ff,fontWeight:300,color:m.c,marginTop:4,letterSpacing:"0.04em",lineHeight:1}}>{m.v}</div>
                   <div style={{fontSize:9,color:C.gray2,fontFamily:ff,marginTop:3}}>{m.sub}</div>
                 </div>
               ))}
@@ -1526,7 +1529,7 @@ ${recentTrades}`;
                   ].map(s=>(
                     <div key={s.l} style={{textAlign:"center",background:isDark?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.03)",borderRadius:8,padding:"10px 6px"}}>
                       <div style={{fontSize:7,color:C.dim,fontFamily:ff,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>{s.l}</div>
-                      <div style={{fontSize:18,fontFamily:"'Cormorant Garamond',serif",fontWeight:600,color:s.c}}>{s.v}</div>
+                      <div style={{fontSize:18,fontFamily:ff,fontWeight:300,color:s.c,letterSpacing:"0.04em",lineHeight:1}}>{s.v}</div>
                       <div style={{fontSize:8,color:C.gray2,fontFamily:ff}}>{s.sub}</div>
                     </div>
                   ))}
@@ -1562,7 +1565,7 @@ ${recentTrades}`;
                   <div style={{fontSize:9,color:C.gray2,fontFamily:ff,marginTop:2}}>Simulation sur {MC} chemins basée sur tes stats réelles</div>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:24,fontFamily:"'Cormorant Garamond',serif",fontWeight:600,color:mcWin>=60?"#4caf6e":mcWin>=40?"#d4c060":"#e05a5a"}}>{mcWin}%</div>
+                  <div style={{fontSize:24,fontFamily:ff,fontWeight:300,color:mcWin>=60?"#4caf6e":mcWin>=40?"#d4c060":"#e05a5a",letterSpacing:"0.04em",lineHeight:1}}>{mcWin}%</div>
                   <div style={{fontSize:8,color:C.gray2,fontFamily:ff}}>chances de profit</div>
                 </div>
               </div>
@@ -1574,7 +1577,7 @@ ${recentTrades}`;
                 ].map(s=>(
                   <div key={s.l} style={{background:isDark?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)",borderRadius:8,padding:"12px 10px",textAlign:"center"}}>
                     <div style={{fontSize:7,color:C.dim,fontFamily:ff,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:6}}>{s.l}</div>
-                    <div style={{fontSize:18,fontFamily:"'Cormorant Garamond',serif",fontWeight:600,color:s.v>=0?"#4caf6e":"#e05a5a"}}>{s.v>=0?"+":""}{s.v.toFixed(0)}{currency}</div>
+                    <div style={{fontSize:18,fontFamily:ff,fontWeight:300,color:s.v>=0?"#4caf6e":"#e05a5a",letterSpacing:"0.04em",lineHeight:1}}>{s.v>=0?"+":""}{s.v.toFixed(0)}{currency}</div>
                     <div style={{fontSize:8,color:C.gray2,fontFamily:ff,marginTop:4}}>{s.desc}</div>
                   </div>
                 ))}
@@ -1667,7 +1670,7 @@ ${recentTrades}`;
                   </div>
                 </div>
                 <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-                  {[t.date, t.session, t.emotion, t.rr ? `RR ${t.rr}` : null].filter(Boolean).map((tag, i) => (
+                  {[t.date, t.time||null, t.session, t.emotion, t.rr ? `RR ${t.rr}` : null].filter(Boolean).map((tag, i) => (
                     <span key={i} style={{ fontSize:10, color:C.gray1, background:C.bg3, padding:"2px 8px", borderRadius:8, letterSpacing:"0.07em", fontFamily:"'Josefin Sans',sans-serif", border:`1px solid ${C.gray3}`, boxShadow:"0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)" }}>{tag}</span>
                   ))}
                 </div>
