@@ -509,7 +509,9 @@ function AuthScreen() {
   ];
 
   return (
-    <div style={{ background:BG, color:CR, fontFamily:JF, overflowX:"hidden", transition:"background 0.3s,color 0.3s" }}>
+    <div style={{ background:BG, color:CR, fontFamily:JF, overflowX:"hidden", transition:"background 0.3s,color 0.3s", position:"relative" }}>
+      {/* Dot pattern — toute la page */}
+      <div style={{ position:"fixed", inset:0, backgroundImage:`radial-gradient(circle, ${isDark?"#E8D4C1":"#111111"} 1.5px, transparent 1.5px)`, backgroundSize:"30px 30px", opacity:isDark?0.3:0.22, pointerEvents:"none", zIndex:0, transition:"opacity 0.3s" }} />
       <style>{FONTS}</style>
 
       {/* ── NAV ── */}
@@ -550,9 +552,7 @@ function AuthScreen() {
       {/* ═══════════════════════════════════════════════════════
           SECTION 1 — HERO
       ═══════════════════════════════════════════════════════ */}
-      <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden" }}>
-        {/* Dot pattern — top half only, fades out at bottom */}
-        <div style={{ position:"absolute", top:0, left:0, right:0, height:"60%", backgroundImage:`radial-gradient(circle, ${isDark?"#E8D4C1":"#0b0b0b"} 1.5px, transparent 1.5px)`, backgroundSize:"30px 30px", opacity:isDark?0.32:0.18, WebkitMaskImage:"linear-gradient(to bottom, black 40%, transparent 100%)", maskImage:"linear-gradient(to bottom, black 40%, transparent 100%)", pointerEvents:"none", transition:"opacity 0.3s,background-image 0.3s" }} />
+      <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden", zIndex:1 }}>
         <div style={{ position:"relative", zIndex:10, minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"center", padding:`100px ${PAD} 60px` }}>
           <div style={{ fontSize:9, color:GD, letterSpacing:"0.28em", fontFamily:JF, fontWeight:600, marginBottom:36 }}>
             Trading Journal · EST. 2025
