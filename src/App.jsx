@@ -530,18 +530,19 @@ function AuthScreen() {
       ctx.globalAlpha = 1;
     };
 
+    const section = canvas.parentElement;
     const onMove = (e) => { const r = canvas.getBoundingClientRect(); mx = e.clientX-r.left; my = e.clientY-r.top; };
     const onLeave = () => { mx = -999; my = -999; };
     const onResize = () => init();
 
     init(); draw();
-    canvas.addEventListener('mousemove', onMove);
-    canvas.addEventListener('mouseleave', onLeave);
+    section.addEventListener('mousemove', onMove);
+    section.addEventListener('mouseleave', onLeave);
     window.addEventListener('resize', onResize);
     return () => {
       cancelAnimationFrame(animId);
-      canvas.removeEventListener('mousemove', onMove);
-      canvas.removeEventListener('mouseleave', onLeave);
+      section.removeEventListener('mousemove', onMove);
+      section.removeEventListener('mouseleave', onLeave);
       window.removeEventListener('resize', onResize);
     };
   }, []);
@@ -620,9 +621,9 @@ function AuthScreen() {
             Trading Journal · EST. 2025
           </div>
           <div>
-            <div style={{ fontFamily:CV, fontSize:"clamp(52px,9vw,130px)", color:CR, letterSpacing:"-0.02em", lineHeight:0.90 }}>YOUR TRADING</div>
-            <div style={{ fontFamily:CV, fontSize:"clamp(34px,5.5vw,80px)", color:GD, letterSpacing:"-0.02em", lineHeight:0.95, paddingLeft:"clamp(16px,3vw,48px)" }}>DESERVES</div>
-            <div style={{ fontFamily:CV, fontSize:"clamp(64px,13.5vw,196px)", color:CR, letterSpacing:"-0.025em", lineHeight:0.88 }}>STRUCTURE.</div>
+            <div style={{ fontFamily:CV, fontSize:"clamp(52px,9vw,130px)", color:CR, letterSpacing:"0.02em", lineHeight:1.0 }}>YOUR TRADING</div>
+            <div style={{ fontFamily:CV, fontSize:"clamp(34px,5.5vw,80px)", color:GD, letterSpacing:"0.02em", lineHeight:1.05, paddingLeft:"clamp(16px,3vw,48px)" }}>DESERVES</div>
+            <div style={{ fontFamily:CV, fontSize:"clamp(64px,13.5vw,196px)", color:CR, letterSpacing:"0.01em", lineHeight:0.95 }}>STRUCTURE.</div>
           </div>
           <div style={{ marginTop:"clamp(32px,4vh,56px)", display:"flex", alignItems:"flex-end", justifyContent:"space-between", flexWrap:"wrap", gap:24 }}>
             <p style={{ fontFamily:JF, fontWeight:300, fontSize:14, color:DIM, lineHeight:1.8, maxWidth:340 }}>
