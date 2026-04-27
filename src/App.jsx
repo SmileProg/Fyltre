@@ -430,98 +430,6 @@ function Reveal({ children, delay = 0, y = 50, style = {} }) {
   );
 }
 
-function GooeyText({ texts, morphTime = 1.2, cooldownTime = 0.6, textStyle = {} }) {
-  const t1Ref = useRef(null);
-  const t2Ref = useRef(null);
-  const state = useRef({ idx:0, morph:0, cooldown:0.6, last:Date.now() });
-
-  useEffect(() => {
-    let animId;
-    if (t1Ref.current) t1Ref.current.textContent = texts[0] || "";
-    if (t2Ref.current) t2Ref.current.textContent = texts[1 % texts.length] || "";
-
-    const tick = () => {
-      animId = requestAnimationFrame(tick);
-      const now = Date.now();
-      const dt = Math.min((now - state.current.last) / 1000, 0.1);
-      state.current.last = now;
-      const s = state.current;
-
-      s.cooldown -= dt;
-      if (s.cooldown > 0) {
-        if (t1Ref.current) { t1Ref.current.style.filter = "none"; t1Ref.current.style.opacity = "1"; }
-        if (t2Ref.current) { t2Ref.current.style.filter = "blur(40px)"; t2Ref.current.style.opacity = "0"; }
-        return;
-      }
-
-      s.morph += dt;
-      const frac = Math.min(s.morph / morphTime, 1);
-
-      const blur1 = Math.min(8 / Math.max(1 - frac, 0.001) - 8, 100);
-      const blur2 = Math.min(8 / Math.max(frac, 0.001) - 8, 100);
-      if (t1Ref.current) { t1Ref.current.style.filter = `blur(${blur1}px)`; t1Ref.current.style.opacity = Math.pow(1 - frac, 0.4); }
-      if (t2Ref.current) { t2Ref.current.style.filter = `blur(${blur2}px)`; t2Ref.current.style.opacity = Math.pow(frac, 0.4); }
-
-      if (frac >= 1) {
-        s.cooldown = cooldownTime;
-        s.morph = 0;
-        s.idx = (s.idx + 1) % texts.length;
-        if (t1Ref.current) t1Ref.current.textContent = texts[s.idx];
-        if (t2Ref.current) t2Ref.current.textContent = texts[(s.idx + 1) % texts.length];
-      }
-    };
-    tick();
-    return () => cancelAnimationFrame(animId);
-  }, [texts, morphTime, cooldownTime]);
-
-  return (
-    <div style={{ position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
-      <svg style={{ position:"absolute", width:0, height:0 }} aria-hidden="true">
-        <defs>
-          <filter id="goo-morph">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
-            <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8" />
-          </filter>
-        </defs>
-      </svg>
-      <div style={{ filter:"url(#goo-morph)", position:"relative", width:"100%", textAlign:"center" }}>
-        <span ref={t1Ref} style={{ display:"block", ...textStyle }} />
-        <span ref={t2Ref} style={{ position:"absolute", top:0, left:0, width:"100%", textAlign:"center", ...textStyle }} />
-      </div>
-    </div>
-  );
-}
-
-function IntroScreen({ onDone }) {
-  const CV = "'CoolveticaHv',sans-serif";
-  const CR = "#f5f2ea";
-  const BG = "#0b0b0b";
-  const [leaving, setLeaving] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setLeaving(true);
-      setTimeout(onDone, 750);
-    }, 5200);
-    return () => clearTimeout(t);
-  }, [onDone]);
-
-  return (
-    <div style={{ position:"fixed", inset:0, background:BG, zIndex:9999, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", opacity:leaving?0:1, transition:"opacity 0.75s cubic-bezier(0.4,0,0.2,1)" }}>
-      <style>{FONTS}</style>
-      <div style={{ width:"100vw", padding:"0 clamp(24px,8vw,120px)", boxSizing:"border-box" }}>
-        <GooeyText
-          texts={["Trading.", "Pattern.", "Structure.", "Edge.", "FYLTRA."]}
-          morphTime={1.1}
-          cooldownTime={0.55}
-          textStyle={{ fontFamily:CV, fontSize:"clamp(48px,10vw,130px)", color:CR, letterSpacing:"-0.025em", lineHeight:1.1, whiteSpace:"nowrap" }}
-        />
-      </div>
-      <div style={{ position:"absolute", bottom:36, fontSize:8, color:"rgba(245,242,234,0.18)", fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.28em", fontWeight:600, textTransform:"uppercase" }}>FYLTRA · 2025</div>
-    </div>
-  );
-}
-
 /* ─── Landing Page ───────────────────────────────────────────────── */
 function TiltCard({ children, style = {} }) {
   const ref = useRef(null);
@@ -1078,7 +986,6 @@ export default function App() {
   const [pfPctMode, setPfPctMode] = useState(false);
   const [pfPctValues, setPfPctValues] = useState({target:"",maxLoss:"",dailyLoss:""});
   const [capital,     setCapital]     = useState(() => load(KEYS.capital, ""));
-  const [introShown, setIntroShown] = useState(() => sessionStorage.getItem("fyltra_intro") === "1");
   const [propfirms,   setPropfirms]   = useState(() => load(KEYS.propfirms, []));
   const [pfView,      setPfView]      = useState("list"); // list | add-type | add-propfirm | add-personal
   const [pfForm,      setPfForm]      = useState({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false });
@@ -3446,7 +3353,6 @@ ${recentTrades}`;
       <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.2em", textTransform:"uppercase" }}>Chargement...</div>
     </div>
   );
-  if (!user && !introShown) return <IntroScreen onDone={() => { sessionStorage.setItem("fyltra_intro","1"); setIntroShown(true); }} />;
   if (!user) return <AuthScreen />;
 
   return (
