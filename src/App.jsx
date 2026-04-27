@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, PieChart, Pie, Cell, BarChart, Bar, CartesianGrid, LabelList, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
 import { supabase } from "./supabase";
+import HeroScene from "./HeroScene";
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const BASE_INSTRUMENTS = ["MNQ","NQ","ES","MES","CL","GC","EUR/USD"];
@@ -731,38 +732,8 @@ function AuthScreen() {
         </div>
       </nav>
 
-      {/* ─── HERO ─── */}
-      <section style={{ minHeight:"100vh", display:"flex", alignItems:"center", padding:"100px clamp(24px,10vw,120px) 80px", position:"relative", overflow:"hidden" }}>
-        <div style={{ maxWidth:540, position:"relative", zIndex:2, animation:"heroIn 0.9s cubic-bezier(.22,1,.36,1) both" }}>
-          <div style={{ fontSize:10, color:"rgba(240,237,232,0.3)", letterSpacing:"0.28em", textTransform:"uppercase", marginBottom:26, fontWeight:600 }}>Trading Journal</div>
-          <h1 style={{ fontFamily:ff, fontWeight:700, fontSize:"clamp(38px,5vw,66px)", letterSpacing:"-0.04em", lineHeight:1.06, color:text, marginBottom:26 }}>
-            Your trading<br/>deserves{" "}<em style={{ fontStyle:"italic", color:accent }}>structure.</em>
-          </h1>
-          <p style={{ fontFamily:ff, fontWeight:300, fontSize:15, color:"rgba(240,237,232,0.5)", lineHeight:1.72, marginBottom:38, maxWidth:380 }}>
-            Fyltra is the trading journal designed to help you analyze, improve and stay consistent.
-          </p>
-          <button onClick={() => openAuth("signup")} style={{ display:"inline-flex", alignItems:"center", gap:10, background:text, color:"#0d0d0d", border:"none", borderRadius:100, padding:"15px 30px", fontSize:11, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer", fontFamily:ff, transition:"opacity 0.2s", marginBottom:14 }}
-            onMouseEnter={e => e.currentTarget.style.opacity="0.86"}
-            onMouseLeave={e => e.currentTarget.style.opacity="1"}
-          >
-            START JOURNALING
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </button>
-          <div style={{ fontSize:10, color:"rgba(240,237,232,0.25)", fontFamily:ff, fontWeight:300, letterSpacing:"0.04em" }}>No credit card required.</div>
-        </div>
-        {/* Sphere */}
-        <div style={{ position:"absolute", right:"clamp(2vw,8vw,12vw)", top:"50%", transform:"translateY(-50%)", animation:"heroIn 0.9s 0.12s cubic-bezier(.22,1,.36,1) both", zIndex:1, pointerEvents:"none" }}>
-          <div style={{
-            width:"clamp(260px,30vw,480px)", height:"clamp(260px,30vw,480px)", borderRadius:"50%",
-            background:"radial-gradient(circle at 37% 32%, #2c2c2c 0%, #181818 30%, #0c0c0c 60%, #070707 100%)",
-            boxShadow:"0 0 140px rgba(0,0,0,0.95), inset -50px -50px 120px rgba(0,0,0,0.98), inset 24px 20px 70px rgba(80,80,65,0.12), 0 0 0 1px rgba(255,255,255,0.03)",
-            display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden",
-          }}>
-            <div style={{ position:"absolute", top:"14%", left:"20%", width:"28%", height:"16%", background:"radial-gradient(ellipse, rgba(140,130,100,0.1) 0%, transparent 70%)", borderRadius:"50%", filter:"blur(10px)" }}/>
-            <img src="/fyltra_logo_black.svg" style={{ width:"16%", opacity:0.15, borderRadius:"50%" }} alt="" />
-          </div>
-        </div>
-      </section>
+      {/* ─── HERO 3D ─── */}
+      <HeroScene openAuth={openAuth} />
 
       {/* ─── TRUST BAR ─── */}
       <section style={{ padding:"36px clamp(24px,10vw,120px)", borderTop:"1px solid rgba(255,255,255,0.06)", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
