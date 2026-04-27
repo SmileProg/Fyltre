@@ -166,7 +166,7 @@ const FULL_NAV = [
   { key:"ai",        icon:"◆",  label:"IA" },
   { key:"settings",  icon:"◎",  label:"Paramètres" },
 ];
-function Sidebar({ view, setView, darkMode }) {
+function Sidebar({ view, setView, darkMode, onSignOut }) {
   const [hovered, setHovered] = useState(null);
   const pillStyle = { background:"linear-gradient(180deg, rgba(60,60,60,0.97) 0%, rgba(18,18,18,0.99) 55%, rgba(8,8,8,1) 100%)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderRadius:24, padding:"10px", boxShadow:"0 6px 20px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.4), 0 0 60px rgba(255,255,255,0.11), 0 0 0 1px rgba(255,255,255,0.13), inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -2px 0 rgba(0,0,0,0.8)", border:"1px solid rgba(255,255,255,0.1)" };
 
@@ -227,7 +227,7 @@ function Sidebar({ view, setView, darkMode }) {
       {/* Footer */}
       <div style={{ padding:"12px 20px", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div style={{ fontSize:9, color:C.gray2, fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.08em" }}>v1.0 · Fyltra</div>
-        <button onClick={() => setShowSignOutConfirm(true)} style={{ background:"none", border:"none", cursor:"pointer", fontSize:9, color:"rgba(229,100,100,0.55)", fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.1em", textTransform:"uppercase", padding:"4px 8px", borderRadius:6, transition:"color 0.2s" }}>
+        <button onClick={() => onSignOut()} style={{ background:"none", border:"none", cursor:"pointer", fontSize:9, color:"rgba(229,100,100,0.55)", fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.1em", textTransform:"uppercase", padding:"4px 8px", borderRadius:6, transition:"color 0.2s" }}>
           Déconnexion
         </button>
       </div>
@@ -3383,7 +3383,7 @@ ${recentTrades}`;
       ) : (
         /* ── DESKTOP ── */
         <div style={{ display:"flex", minHeight:"100vh" }}>
-          <Sidebar view={view} setView={setView} darkMode={darkMode} />
+          <Sidebar view={view} setView={setView} darkMode={darkMode} onSignOut={() => setShowSignOutConfirm(true)} />
           <div style={{ marginLeft:220, flex:1, display:"flex", flexDirection:"column" }}>
             <div style={{ padding:"20px 36px 18px", borderBottom:`1px solid ${C.border}`, background:C.bg, position:"sticky", top:0, zIndex:40, backdropFilter:"blur(12px)", display:"flex", alignItems:"flex-end", justifyContent:"space-between" }}>
               <div>
