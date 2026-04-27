@@ -551,10 +551,8 @@ function AuthScreen() {
           SECTION 1 — HERO
       ═══════════════════════════════════════════════════════ */}
       <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden" }}>
-        {/* Dot pattern */}
-        <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(circle, #E8D4C1 1.5px, transparent 1.5px)", backgroundSize:"30px 30px", opacity:isDark?0.35:0.5, pointerEvents:"none", transition:"opacity 0.3s" }} />
-        {/* Fade edges */}
-        <div style={{ position:"absolute", inset:0, background:`radial-gradient(ellipse 70% 70% at 50% 40%, transparent 30%, ${BG} 100%)`, pointerEvents:"none", transition:"background 0.3s" }} />
+        {/* Dot pattern — top half only, fades out at bottom */}
+        <div style={{ position:"absolute", top:0, left:0, right:0, height:"60%", backgroundImage:`radial-gradient(circle, ${isDark?"#E8D4C1":"#0b0b0b"} 1.5px, transparent 1.5px)`, backgroundSize:"30px 30px", opacity:isDark?0.32:0.18, WebkitMaskImage:"linear-gradient(to bottom, black 40%, transparent 100%)", maskImage:"linear-gradient(to bottom, black 40%, transparent 100%)", pointerEvents:"none", transition:"opacity 0.3s,background-image 0.3s" }} />
         <div style={{ position:"relative", zIndex:10, minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"center", padding:`100px ${PAD} 60px` }}>
           <div style={{ fontSize:9, color:GD, letterSpacing:"0.28em", fontFamily:JF, fontWeight:600, marginBottom:36 }}>
             Trading Journal · EST. 2025
