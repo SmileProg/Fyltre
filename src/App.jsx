@@ -33,7 +33,7 @@ let C = LIGHT_THEME;
 
 /* ─── Fonts / Global CSS ─────────────────────────────────────────── */
 const FONTS = `
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Josefin+Sans:wght@300;400;600&family=Barlow:wght@500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Barlow:wght@500;600;700&display=swap');
   *{box-sizing:border-box;margin:0;padding:0;}
   body{background:var(--bg, #f8f7f5);overflow-x:hidden;transition:background 0.3s;}
   input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-calendar-picker-indicator{filter:invert(0.4);opacity:0.5;}
@@ -133,7 +133,7 @@ function PageTitle({ sub, title }) {
   return (
     <div style={{ marginBottom:22 }}>
       <div style={{ fontSize:11, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", marginBottom:4, fontFamily:"'Josefin Sans',sans-serif" }}>{sub}</div>
-      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:600, color:C.white }}>{title}</div>
+      <div style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:26, fontWeight:700, color:C.white, letterSpacing:"-0.025em" }}>{title}</div>
     </div>
   );
 }
@@ -1240,7 +1240,7 @@ ${recentTrades}`;
       {trades.length === 0 && (
         <div style={{ textAlign:"center", padding:"48px 0" }}>
           <div style={{ fontSize:44, marginBottom:12, color:C.gray2 }}>◎</div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:C.gray1, marginBottom:14 }}>Commencez à enregistrer vos trades</div>
+          <div style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:16, fontWeight:300, color:C.gray1, marginBottom:14, letterSpacing:"0.06em" }}>Commencez à enregistrer vos trades</div>
           <button onClick={() => setView("add")} style={{ background:"radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.95) 0%, rgba(215,215,215,0.88) 55%, rgba(230,230,230,0.92) 100%)", border:"none", borderRadius:12, padding:"11px 24px", color:darkMode?"#111":"#fff", fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.15em", textTransform:"uppercase", cursor:"pointer" }}>+ Premier trade</button>
         </div>
       )}
@@ -1792,7 +1792,7 @@ ${recentTrades}`;
       {trades.length === 0 ? (
         <div style={{ textAlign:"center", padding:"60px 0" }}>
           <div style={{ fontSize:44, marginBottom:10, color:C.gray2 }}>◎</div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, color:C.gray1 }}>Aucun trade enregistré</div>
+          <div style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:14, fontWeight:300, color:C.gray1, letterSpacing:"0.08em" }}>Aucun trade enregistré</div>
         </div>
       ) : [...trades].sort((a, b) => b.date.localeCompare(a.date)).map(t => {
         const pnl = t.pnl || 0; const isWin = t.result === "WIN"; const isLoss = t.result === "LOSS"; const isEditing = editingTrade?.id === t.id;
@@ -1802,7 +1802,7 @@ ${recentTrades}`;
               <>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7 }}>
                   <div>
-                    <span style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:700, fontSize:17, color:C.white }}>{t.instrument}</span>
+                    <span style={{ fontFamily:"'Josefin Sans',sans-serif", fontWeight:700, fontSize:15, color:C.white, letterSpacing:"-0.025em" }}>{t.instrument}</span>
                     <span style={{ marginLeft:8, fontSize:10, color:C.gray1, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.1em" }}>{t.direction}</span>
                   </div>
                   <div style={{ display:"flex", alignItems:"center", gap:8 }}>
@@ -1816,7 +1816,7 @@ ${recentTrades}`;
                     <span key={i} style={{ fontSize:10, color:C.gray1, background:C.bg3, padding:"2px 8px", borderRadius:8, letterSpacing:"0.07em", fontFamily:"'Josefin Sans',sans-serif", border:`1px solid ${C.gray3}`, boxShadow:"0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)" }}>{tag}</span>
                   ))}
                 </div>
-                {t.notes && <div style={{ marginTop:7, fontSize:12, color:C.gray1, lineHeight:1.6, fontStyle:"italic", fontFamily:"'Cormorant Garamond',serif" }}>{t.notes}</div>}
+                {t.notes && <div style={{ marginTop:7, fontSize:11, color:C.gray1, lineHeight:1.6, fontStyle:"italic", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300, letterSpacing:"0.03em" }}>{t.notes}</div>}
               </>
             )}
             {isEditing && (
@@ -2201,7 +2201,7 @@ ${recentTrades}`;
       {pfView==="list" && propfirms.length===0 && (
         <div style={{textAlign:"center",padding:"60px 0"}}>
           <div style={{fontSize:44,marginBottom:10,color:C.gray2}}>◉</div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:C.gray1,marginBottom:14}}>Aucun compte enregistré</div>
+          <div style={{fontFamily:"'Josefin Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray1,marginBottom:14,letterSpacing:"0.08em"}}>Aucun compte enregistré</div>
           <button onClick={(e)=>{e.stopPropagation();setPfView("add-type");}} style={{background:C.accent,border:"none",borderRadius:4,padding:"11px 24px",color:darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:"pointer"}}>+ Ajouter un compte</button>
         </div>
       )}
@@ -2818,7 +2818,7 @@ ${recentTrades}`;
         <button onClick={()=>{setEodText("");runEOD(pf);}} disabled={eodLoading} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${C.borderGold}`,background:eodLoading?"transparent":"rgba(0,0,0,0.04)",color:eodLoading?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:eodLoading?"not-allowed":"pointer",marginBottom:8,transition:"all 0.3s"}}>
           {eodLoading?"◌  Analyse en cours...":"◆  Debriefing fin de journée"}
         </button>
-        {eodText && <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:20,fontSize:13,lineHeight:1.8,color:C.white,whiteSpace:"pre-wrap",fontFamily:"'Cormorant Garamond',serif",marginBottom:10}}>{eodText}</div>}
+        {eodText && <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:20,fontSize:12,lineHeight:1.8,color:C.white,whiteSpace:"pre-wrap",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.03em",marginBottom:10}}>{eodText}</div>}
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:4}}>
           <button onClick={()=>{setEditingPf({...pf});closeAccount();setPfView("list");}} style={{padding:"13px",borderRadius:8,border:`1px solid ${C.border}`,background:C.bg2,color:C.white,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>✎ Modifier</button>
@@ -3388,7 +3388,7 @@ ${recentTrades}`;
             <div style={{ padding:"20px 36px 18px", borderBottom:`1px solid ${C.border}`, background:C.bg, position:"sticky", top:0, zIndex:40, backdropFilter:"blur(12px)", display:"flex", alignItems:"flex-end", justifyContent:"space-between" }}>
               <div>
                 <div style={{ fontSize:11, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", marginBottom:2, fontFamily:"'Josefin Sans',sans-serif" }}>{FULL_NAV.find(n => n.key === view)?.label}</div>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:30, fontWeight:600, color:C.white, letterSpacing:"-0.01em" }}>
+                <div style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:26, fontWeight:700, color:C.white, letterSpacing:"-0.025em" }}>
                   {view === "propfirm" ? (selectedPf ? selectedPf.firm + (selectedPf.name ? " · " + selectedPf.name : "") : "Mes Comptes") : view === "add" ? "Nouveau Trade" : view === "history" ? "Statistiques" : view === "strategy" ? "Plan de Trading" : view === "tools" ? "Outils" : "Analyse IA"}
                 </div>
               </div>
@@ -3515,7 +3515,7 @@ ${recentTrades}`;
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
               </svg>
             </div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:600,color:C.white,marginBottom:8,letterSpacing:"-0.01em"}}>Déconnexion</div>
+            <div style={{fontFamily:"'Josefin Sans',sans-serif",fontSize:20,fontWeight:700,color:C.white,marginBottom:8,letterSpacing:"-0.025em"}}>Déconnexion</div>
             <div style={{fontFamily:"'Josefin Sans',sans-serif",fontSize:11,color:C.gray1,letterSpacing:"0.04em",lineHeight:1.6,marginBottom:28}}>Êtes-vous sûr de vouloir<br/>vous déconnecter ?</div>
             <div style={{display:"flex",gap:10}}>
               <button onClick={cancelSignOut} style={{flex:1,padding:"11px",borderRadius:10,border:`1px solid ${C.border}`,background:"transparent",color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>Annuler</button>
