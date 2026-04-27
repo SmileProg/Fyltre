@@ -639,16 +639,14 @@ function AuthScreen() {
       <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden" }}>
         {/* Dot pattern — réactif à la souris */}
         <canvas ref={dotsRef} style={{ position:"absolute", inset:0, width:"100%", height:"100%", WebkitMaskImage:"radial-gradient(ellipse 85% 90% at 50% 30%, black 20%, transparent 80%)", maskImage:"radial-gradient(ellipse 85% 90% at 50% 30%, black 20%, transparent 80%)" }} />
-        <div style={{ position:"relative", zIndex:10, minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"flex-start", padding:`80px ${PAD} 60px`, paddingTop:"clamp(80px,10vh,110px)" }}>
-          {/* Headline + Logo 3D côte à côte */}
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:"clamp(24px,4vw,64px)", flexWrap:"wrap" }}>
-            <div>
-              <div style={{ fontFamily:CV, fontSize:"clamp(52px,9vw,130px)", color:CR, letterSpacing:"0.02em", lineHeight:1.0 }}>YOUR TRADING</div>
-              <div style={{ fontFamily:CV, fontSize:"clamp(34px,5.5vw,80px)", color:GD, letterSpacing:"0.02em", lineHeight:1.05, paddingLeft:"clamp(16px,3vw,48px)" }}>DESERVES</div>
-              <div style={{ fontFamily:CV, fontSize:"clamp(64px,13.5vw,196px)", color:CR, letterSpacing:"0.01em", lineHeight:0.95 }}>STRUCTURE.</div>
-            </div>
-            {/* Logo 3D réactif */}
-            <Logo3D src={isDark?"/fyltra-creme.svg":"/fyltra-black.svg"} />
+        <div style={{ position:"relative", zIndex:10, minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"center", padding:`100px ${PAD} 60px` }}>
+          <div style={{ fontSize:9, color:GD, letterSpacing:"0.28em", fontFamily:JF, fontWeight:600, marginBottom:36 }}>
+            Trading Journal · EST. 2025
+          </div>
+          <div>
+            <div style={{ fontFamily:CV, fontSize:"clamp(52px,9vw,130px)", color:CR, letterSpacing:"0.02em", lineHeight:1.0 }}>YOUR TRADING</div>
+            <div style={{ fontFamily:CV, fontSize:"clamp(34px,5.5vw,80px)", color:GD, letterSpacing:"0.02em", lineHeight:1.05, paddingLeft:"clamp(16px,3vw,48px)" }}>DESERVES</div>
+            <div style={{ fontFamily:CV, fontSize:"clamp(64px,13.5vw,196px)", color:CR, letterSpacing:"0.01em", lineHeight:0.95 }}>STRUCTURE.</div>
           </div>
           <div style={{ marginTop:"clamp(32px,4vh,52px)", display:"flex", alignItems:"flex-end", justifyContent:"space-between", flexWrap:"wrap", gap:24 }}>
             <p style={{ fontFamily:JF, fontWeight:300, fontSize:14, color:DIM, lineHeight:1.8, maxWidth:340 }}>
