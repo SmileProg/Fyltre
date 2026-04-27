@@ -552,7 +552,7 @@ function AuthScreen() {
       ═══════════════════════════════════════════════════════ */}
       <section style={{ position:"relative", minHeight:"100vh", overflow:"hidden" }}>
         {/* Dot pattern hero */}
-        <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle, ${isDark?"#E8D4C1":"#111"} 1.5px, transparent 1.5px)`, backgroundSize:"30px 30px", opacity:isDark?0.3:0.25, WebkitMaskImage:"radial-gradient(ellipse 80% 90% at 50% 30%, black 20%, transparent 80%)", maskImage:"radial-gradient(ellipse 80% 90% at 50% 30%, black 20%, transparent 80%)", pointerEvents:"none", transition:"opacity 0.3s" }} />
+        <div style={{ position:"absolute", inset:0, backgroundImage:`radial-gradient(circle, ${isDark?"#E8D4C1":"#111"} 1.5px, transparent 1.5px)`, backgroundSize:"clamp(20px,3vw,32px) clamp(20px,3vw,32px)", opacity:isDark?0.3:0.25, WebkitMaskImage:"radial-gradient(ellipse 80% 90% at 50% 30%, black 20%, transparent 80%)", maskImage:"radial-gradient(ellipse 80% 90% at 50% 30%, black 20%, transparent 80%)", pointerEvents:"none", transition:"opacity 0.3s" }} />
         <div style={{ position:"relative", zIndex:10, minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"center", padding:`100px ${PAD} 60px` }}>
           <div style={{ fontSize:9, color:GD, letterSpacing:"0.28em", fontFamily:JF, fontWeight:600, marginBottom:36 }}>
             Trading Journal · EST. 2025
