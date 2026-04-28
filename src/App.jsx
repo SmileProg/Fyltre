@@ -1110,7 +1110,7 @@ export default function App() {
   const [capital,     setCapital]     = useState(() => load(KEYS.capital, ""));
   const [propfirms,   setPropfirms]   = useState(() => load(KEYS.propfirms, []));
   const [pfView,      setPfView]      = useState("list"); // list | add-type | add-propfirm | add-personal
-  const [pfForm,      setPfForm]      = useState({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false, hasInactivity:false, inactivityDays:"" });
+  const [pfForm,      setPfForm]      = useState({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false, hasInactivity:false, inactivityDays:"", inactivityFrom:"" });
   const [activePf,    setActivePf]    = useState(null);
   const [chartAccountId, setChartAccountId] = useState("all");
   const [editingPf, setEditingPf] = useState(null);
@@ -2355,7 +2355,7 @@ ${recentTrades}`;
     if (pfForm.type==="personal" && !pfForm.capital) return;
     const newPf = { ...pfForm, id:Date.now(), pnl:0 };
     setPropfirms(p => [...p, newPf]);
-    setPfForm({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false, hasInactivity:false, inactivityDays:"" });
+    setPfForm({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false, hasInactivity:false, inactivityDays:"", inactivityFrom:"" });
     setPfView("list");
   };
 
@@ -2493,6 +2493,11 @@ ${recentTrades}`;
               <input type="text" inputMode="numeric" placeholder="ex: 5" value={pfForm.inactivityDays} onChange={e=>pfSet("inactivityDays",e.target.value.replace(/[^0-9]/g,""))} style={iStyle}/>
             </Field>
           )}
+          {pfForm.hasInactivity && (
+            <Field label="À partir du">
+              <input type="date" value={pfForm.inactivityFrom} onChange={e=>pfSet("inactivityFrom",e.target.value)} style={iStyle}/>
+            </Field>
+          )}
           <Divider/>
           <button onClick={addPropfirm} disabled={!pfForm.firm||!pfForm.capital||!pfForm.target||!pfForm.maxLoss} style={{width:"100%",padding:"14px",borderRadius:4,border:"none",background:pfForm.firm&&pfForm.capital&&pfForm.target&&pfForm.maxLoss?C.accent:C.gray3,color:pfForm.firm&&pfForm.capital&&pfForm.target&&pfForm.maxLoss?"#fff":C.gray2,fontSize:12,fontWeight:600,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.2em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.3s"}}>
             Enregistrer →
@@ -2538,42 +2543,6 @@ ${recentTrades}`;
         </div>
       )}
 
-      {pfView==="list" && propfirms.some(pf => pf.type==="propfirm" && pf.hasInactivity && pf.inactivityDays) && (() => {
-        const today = new Date(); today.setHours(0,0,0,0);
-        const inactPfs = propfirms.filter(pf => pf.type==="propfirm" && pf.hasInactivity && pf.inactivityDays);
-        return (
-          <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,padding:"16px 18px",marginBottom:16,boxShadow:"0 2px 12px rgba(0,0,0,0.3)"}}>
-            <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:12}}>Surveillance d'Inactivité</div>
-            {inactPfs.map(pf => {
-              const pfTrades = trades.filter(t => !t.accountIds||t.accountIds.length===0||t.accountIds.includes(pf.id));
-              const maxDays = parseInt(pf.inactivityDays)||1;
-              let daysSince = maxDays;
-              if (pfTrades.length > 0) {
-                const lastDate = pfTrades.reduce((mx,t)=>t.date>mx?t.date:mx,"");
-                const last = new Date(lastDate+"T12:00:00"); last.setHours(0,0,0,0);
-                daysSince = Math.floor((today-last)/(1000*60*60*24));
-              }
-              const pct = Math.min(100,(daysSince/maxDays)*100);
-              const isViolation = daysSince >= maxDays;
-              const barColor = isViolation ? "#c0392b" : pct > 70 ? `rgba(var(--gold-rgb),0.9)` : "#2a6e3a";
-              return (
-                <div key={pf.id} style={{marginBottom:10}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                    <div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif",color:C.white,letterSpacing:"0.05em"}}>{pf.firm||pf.name||"Compte"}</div>
-                    <div style={{fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:isViolation?"#c0392b":C.gray1,fontWeight:isViolation?600:300}}>
-                      {isViolation ? "⚠ VIOLATION" : `${daysSince}j / ${maxDays}j sans trade`}
-                    </div>
-                  </div>
-                  <div style={{height:6,borderRadius:3,background:C.bg3,overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${pct}%`,background:barColor,borderRadius:3,transition:"width 0.5s ease"}}/>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        );
-      })()}
-
       {pfView==="list" && propfirms.map((pf) => {
         const cap = parseFloat(pf.capital)||0;
         const target = parseFloat(pf.target)||0;
@@ -2616,6 +2585,9 @@ ${recentTrades}`;
                   </div>
                   {editingPf.hasInactivity && (
                   <div style={{marginBottom:8}}><Label>Jours max d'inactivité</Label><input type="text" inputMode="numeric" value={editingPf.inactivityDays||""} onChange={e=>setEditingPf(p=>({...p,inactivityDays:e.target.value.replace(/[^0-9]/g,"")}))} style={{...iStyle,padding:"9px 10px",fontSize:13}}/></div>
+                  )}
+                  {editingPf.hasInactivity && (
+                  <div style={{marginBottom:8}}><Label>À partir du</Label><input type="date" value={editingPf.inactivityFrom||""} onChange={e=>setEditingPf(p=>({...p,inactivityFrom:e.target.value}))} style={{...iStyle,padding:"9px 10px",fontSize:13}}/></div>
                   )}
                 </>}
                 <div style={{display:"flex",gap:7,marginTop:4}}>
@@ -2677,6 +2649,37 @@ ${recentTrades}`;
                 <div style={{width:ddProgress+"%",height:"100%",borderRadius:3,background:ddProgress>=80?"rgba(192,57,43,0.9)":ddProgress>=50?"rgba(192,57,43,0.5)":"rgba(192,57,43,0.25)",transition:"width 0.5s"}}/>
               </div>
             </div>}
+
+            {editingPf?.id !== pf.id && pf.type==="propfirm" && pf.hasInactivity && pf.inactivityDays && (()=>{
+              const today = new Date(); today.setHours(0,0,0,0);
+              const maxDays = parseInt(pf.inactivityDays)||1;
+              const pfTrades = trades.filter(t => (!t.accountIds||t.accountIds.length===0||t.accountIds.includes(pf.id)) && (!pf.inactivityFrom || t.date >= pf.inactivityFrom));
+              let daysSince;
+              if (pfTrades.length > 0) {
+                const lastDate = pfTrades.reduce((mx,t)=>t.date>mx?t.date:mx,"");
+                const last = new Date(lastDate+"T12:00:00"); last.setHours(0,0,0,0);
+                daysSince = Math.floor((today-last)/(1000*60*60*24));
+              } else if (pf.inactivityFrom) {
+                const start = new Date(pf.inactivityFrom+"T12:00:00"); start.setHours(0,0,0,0);
+                daysSince = Math.floor((today-start)/(1000*60*60*24));
+              } else {
+                daysSince = maxDays;
+              }
+              const pct = Math.min(100,(daysSince/maxDays)*100);
+              const isViolation = daysSince >= maxDays;
+              const barColor = isViolation ? "rgba(192,57,43,0.9)" : pct > 70 ? `rgba(var(--gold-rgb),0.9)` : "rgba(42,110,58,0.85)";
+              return (
+                <div style={{marginBottom:12}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                    <span style={{fontSize:10,color:isViolation?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Inactivité</span>
+                    <span style={{fontSize:10,color:isViolation?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif",fontWeight:isViolation?600:400}}>{isViolation?"⚠ Violation":`${daysSince}j / ${maxDays}j`}</span>
+                  </div>
+                  <div style={{height:5,background:C.gray3,borderRadius:3}}>
+                    <div style={{width:pct+"%",height:"100%",borderRadius:3,background:barColor,transition:"width 0.5s"}}/>
+                  </div>
+                </div>
+              );
+            })()}
 
             {editingPf?.id !== pf.id && (() => {
               const acctTrades = trades.filter(t => !t.accountIds||t.accountIds.length===0||t.accountIds.includes(pf.id));
