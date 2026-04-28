@@ -2255,7 +2255,7 @@ ${recentTrades}`;
       </div>
 
       {/* Trigger button */}
-      <button onClick={analyzeAI} disabled={aiLoading} style={{width:"100%",padding:"14px",borderRadius:8,border:"none",background:aiLoading?"rgba(var(--gold-rgb),0.12)":"linear-gradient(135deg,rgba(var(--gold-rgb),0.25),rgba(var(--gold-rgb),0.1))",color:aiLoading?"rgba(var(--gold-rgb),0.5)":"rgba(var(--gold-rgb),0.95)",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",cursor:aiLoading?"not-allowed":"pointer",border:"1px solid rgba(var(--gold-rgb),0.3)",marginBottom:20,transition:"all 0.2s"}}>
+      <button onClick={analyzeAI} disabled={aiLoading} style={{width:"100%",padding:"14px",borderRadius:8,border:"none",background:aiLoading?`rgba(var(--gold-rgb),${darkMode?0.12:0.18})`:darkMode?"linear-gradient(135deg,rgba(var(--gold-rgb),0.25),rgba(var(--gold-rgb),0.1))":"linear-gradient(135deg,rgba(var(--gold-rgb),0.5),rgba(var(--gold-rgb),0.3))",color:aiLoading?"rgba(var(--gold-rgb),0.5)":"rgba(var(--gold-rgb),0.95)",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",cursor:aiLoading?"not-allowed":"pointer",border:`1px solid rgba(var(--gold-rgb),${darkMode?0.3:0.6})`,marginBottom:20,transition:"all 0.2s"}}>
         {aiLoading ? "Analyse en cours…" : "Lancer l'analyse"}
       </button>
 
@@ -3383,7 +3383,7 @@ ${recentTrades}`;
             </button>
           ))}
         </div>
-        {lang!=="fr"&&<div style={{marginTop:10,padding:"8px 12px",borderRadius:6,background:"rgba(var(--gold-rgb),0.08)",border:"1px solid rgba(var(--gold-rgb),0.2)",fontSize:11,color:"rgba(var(--gold-rgb),0.9)",fontFamily:"'Josefin Sans',sans-serif"}}>La traduction complète sera disponible prochainement.</div>}
+        {lang!=="fr"&&<div style={{marginTop:10,padding:"8px 12px",borderRadius:6,background:`rgba(var(--gold-rgb),${darkMode?0.08:0.15})`,border:`1px solid rgba(var(--gold-rgb),${darkMode?0.2:0.45})`,fontSize:11,color:"rgba(var(--gold-rgb),0.9)",fontFamily:"'Josefin Sans',sans-serif"}}>La traduction complète sera disponible prochainement.</div>}
       </div>
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
