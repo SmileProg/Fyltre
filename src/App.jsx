@@ -571,6 +571,7 @@ function TiltCard({ children, style = {} }) {
 
 function AuthScreen() {
   const JF = "'Josefin Sans',sans-serif";
+  const CV = "'CoolveticaHv',sans-serif";
   const MN = "'MariellaNove',sans-serif";
 
   const [authModal, setAuthModal] = useState(null);
@@ -581,6 +582,29 @@ function AuthScreen() {
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState("");
   const [success, setSuccess]     = useState("");
+
+  const ctaRef  = useRef(null);
+  const glowRef = useRef(null);
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (glowRef.current) {
+        glowRef.current.style.left = `${e.clientX}px`;
+        glowRef.current.style.top  = `${e.clientY}px`;
+      }
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
+  const onMagnet  = (e) => {
+    const el = ctaRef.current; if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left - r.width/2)  * 0.3;
+    const y = (e.clientY - r.top  - r.height/2) * 0.3;
+    el.style.transform = `translate(${x}px,${y}px) scale(1.04)`;
+  };
+  const offMagnet = () => { if (ctaRef.current) ctaRef.current.style.transform = "translate(0,0) scale(1)"; };
 
   const openAuth = (m) => { setMode(m); setAuthModal(true); setError(""); setSuccess(""); };
 
@@ -607,7 +631,7 @@ function AuthScreen() {
   const PAD  = "clamp(24px,6vw,96px)";
   const CARD_BG  = "rgba(255,255,255,0.025)";
   const CARD_BDR = `1px solid ${BDR}`;
-  const CARD_SHD = "0 0 0 1px rgba(255,255,255,0.05), 0 8px 40px rgba(0,0,0,0.5)";
+  const CARD_SHD = "0 0 0 1px rgba(255,255,255,0.05), 0 12px 48px rgba(0,0,0,0.6)";
 
   const features = [
     { n:"01", title:"Journal structuré", sub:"Enregistre chaque trade — émotion, session, instrument, résultat. Sans friction, sans oubli.", icon:"◎" },
@@ -616,18 +640,55 @@ function AuthScreen() {
     { n:"04", title:"Prop Firms", sub:"Suivi multi-compte avec daily loss, consistance et inactivité. Une jauge par règle, en temps réel.", icon:"◉" },
   ];
 
+  const SPARKS = [
+    {top:"18%",left:"8%",delay:"0s",size:3},  {top:"32%",left:"92%",delay:"0.7s",size:2},
+    {top:"55%",left:"5%",delay:"1.4s",size:2}, {top:"70%",left:"88%",delay:"2.1s",size:3},
+    {top:"12%",left:"72%",delay:"0.4s",size:2},{top:"82%",left:"22%",delay:"1.8s",size:2},
+  ];
+
   return (
     <div style={{ background:BG, color:CR, fontFamily:JF, overflowX:"hidden" }}>
       <style>{FONTS}</style>
       <style>{`
-        @keyframes lnFadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-        .ln1{animation:lnFadeUp 0.7s 0.05s both ease-out;}
-        .ln2{animation:lnFadeUp 0.7s 0.18s both ease-out;}
-        .ln3{animation:lnFadeUp 0.7s 0.32s both ease-out;}
-        .ln4{animation:lnFadeUp 0.7s 0.46s both ease-out;}
-        @keyframes lnGlow{0%,100%{opacity:0.4;}50%{opacity:0.65;}}
+        @keyframes lnFadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+        .ln1{animation:lnFadeUp 0.8s 0.05s both cubic-bezier(0.16,1,0.3,1);}
+        .ln2{animation:lnFadeUp 0.9s 0.2s  both cubic-bezier(0.16,1,0.3,1);}
+        .ln3{animation:lnFadeUp 0.8s 0.38s both cubic-bezier(0.16,1,0.3,1);}
+        .ln4{animation:lnFadeUp 0.8s 0.52s both cubic-bezier(0.16,1,0.3,1);}
+        .ln5{animation:lnFadeUp 0.8s 0.66s both cubic-bezier(0.16,1,0.3,1);}
+        @keyframes lnGlow{0%,100%{opacity:0.35;}50%{opacity:0.6;}}
         .lnglow{animation:lnGlow 5s ease-in-out infinite;}
+        @keyframes float3d{
+          0%,100%{transform:perspective(1400px) rotateX(10deg) rotateY(-5deg) translateY(0px);}
+          50%{transform:perspective(1400px) rotateX(10deg) rotateY(-5deg) translateY(-14px);}
+        }
+        .img3d{animation:float3d 7s ease-in-out infinite;transform:perspective(1400px) rotateX(10deg) rotateY(-5deg);}
+        @keyframes sparkFloat{
+          0%{opacity:0;transform:translateY(0) scale(0);}
+          20%{opacity:1;transform:translateY(-8px) scale(1);}
+          80%{opacity:0.6;transform:translateY(-20px) scale(0.8);}
+          100%{opacity:0;transform:translateY(-32px) scale(0);}
+        }
+        .spark{animation:sparkFloat 3s ease-in-out infinite;}
+        @keyframes shimmerText{
+          0%{background-position:0% 50%;}
+          50%{background-position:100% 50%;}
+          100%{background-position:0% 50%;}
+        }
+        .shimmer-text{
+          background:linear-gradient(90deg,#f5f2ea 0%,#e8cda9 40%,#f5d898 60%,#e8cda9 80%,#f5f2ea 100%);
+          background-size:200% auto;
+          -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+          animation:shimmerText 4s linear infinite;
+        }
+        @keyframes borderPulse{0%,100%{box-shadow:0 0 0 0 rgba(232,205,169,0);}50%{box-shadow:0 0 0 4px rgba(232,205,169,0.12);}}
+        .cta-primary{animation:borderPulse 3s ease-in-out infinite;}
+        @keyframes scanline{from{transform:translateY(-100%);}to{transform:translateY(100vh);}}
+        .mouse-glow{position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(232,205,169,0.04) 0%,transparent 70%);pointer-events:none;transform:translate(-50%,-50%);z-index:0;transition:left 0.1s,top 0.1s;}
       `}</style>
+
+      {/* Mouse glow tracker */}
+      <div ref={glowRef} className="mouse-glow" />
 
       {/* ── NAV ── */}
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:200, display:"flex", alignItems:"center", justifyContent:"space-between", padding:`0 ${PAD}`, height:56, background:"rgba(6,6,9,0.88)", backdropFilter:"blur(20px)", borderBottom:`1px solid ${BDR}` }}>
@@ -643,7 +704,7 @@ function AuthScreen() {
           ))}
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <button onClick={()=>openAuth("login")} style={{ background:"none", border:"none", color:DIM, fontSize:12, cursor:"pointer", padding:"8px 12px", borderRadius:7, transition:"all 0.15s", letterSpacing:"0.02em" }}
+          <button onClick={()=>openAuth("login")} style={{ background:"none", border:"none", color:DIM, fontSize:12, cursor:"pointer", padding:"8px 12px", borderRadius:7, transition:"all 0.15s" }}
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color=CR;}}
             onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color=DIM;}}>Se connecter</button>
           <button onClick={()=>openAuth("signup")} style={{ background:CR, color:BG, border:"none", borderRadius:7, padding:"8px 18px", fontSize:12, fontWeight:700, letterSpacing:"0.04em", cursor:"pointer", transition:"opacity 0.15s" }}
@@ -654,99 +715,64 @@ function AuthScreen() {
 
       {/* ── HERO ── */}
       <section style={{ position:"relative", minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", textAlign:"center", padding:`140px ${PAD} 60px`, overflow:"hidden" }}>
-        {/* Glow */}
-        <div className="lnglow" style={{ position:"absolute", top:"15%", left:"50%", transform:"translateX(-50%)", width:"min(700px,90vw)", height:500, background:"radial-gradient(ellipse, rgba(232,205,169,0.11) 0%, transparent 70%)", pointerEvents:"none", filter:"blur(50px)" }} />
+        {/* Glows */}
+        <div className="lnglow" style={{ position:"absolute", top:"10%", left:"30%", width:"min(500px,60vw)", height:400, background:"radial-gradient(ellipse, rgba(232,205,169,0.09) 0%, transparent 70%)", pointerEvents:"none", filter:"blur(60px)", zIndex:0 }} />
+        <div className="lnglow" style={{ position:"absolute", top:"30%", right:"15%", width:"min(300px,40vw)", height:250, background:"radial-gradient(ellipse, rgba(232,205,169,0.06) 0%, transparent 70%)", pointerEvents:"none", filter:"blur(40px)", zIndex:0, animationDelay:"2.5s" }} />
         {/* Grid */}
-        <div style={{ position:"absolute", inset:0, backgroundImage:`linear-gradient(${BDR} 1px, transparent 1px), linear-gradient(90deg, ${BDR} 1px, transparent 1px)`, backgroundSize:"60px 60px", WebkitMaskImage:"radial-gradient(ellipse 80% 55% at 50% 35%, black, transparent)", maskImage:"radial-gradient(ellipse 80% 55% at 50% 35%, black, transparent)", pointerEvents:"none" }} />
-
-        {/* Badge */}
-        <div className="ln1" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(232,205,169,0.07)", border:"1px solid rgba(232,205,169,0.2)", borderRadius:100, padding:"5px 14px", marginBottom:28 }}>
-          <span style={{ width:5, height:5, borderRadius:"50%", background:GD, flexShrink:0 }} />
-          <span style={{ fontSize:11, color:GD, letterSpacing:"0.1em", fontWeight:600 }}>Trading Journal</span>
-        </div>
+        <div style={{ position:"absolute", inset:0, backgroundImage:`linear-gradient(${BDR} 1px, transparent 1px), linear-gradient(90deg, ${BDR} 1px, transparent 1px)`, backgroundSize:"60px 60px", WebkitMaskImage:"radial-gradient(ellipse 90% 60% at 50% 30%, black, transparent)", maskImage:"radial-gradient(ellipse 90% 60% at 50% 30%, black, transparent)", pointerEvents:"none", zIndex:0 }} />
+        {/* Floating sparks */}
+        {SPARKS.map((s,i)=>(
+          <div key={i} className="spark" style={{ position:"absolute", top:s.top, left:s.left, width:s.size, height:s.size, borderRadius:"50%", background:GD, animationDelay:s.delay, animationDuration:`${2.5+i*0.4}s`, zIndex:1, pointerEvents:"none" }} />
+        ))}
 
         {/* Headline */}
-        <h1 className="ln2" style={{ fontWeight:700, fontSize:"clamp(38px,5.5vw,76px)", letterSpacing:"-0.035em", lineHeight:1.07, color:CR, marginBottom:20, maxWidth:700 }}>
-          Ton trading mérite<br />de la{" "}
-          <span style={{ background:`linear-gradient(130deg, ${CR} 20%, ${GD} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>structure.</span>
+        <h1 className="ln1" style={{ fontFamily:CV, fontSize:"clamp(52px,7vw,100px)", letterSpacing:"-0.02em", lineHeight:0.96, color:CR, marginBottom:24, maxWidth:800, position:"relative", zIndex:1 }}>
+          Ton trading<br />mérite de la{" "}
+          <span className="shimmer-text">structure.</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="ln3" style={{ fontSize:16, color:DIM, lineHeight:1.75, marginBottom:36, maxWidth:460, fontWeight:300 }}>
-          Fyltra est le journal de trading qui transforme tes données brutes en règles concrètes. Analyse, améliore, répète.
+        <p className="ln2" style={{ fontSize:16, color:DIM, lineHeight:1.8, marginBottom:40, maxWidth:440, fontWeight:300, position:"relative", zIndex:1 }}>
+          Fyltra transforme tes données brutes en règles concrètes. Analyse, améliore, répète.
         </p>
 
         {/* CTAs */}
-        <div className="ln4" style={{ display:"flex", gap:10, flexWrap:"wrap", justifyContent:"center", marginBottom:72 }}>
-          <button onClick={()=>openAuth("signup")} style={{ background:CR, color:BG, border:"none", borderRadius:8, padding:"13px 28px", fontSize:13, fontWeight:700, letterSpacing:"0.03em", cursor:"pointer", transition:"opacity 0.15s", display:"flex", alignItems:"center", gap:8 }}
-            onMouseEnter={e=>e.currentTarget.style.opacity="0.86"}
-            onMouseLeave={e=>e.currentTarget.style.opacity="1"}>
+        <div className="ln3" style={{ display:"flex", gap:12, flexWrap:"wrap", justifyContent:"center", marginBottom:80, position:"relative", zIndex:1 }}>
+          <button ref={ctaRef} onClick={()=>openAuth("signup")}
+            onMouseMove={onMagnet} onMouseLeave={offMagnet}
+            className="cta-primary"
+            style={{ background:CR, color:BG, border:"none", borderRadius:9, padding:"14px 32px", fontSize:13, fontWeight:700, letterSpacing:"0.04em", cursor:"pointer", transition:"transform 0.2s cubic-bezier(.23,1,.32,1), opacity 0.15s", display:"flex", alignItems:"center", gap:9 }}>
             Commencer gratuitement
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
-          <button onClick={()=>openAuth("login")} style={{ background:"rgba(255,255,255,0.04)", color:CR, border:CARD_BDR, borderRadius:8, padding:"13px 24px", fontSize:13, fontWeight:400, cursor:"pointer", transition:"background 0.15s" }}
+          <button onClick={()=>openAuth("login")} style={{ background:"rgba(255,255,255,0.04)", color:CR, border:CARD_BDR, borderRadius:9, padding:"14px 24px", fontSize:13, fontWeight:400, cursor:"pointer", transition:"background 0.15s" }}
             onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.08)"}
             onMouseLeave={e=>e.currentTarget.style.background="rgba(255,255,255,0.04)"}>Se connecter</button>
         </div>
 
-        {/* Product Mockup */}
-        <div className="ln4" style={{ width:"100%", maxWidth:880, position:"relative" }}>
-          <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"45%", background:`linear-gradient(to bottom, transparent, ${BG})`, zIndex:2, pointerEvents:"none" }} />
-          <div style={{ background:"rgba(10,10,16,0.97)", border:CARD_BDR, borderRadius:14, overflow:"hidden", boxShadow:"0 0 0 1px rgba(255,255,255,0.06), 0 40px 80px rgba(0,0,0,0.8)" }}>
-            {/* Chrome */}
-            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"11px 14px", borderBottom:`1px solid ${BDR}`, background:"rgba(255,255,255,0.02)" }}>
-              {[0.12,0.08,0.05].map((o,i)=><div key={i} style={{ width:9, height:9, borderRadius:"50%", background:`rgba(255,255,255,${o})` }}/>)}
+        {/* 3D Product image */}
+        <div className="ln4" style={{ width:"100%", maxWidth:960, position:"relative", zIndex:1 }}>
+          {/* bottom fade */}
+          <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"38%", background:`linear-gradient(to bottom, transparent, ${BG})`, zIndex:3, pointerEvents:"none" }} />
+          {/* left/right fades */}
+          <div style={{ position:"absolute", top:0, left:0, bottom:0, width:"8%", background:`linear-gradient(to right, ${BG}, transparent)`, zIndex:3, pointerEvents:"none" }} />
+          <div style={{ position:"absolute", top:0, right:0, bottom:0, width:"8%", background:`linear-gradient(to left, ${BG}, transparent)`, zIndex:3, pointerEvents:"none" }} />
+          {/* 3D frame */}
+          <div className="img3d" style={{ borderRadius:14, overflow:"hidden", boxShadow:"0 0 0 1px rgba(255,255,255,0.08), 0 60px 120px rgba(0,0,0,0.9), 40px 40px 80px rgba(0,0,0,0.6), -10px -10px 40px rgba(232,205,169,0.04)", willChange:"transform" }}>
+            {/* Chrome bar */}
+            <div style={{ display:"flex", alignItems:"center", gap:6, padding:"10px 14px", background:"rgba(14,14,20,0.99)", borderBottom:`1px solid ${BDR}` }}>
+              {[0.18,0.1,0.06].map((o,i)=><div key={i} style={{ width:9, height:9, borderRadius:"50%", background:`rgba(255,255,255,${o})` }}/>)}
               <div style={{ flex:1, textAlign:"center" }}>
-                <span style={{ fontSize:10, color:DIM2, letterSpacing:"0.08em" }}>app.fyltra.io — Journal</span>
+                <span style={{ fontSize:10, color:DIM2, letterSpacing:"0.08em" }}>app.fyltra.io</span>
               </div>
             </div>
-            {/* Interior */}
-            <div style={{ display:"flex", height:320 }}>
-              {/* Sidebar */}
-              <div style={{ width:164, borderRight:`1px solid ${BDR}`, padding:"14px 10px", flexShrink:0, background:"rgba(255,255,255,0.01)" }}>
-                <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:18, padding:"3px 8px" }}>
-                  <img src="/fyltra-white.svg" style={{ width:16, height:16, opacity:0.8 }} alt="" />
-                  <span style={{ fontFamily:MN, fontSize:11, color:CR }}>FYLTRA</span>
-                </div>
-                {["Journal","Comptes","Analytics","IA","Réglages"].map((item, i) => (
-                  <div key={item} style={{ padding:"6px 8px", borderRadius:5, marginBottom:2, background: i===0 ? "rgba(232,205,169,0.1)" : "transparent", display:"flex", alignItems:"center", gap:7 }}>
-                    <div style={{ width:4, height:4, borderRadius:1, background: i===0 ? GD : "rgba(255,255,255,0.18)", flexShrink:0 }} />
-                    <span style={{ fontSize:11, color: i===0 ? CR : DIM2, letterSpacing:"0.03em" }}>{item}</span>
-                  </div>
-                ))}
-              </div>
-              {/* Content */}
-              <div style={{ flex:1, padding:"18px 18px", overflow:"hidden" }}>
-                <div style={{ marginBottom:14 }}>
-                  <div style={{ fontSize:9, color:DIM2, letterSpacing:"0.14em", textTransform:"uppercase", marginBottom:7 }}>Equity Curve · Avril 2025</div>
-                  <svg viewBox="0 0 560 70" style={{ width:"100%", height:52, display:"block" }}>
-                    <defs>
-                      <linearGradient id="mf" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#e8cda9" stopOpacity="0.2"/>
-                        <stop offset="100%" stopColor="#e8cda9" stopOpacity="0"/>
-                      </linearGradient>
-                    </defs>
-                    <path d="M0,65 C25,63 40,56 80,46 C120,36 130,48 170,38 C210,28 225,40 260,24 C295,8 315,20 350,12 C385,4 400,16 440,8 C475,1 490,10 560,5 L560,70 L0,70 Z" fill="url(#mf)"/>
-                    <path d="M0,65 C25,63 40,56 80,46 C120,36 130,48 170,38 C210,28 225,40 260,24 C295,8 315,20 350,12 C385,4 400,16 440,8 C475,1 490,10 560,5" fill="none" stroke="#e8cda9" strokeWidth="1.5"/>
-                  </svg>
-                </div>
-                {/* Trade rows */}
-                {[
-                  { date:"Lun 28", instr:"MNQ", res:"WIN", pnl:"+420€", em:"Confiant" },
-                  { date:"Lun 28", instr:"NQ",  res:"WIN", pnl:"+360€", em:"Neutre"  },
-                  { date:"Mar 29", instr:"MNQ", res:"LOSS",pnl:"-200€", em:"Anxieux" },
-                  { date:"Mar 29", instr:"GC",  res:"WIN", pnl:"+640€", em:"Confiant"},
-                  { date:"Mer 30", instr:"MNQ", res:"WIN", pnl:"+280€", em:"Neutre"  },
-                ].map((t,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"5px 0", borderBottom:`1px solid rgba(255,255,255,0.04)` }}>
-                    <span style={{ fontSize:9, color:DIM2, width:38, flexShrink:0 }}>{t.date}</span>
-                    <span style={{ fontSize:10, color:"rgba(255,255,255,0.5)", width:30, flexShrink:0, letterSpacing:"0.06em" }}>{t.instr}</span>
-                    <span style={{ fontSize:9, color:t.res==="WIN"?"#4caf6e":"#e05a5a", background:t.res==="WIN"?"rgba(76,175,110,0.1)":"rgba(224,90,90,0.1)", padding:"2px 6px", borderRadius:3, flexShrink:0 }}>{t.res}</span>
-                    <span style={{ fontSize:10, color:t.res==="WIN"?"#4caf6e":"#e05a5a", marginLeft:"auto", fontWeight:600, flexShrink:0 }}>{t.pnl}</span>
-                    <span style={{ fontSize:9, color:DIM2, width:50, textAlign:"right", flexShrink:0 }}>{t.em}</span>
-                  </div>
-                ))}
-              </div>
+            {/* Screenshot — place journal.png in /public/ */}
+            <img src="/journal.png" alt="Fyltra Journal" style={{ width:"100%", display:"block" }}
+              onError={e=>{ e.currentTarget.style.display="none"; e.currentTarget.nextSibling.style.display="flex"; }} />
+            {/* Fallback if no image yet */}
+            <div style={{ display:"none", height:320, background:"rgba(10,10,16,0.97)", alignItems:"center", justifyContent:"center", flexDirection:"column", gap:12 }}>
+              <span style={{ fontSize:28, opacity:0.15 }}>◉</span>
+              <span style={{ fontSize:11, color:DIM2, letterSpacing:"0.12em", textTransform:"uppercase" }}>Place journal.png in /public/</span>
             </div>
           </div>
         </div>
@@ -755,37 +781,37 @@ function AuthScreen() {
       {/* ── FEATURES ── */}
       <section style={{ padding:`120px ${PAD}`, position:"relative" }}>
         <Reveal style={{ marginBottom:64, textAlign:"center" }}>
-          <div style={{ fontSize:11, color:GD, letterSpacing:"0.2em", fontWeight:600, marginBottom:14, textTransform:"uppercase" }}>Ce que fait Fyltra</div>
-          <div style={{ fontWeight:700, fontSize:"clamp(30px,4vw,54px)", letterSpacing:"-0.03em", color:CR, lineHeight:1.1 }}>
+          <div style={{ fontSize:11, color:GD, letterSpacing:"0.2em", fontWeight:600, marginBottom:16, textTransform:"uppercase" }}>Ce que fait Fyltra</div>
+          <div style={{ fontFamily:CV, fontSize:"clamp(32px,4.5vw,58px)", letterSpacing:"-0.02em", color:CR, lineHeight:1.0 }}>
             Tout ce dont tu as besoin<br />pour progresser.
           </div>
         </Reveal>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:14 }}>
           {features.map((f,i)=>(
-            <Reveal key={f.n} delay={i*0.07}>
-              <div style={{ background:CARD_BG, border:CARD_BDR, borderRadius:14, padding:"30px 26px", height:"100%", boxSizing:"border-box", boxShadow:CARD_SHD, transition:"background 0.2s,border-color 0.2s", cursor:"default" }}
-                onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.045)";e.currentTarget.style.borderColor="rgba(232,205,169,0.18)";}}
-                onMouseLeave={e=>{e.currentTarget.style.background=CARD_BG;e.currentTarget.style.borderColor=BDR;}}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-                  <span style={{ fontSize:20, color:"rgba(232,205,169,0.5)", lineHeight:1 }}>{f.icon}</span>
-                  <span style={{ fontSize:9, color:DIM2, letterSpacing:"0.16em", fontWeight:600 }}>{f.n}</span>
+            <Reveal key={f.n} delay={i*0.08} y={40}>
+              <TiltCard style={{ background:CARD_BG, border:CARD_BDR, borderRadius:16, padding:"32px 28px", height:"100%", boxSizing:"border-box", boxShadow:CARD_SHD, transition:"background 0.2s,border-color 0.2s" }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(232,205,169,0.2)";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor=BDR;}}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:22 }}>
+                  <span style={{ fontSize:22, color:"rgba(232,205,169,0.55)", lineHeight:1 }}>{f.icon}</span>
+                  <span style={{ fontSize:9, color:DIM2, letterSpacing:"0.18em", fontWeight:600 }}>{f.n}</span>
                 </div>
-                <div style={{ fontSize:13, fontWeight:700, color:CR, letterSpacing:"0.04em", marginBottom:10 }}>{f.title}</div>
-                <p style={{ fontSize:13, color:DIM, lineHeight:1.7, fontWeight:300 }}>{f.sub}</p>
-              </div>
+                <div style={{ fontSize:13, fontWeight:700, color:CR, letterSpacing:"0.05em", marginBottom:10 }}>{f.title}</div>
+                <p style={{ fontSize:13, color:DIM, lineHeight:1.72, fontWeight:300 }}>{f.sub}</p>
+              </TiltCard>
             </Reveal>
           ))}
         </div>
       </section>
 
       {/* ── STATS ── */}
-      <section style={{ padding:`60px ${PAD}`, borderTop:`1px solid ${BDR}`, borderBottom:`1px solid ${BDR}` }}>
-        <div style={{ display:"flex", justifyContent:"space-around", flexWrap:"wrap", gap:40, textAlign:"center" }}>
+      <section style={{ padding:`64px ${PAD}`, borderTop:`1px solid ${BDR}`, borderBottom:`1px solid ${BDR}` }}>
+        <div style={{ display:"flex", justifyContent:"space-around", flexWrap:"wrap", gap:48, textAlign:"center" }}>
           {[["90%","des traders perdent faute de structure"],["3.2x","meilleur win rate avec un journal"],["12h","économisées par mois en analyse"]].map(([v,l])=>(
-            <Reveal key={l}>
+            <Reveal key={l} y={30}>
               <div>
-                <div style={{ fontWeight:700, fontSize:"clamp(36px,4.5vw,68px)", letterSpacing:"-0.04em", background:`linear-gradient(135deg, ${CR} 30%, ${GD} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", lineHeight:1 }}>{v}</div>
-                <div style={{ fontSize:11, color:DIM2, letterSpacing:"0.08em", marginTop:10, textTransform:"uppercase", fontWeight:600, maxWidth:160, margin:"10px auto 0" }}>{l}</div>
+                <div style={{ fontFamily:CV, fontSize:"clamp(40px,5vw,72px)", letterSpacing:"-0.03em", background:`linear-gradient(135deg, ${CR} 20%, ${GD} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", lineHeight:1 }}>{v}</div>
+                <div style={{ fontSize:11, color:DIM2, letterSpacing:"0.08em", marginTop:12, textTransform:"uppercase", fontWeight:600, maxWidth:160, margin:"12px auto 0" }}>{l}</div>
               </div>
             </Reveal>
           ))}
@@ -793,17 +819,18 @@ function AuthScreen() {
       </section>
 
       {/* ── CTA BOTTOM ── */}
-      <section style={{ padding:`120px ${PAD}`, textAlign:"center", position:"relative", overflow:"hidden" }}>
-        <div className="lnglow" style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:"min(600px,80vw)", height:400, background:"radial-gradient(ellipse, rgba(232,205,169,0.09) 0%, transparent 70%)", pointerEvents:"none", filter:"blur(40px)" }} />
-        <Reveal>
-          <div style={{ fontSize:11, color:GD, letterSpacing:"0.2em", fontWeight:600, marginBottom:20, textTransform:"uppercase" }}>Prêt à progresser ?</div>
-          <div style={{ fontWeight:700, fontSize:"clamp(32px,4.5vw,62px)", letterSpacing:"-0.03em", color:CR, lineHeight:1.1, marginBottom:18 }}>
+      <section style={{ padding:`130px ${PAD}`, textAlign:"center", position:"relative", overflow:"hidden" }}>
+        <div className="lnglow" style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:"min(700px,80vw)", height:500, background:"radial-gradient(ellipse, rgba(232,205,169,0.08) 0%, transparent 70%)", pointerEvents:"none", filter:"blur(50px)" }} />
+        <Reveal y={40}>
+          <div style={{ fontFamily:CV, fontSize:"clamp(38px,5.5vw,78px)", letterSpacing:"-0.025em", color:CR, lineHeight:0.98, marginBottom:24 }}>
             Commence à journaliser<br />dès aujourd'hui.
           </div>
-          <p style={{ fontSize:15, color:DIM, marginBottom:36, fontWeight:300 }}>Sans carte bancaire. Gratuit pour commencer.</p>
-          <button onClick={()=>openAuth("signup")} style={{ background:CR, color:BG, border:"none", borderRadius:8, padding:"14px 36px", fontSize:14, fontWeight:700, letterSpacing:"0.03em", cursor:"pointer", transition:"opacity 0.15s" }}
-            onMouseEnter={e=>e.currentTarget.style.opacity="0.86"}
-            onMouseLeave={e=>e.currentTarget.style.opacity="1"}>Commencer gratuitement →</button>
+          <p style={{ fontSize:15, color:DIM, marginBottom:40, fontWeight:300 }}>Sans carte bancaire. Gratuit pour commencer.</p>
+          <button onClick={()=>openAuth("signup")} style={{ background:CR, color:BG, border:"none", borderRadius:9, padding:"15px 40px", fontSize:14, fontWeight:700, letterSpacing:"0.04em", cursor:"pointer", transition:"opacity 0.15s, transform 0.2s" }}
+            onMouseEnter={e=>{e.currentTarget.style.opacity="0.88";e.currentTarget.style.transform="scale(1.03)";}}
+            onMouseLeave={e=>{e.currentTarget.style.opacity="1";e.currentTarget.style.transform="scale(1)";}}>
+            Commencer gratuitement →
+          </button>
         </Reveal>
       </section>
 
