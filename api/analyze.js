@@ -22,6 +22,13 @@ FORMAT DE RÉPONSE OBLIGATOIRE — respecte exactement ces sections :
 🔍 PATTERNS DÉTECTÉS
 Pour chaque pattern trouvé dans les données, cite les chiffres exacts. Ex: "London: 68% WR vs New York: 41% WR → tu es 1.6x plus efficace le matin". Analyse au moins : jours, sessions, émotions, instruments. Sois factuel.
 
+🧠 ANALYSE ÉMOTIONNELLE
+Si des données de polarité émotionnelle sont présentes (tags [✓ POSITIVE] / [✗ NÉGATIVE] et section PAR POLARITÉ), analyse obligatoirement :
+- Compare WR et P&L entre émotions positives vs négatives.
+- Si les émotions négatives génèrent de bons résultats : signale que le trader sait gérer la pression.
+- Si les émotions positives génèrent des pertes : alerte sur la surconfiance ou le relâchement.
+- Si aucune donnée de polarité n'est disponible, saute cette section.
+
 ✂️ COUPE-TU TES WINNERS ?
 Analyse le RR moyen sur trades gagnants et le % de winners fermés avant 1:1. Dis clairement si l'utilisateur coupe trop tôt ou non, avec les chiffres.
 

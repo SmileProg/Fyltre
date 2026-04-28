@@ -1369,11 +1369,35 @@ export default function App() {
       .map(([k,v]) => `  ${k}: ${v.count} trades | WR ${v.count ? Math.round(v.wins/v.count*100) : 0}% | P&L ${v.pnl >= 0 ? "+" : ""}${v.pnl.toFixed(0)}${currency}`)
       .join("\n");
 
+    // Polarity map from custom emotions
+    const polarityMap = {};
+    extraEmotions.forEach(e => { if (typeof e === "object" && e.polarity) polarityMap[e.label] = e.polarity; });
+
     const byDay     = group(t => DAYS[new Date(t.date+"T12:00:00").getDay()]);
     const bySession = group(t => t.session);
     const byEmotion = group(t => t.emotion);
     const byInstr   = group(t => t.instrument);
     const byDir     = group(t => t.direction);
+
+    // Aggregate stats by polarity group
+    const posEmotions = Object.keys(polarityMap).filter(k => polarityMap[k] === "positive");
+    const negEmotions = Object.keys(polarityMap).filter(k => polarityMap[k] === "negative");
+    const groupByPolarity = (keys) => {
+      let pnl=0, count=0, wins=0;
+      keys.forEach(k => { if (byEmotion[k]) { pnl += byEmotion[k].pnl; count += byEmotion[k].count; wins += byEmotion[k].wins; } });
+      return { pnl, count, wins };
+    };
+    const posStats = groupByPolarity(posEmotions);
+    const negStats = groupByPolarity(negEmotions);
+    const polaritySection = (posEmotions.length || negEmotions.length) ? `
+📊 PAR POLARITÉ ÉMOTIONNELLE:
+  Émotions POSITIVES (${posEmotions.join(", ") || "aucune"}): ${posStats.count} trades | WR ${posStats.count ? Math.round(posStats.wins/posStats.count*100) : 0}% | P&L ${posStats.pnl >= 0 ? "+" : ""}${posStats.pnl.toFixed(0)}${currency}
+  Émotions NÉGATIVES (${negEmotions.join(", ") || "aucune"}): ${negStats.count} trades | WR ${negStats.count ? Math.round(negStats.wins/negStats.count*100) : 0}% | P&L ${negStats.pnl >= 0 ? "+" : ""}${negStats.pnl.toFixed(0)}${currency}` : "";
+
+    const fmtEmotion = (m) => Object.entries(m)
+      .sort((a,b) => b[1].pnl - a[1].pnl)
+      .map(([k,v]) => { const pol = polarityMap[k]; const tag = pol === "positive" ? " [✓ POSITIVE]" : pol === "negative" ? " [✗ NÉGATIVE]" : ""; return `  ${k}${tag}: ${v.count} trades | WR ${v.count ? Math.round(v.wins/v.count*100) : 0}% | P&L ${v.pnl >= 0 ? "+" : ""}${v.pnl.toFixed(0)}${currency}`; })
+      .join("\n");
 
     const winners = trades.filter(t => t.result === "WIN" && parseFloat(t.rr) > 0);
     const avgWinRR = winners.length ? (winners.reduce((s,t) => s + (parseFloat(t.rr)||0), 0) / winners.length).toFixed(2) : null;
@@ -1400,7 +1424,7 @@ ${fmt(byDay)}
 ${fmt(bySession)}
 
 🧠 PAR ÉMOTION:
-${fmt(byEmotion)}
+${fmtEmotion(byEmotion)}${polaritySection}
 
 📊 PAR INSTRUMENT:
 ${fmt(byInstr)}
