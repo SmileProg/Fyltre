@@ -2667,7 +2667,7 @@ ${recentTrades}`;
               }
               const pct = Math.min(100,(daysSince/maxDays)*100);
               const isViolation = daysSince >= maxDays;
-              const barColor = isViolation ? "rgba(192,57,43,0.9)" : pct > 70 ? `rgba(var(--gold-rgb),0.9)` : "rgba(42,110,58,0.85)";
+              const barColor = isViolation ? "rgba(192,57,43,0.9)" : pct >= 50 ? "rgba(192,57,43,0.9)" : "rgba(42,110,58,0.85)";
               return (
                 <div style={{marginBottom:12}}>
                   <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
