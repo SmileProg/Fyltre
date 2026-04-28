@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "./supabase";
 
 /* ─── BGPattern ──────────────────────────────────────────────────── */
 const MASKS = {
@@ -347,11 +348,125 @@ const SunIcon = () => (
   </svg>
 );
 
+/* ─── AuthModal ──────────────────────────────────────────────────── */
+function AuthModal({ onClose, navigate, initialMode = "login" }) {
+  const [mode, setMode]         = useState(initialMode);
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd]   = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+  const [success, setSuccess]   = useState("");
+  const overlayRef              = useRef();
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
+  const submit = async () => {
+    if (!email || !password) { setError("Remplis tous les champs."); return; }
+    setLoading(true); setError(""); setSuccess("");
+    if (mode === "login") {
+      const { error: e } = await supabase.auth.signInWithPassword({ email, password });
+      if (e) setError(e.message === "Invalid login credentials" ? "Email ou mot de passe incorrect." : e.message);
+      else { onClose(); navigate("/app"); }
+    } else {
+      const { error: e } = await supabase.auth.signUp({ email, password });
+      if (e) setError(e.message);
+      else setSuccess("Compte créé ! Vérifie ton email pour confirmer.");
+    }
+    setLoading(false);
+  };
+
+  const gold = "#F0B43C";
+  const fieldStyle = {
+    width:"100%", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.1)",
+    borderRadius:10, padding:"13px 16px", color:"#fff", fontFamily:"'Outfit',sans-serif",
+    fontSize:14, outline:"none", transition:"border-color .2s", boxSizing:"border-box",
+  };
+
+  return (
+    <div ref={overlayRef} onClick={e=>{ if(e.target===overlayRef.current) onClose(); }}
+      style={{ position:"fixed", inset:0, zIndex:9000, display:"flex", alignItems:"center", justifyContent:"center",
+        background:"rgba(0,0,0,0.72)", backdropFilter:"blur(12px)", animation:"lFadeIn .22s both" }}>
+      <div style={{ width:"100%", maxWidth:420, margin:"0 16px", background:"#0e0f12", border:"1px solid rgba(255,255,255,0.08)",
+        borderRadius:22, padding:"44px 40px", boxShadow:"0 0 0 1px rgba(255,255,255,0.04),0 32px 80px rgba(0,0,0,0.7)",
+        position:"relative", animation:"lFadeUp .28s both" }}>
+
+        {/* close */}
+        <button onClick={onClose} style={{ position:"absolute", top:16, right:16, width:32, height:32, borderRadius:8,
+          background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.4)",
+          cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center" }}>×</button>
+
+        {/* logo */}
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:32 }}>
+          <img src="/fyltra-white.svg" style={{ width:22, height:22 }} alt="" />
+          <span style={{ fontWeight:700, fontSize:13, color:"rgba(255,255,255,0.5)", letterSpacing:"0.1em" }}>FYLTRA</span>
+        </div>
+
+        <h2 style={{ fontFamily:"'Outfit',sans-serif", fontWeight:800, fontSize:24, color:"#fff", marginBottom:6, letterSpacing:"-0.02em" }}>
+          {mode === "login" ? "Bon retour 👋" : "Créer un compte"}
+        </h2>
+        <p style={{ fontSize:13, color:"rgba(255,255,255,0.35)", marginBottom:28 }}>
+          {mode === "login" ? "Connecte-toi à ton journal de trading." : "Commence ton journal de trading gratuit."}
+        </p>
+
+        {/* tabs */}
+        <div style={{ display:"flex", gap:4, background:"rgba(255,255,255,0.04)", borderRadius:10, padding:4, marginBottom:24 }}>
+          {[["login","Se connecter"],["signup","Créer un compte"]].map(([m,l])=>(
+            <button key={m} onClick={()=>{ setMode(m); setError(""); setSuccess(""); }}
+              style={{ flex:1, padding:"9px 0", borderRadius:8, border:"none", cursor:"pointer", fontFamily:"'Outfit',sans-serif",
+                fontWeight:600, fontSize:13, transition:"all .2s",
+                background: mode===m ? "rgba(240,180,60,0.15)" : "transparent",
+                color: mode===m ? gold : "rgba(255,255,255,0.35)",
+                boxShadow: mode===m ? `inset 0 0 0 1px rgba(240,180,60,0.25)` : "none" }}>
+              {l}
+            </button>
+          ))}
+        </div>
+
+        {/* fields */}
+        <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:20 }}>
+          <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}
+            style={fieldStyle} onFocus={e=>e.target.style.borderColor="rgba(240,180,60,0.4)"}
+            onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
+          <div style={{ position:"relative" }}>
+            <input type={showPwd?"text":"password"} placeholder="Mot de passe" value={password}
+              onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}
+              style={{...fieldStyle, paddingRight:46}}
+              onFocus={e=>e.target.style.borderColor="rgba(240,180,60,0.4)"}
+              onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
+            <button onClick={()=>setShowPwd(p=>!p)} style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)",
+              background:"none", border:"none", cursor:"pointer", color:"rgba(255,255,255,0.3)", fontSize:12, padding:4 }}>
+              {showPwd?"Cacher":"Voir"}
+            </button>
+          </div>
+        </div>
+
+        {error   && <div style={{ background:"rgba(255,80,80,0.1)", border:"1px solid rgba(255,80,80,0.2)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#ff8080", marginBottom:14 }}>{error}</div>}
+        {success && <div style={{ background:"rgba(80,200,100,0.1)", border:"1px solid rgba(80,200,100,0.2)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#80e090", marginBottom:14 }}>{success}</div>}
+
+        <button onClick={submit} disabled={loading}
+          style={{ width:"100%", background:`linear-gradient(135deg,${gold},#E89020)`, color:"#000", border:"none",
+            borderRadius:12, padding:"14px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14,
+            cursor:loading?"wait":"pointer", opacity:loading?0.7:1, transition:"all .22s",
+            boxShadow:"0 0 28px rgba(240,180,60,0.2)" }}>
+          {loading ? "..." : mode === "login" ? "Se connecter →" : "Créer mon compte →"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Landing ────────────────────────────────────────────────────── */
 export default function Landing() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
   const [mouse, setMouse] = useState({ x:-999, y:-999 });
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
   const [darkMode, setDarkMode] = useState(() => {
     try { return localStorage.getItem("fyltra-theme") !== "light"; } catch { return true; }
   });
@@ -375,6 +490,7 @@ export default function Landing() {
     <div onMouseMove={e => setMouse({ x:e.clientX, y:e.clientY })} style={{ fontFamily:"'Outfit',sans-serif", background:C.bg, color:C.text, minHeight:"100vh", transition:"background .4s,color .4s" }}>
       <style>{FONTS}</style>
       <style>{`:root { --l-bg:${C.bg}; --l-border:${C.border}; }`}</style>
+      {showAuth && <AuthModal onClose={()=>setShowAuth(false)} navigate={navigate} initialMode={authMode}/>}
 
       {/* cursor glow */}
       <div style={{ position:"fixed", left:mouse.x-220, top:mouse.y-220, width:440, height:440, borderRadius:"50%", background:`radial-gradient(circle,rgba(240,180,60,0.05) 0%,transparent 70%)`, pointerEvents:"none", zIndex:9999, transition:"left .08s,top .08s" }}/>
@@ -403,7 +519,7 @@ export default function Landing() {
             {darkMode ? <SunIcon /> : <MoonIcon />}
           </button>
 
-          <button onClick={() => navigate("/app")} style={{ marginLeft:4, background:"rgba(240,180,60,0.12)", border:"1px solid rgba(240,180,60,0.3)", borderRadius:10, padding:"9px 20px", fontFamily:"'Outfit',sans-serif", fontWeight:600, fontSize:13, color:gold, cursor:"pointer", transition:"all .22s" }}
+          <button onClick={() => { setAuthMode("login"); setShowAuth(true); }} style={{ marginLeft:4, background:"rgba(240,180,60,0.12)", border:"1px solid rgba(240,180,60,0.3)", borderRadius:10, padding:"9px 20px", fontFamily:"'Outfit',sans-serif", fontWeight:600, fontSize:13, color:gold, cursor:"pointer", transition:"all .22s" }}
             onMouseEnter={e=>{ e.currentTarget.style.background="rgba(240,180,60,0.22)"; e.currentTarget.style.boxShadow="0 0 20px rgba(240,180,60,0.2)"; }}
             onMouseLeave={e=>{ e.currentTarget.style.background="rgba(240,180,60,0.12)"; e.currentTarget.style.boxShadow="none"; }}>
             Se connecter
@@ -501,7 +617,7 @@ export default function Landing() {
           </R>
           <R delay={0.1}>
             <div className="l-price-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr" }}>
-              <PriceLeft navigate={navigate} C={C}/>
+              <PriceLeft onAuth={(m)=>{ setAuthMode(m); setShowAuth(true); }} C={C}/>
               <div className="l-price-right" style={{ background:C.cardBg, border:`1px solid ${C.border}`, borderLeft:"none", borderRadius:"0 18px 18px 0", padding:"48px 40px" }}>
                 <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.textDimmer, letterSpacing:"0.28em", textTransform:"uppercase", display:"block", marginBottom:28 }}>Inclus</span>
                 <div style={{ display:"flex", flexDirection:"column" }}>
@@ -533,7 +649,7 @@ export default function Landing() {
             </h2>
             <p style={{ fontSize:14, color:C.textDim, marginBottom:44 }}>$24.99 / mois · Résiliable à tout moment.</p>
             <div className="l-cta-btns" style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-              <button onClick={() => navigate("/app")} style={{ background:"linear-gradient(135deg,#F0B43C,#E89020)", color:"#000", border:"none", borderRadius:14, padding:"17px 50px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:15, cursor:"pointer", boxShadow:"0 0 40px rgba(240,180,60,0.28),0 4px 20px rgba(0,0,0,0.2)", transition:"all .25s cubic-bezier(.16,1,.3,1)" }}
+              <button onClick={() => { setAuthMode("signup"); setShowAuth(true); }} style={{ background:"linear-gradient(135deg,#F0B43C,#E89020)", color:"#000", border:"none", borderRadius:14, padding:"17px 50px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:15, cursor:"pointer", boxShadow:"0 0 40px rgba(240,180,60,0.28),0 4px 20px rgba(0,0,0,0.2)", transition:"all .25s cubic-bezier(.16,1,.3,1)" }}
                 onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px) scale(1.03)"; e.currentTarget.style.boxShadow="0 0 60px rgba(240,180,60,0.5),0 8px 28px rgba(0,0,0,0.3)"; }}
                 onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 0 40px rgba(240,180,60,0.28),0 4px 20px rgba(0,0,0,0.2)"; }}>
                 Créer mon compte →
@@ -550,7 +666,7 @@ export default function Landing() {
           <span style={{ fontWeight:700, fontSize:12, color:C.textDimmer, letterSpacing:"0.05em" }}>FYLTRA</span>
         </div>
         <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.textDimmer, letterSpacing:"0.1em" }}>© 2025 Fyltra · Trading Journal</span>
-        <button onClick={() => navigate("/app")} style={{ background:"none", border:"none", fontFamily:"'Outfit',sans-serif", fontWeight:500, fontSize:12, color:C.textDimmer, cursor:"pointer", transition:"color .2s" }}
+        <button onClick={() => { setAuthMode("login"); setShowAuth(true); }} style={{ background:"none", border:"none", fontFamily:"'Outfit',sans-serif", fontWeight:500, fontSize:12, color:C.textDimmer, cursor:"pointer", transition:"color .2s" }}
           onMouseEnter={e=>e.currentTarget.style.color=C.text}
           onMouseLeave={e=>e.currentTarget.style.color=C.textDimmer}>
           Accéder à l'app →
@@ -561,7 +677,7 @@ export default function Landing() {
 }
 
 /* ─── Price Left Card ────────────────────────────────────────────── */
-function PriceLeft({ navigate, C }) {
+function PriceLeft({ onAuth, C }) {
   const [h, setH] = useState(false);
   return (
     <div className="l-price-left" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{ padding:"48px 40px", background:h?"rgba(240,180,60,0.04)":C.cardBg, border:`1px solid ${h?"rgba(240,180,60,0.3)":"rgba(240,180,60,0.15)"}`, borderRadius:"18px 0 0 18px", position:"relative", overflow:"hidden", transition:"all .4s cubic-bezier(.16,1,.3,1)", boxShadow:h?"0 0 60px rgba(240,180,60,0.08)":"none" }}>
@@ -573,7 +689,7 @@ function PriceLeft({ navigate, C }) {
         <span style={{ fontSize:32, color:C.textDim, marginTop:24, fontWeight:400 }}>.99</span>
       </div>
       <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.textDimmer, letterSpacing:"0.15em", display:"block", marginBottom:40 }}>PAR MOIS · RÉSILIABLE</span>
-      <button onClick={() => navigate("/app")} style={{ width:"100%", background:"linear-gradient(135deg,#F0B43C,#E89020)", color:"#000", border:"none", borderRadius:12, padding:"14px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14, cursor:"pointer", boxShadow:"0 0 28px rgba(240,180,60,0.2)", transition:"all .22s cubic-bezier(.16,1,.3,1)" }}
+      <button onClick={() => onAuth("signup")} style={{ width:"100%", background:"linear-gradient(135deg,#F0B43C,#E89020)", color:"#000", border:"none", borderRadius:12, padding:"14px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14, cursor:"pointer", boxShadow:"0 0 28px rgba(240,180,60,0.2)", transition:"all .22s cubic-bezier(.16,1,.3,1)" }}
         onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 0 44px rgba(240,180,60,0.42)"; }}
         onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 0 28px rgba(240,180,60,0.2)"; }}>
         Commencer maintenant →
