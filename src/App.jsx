@@ -242,7 +242,7 @@ function Sidebar({ view, setView, darkMode, onSignOut }) {
       {/* Logo */}
       <div style={{ padding:"0 20px 24px", borderBottom:`1px solid ${C.border}` }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
-          <img src={darkMode?"/fyltra-creme.svg":"/fyltra-black.svg"} style={{width:42,height:42,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
+          <img src={darkMode?"/fyltra_logo_white.svg":"/fyltra-black.svg"} style={{width:42,height:42,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
           <div>
             <div style={{ fontFamily:"'MariellaNove',sans-serif", fontSize:20, color:C.white, lineHeight:1 }}>FYLTRA</div>
             <div style={{ fontSize:8, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
@@ -693,7 +693,7 @@ function AuthScreen() {
       {/* ── NAV ── */}
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:200, display:"flex", alignItems:"center", justifyContent:"space-between", padding:`0 ${PAD}`, height:60, background:isDark?"rgba(11,11,11,0.9)":"rgba(240,237,232,0.92)", backdropFilter:"blur(18px)", borderBottom:`1px solid ${BDR}`, transition:"background 0.3s" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <img src={isDark?"/fyltra-creme.svg":"/fyltra-black.svg"} style={{ width:38, height:38, borderRadius:8 }} alt="" />
+          <img src={isDark?"/fyltra_logo_white.svg":"/fyltra-black.svg"} style={{ width:38, height:38, borderRadius:8 }} alt="" />
           <span style={{ fontFamily:MN, fontSize:20, color:CR }}>FYLTRA</span>
         </div>
         <div style={{ display:"flex", gap:32, position:"absolute", left:"50%", transform:"translateX(-50%)" }}>
@@ -3587,7 +3587,7 @@ ${recentTrades}`;
         <div style={{ minHeight:"100vh", paddingBottom:100 }}>
           <div style={{ padding:"16px 20px", background:`linear-gradient(180deg,${C.bg2},${C.bg})`, borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:50, backdropFilter:"blur(16px)", flexWrap:"wrap" }}>
             <div style={{ display:"flex", alignItems:"center", gap:9 }}>
-              <img src={darkMode?"/fyltra-creme.svg":"/fyltra-black.svg"} style={{width:38,height:38,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
+              <img src={darkMode?"/fyltra_logo_white.svg":"/fyltra-black.svg"} style={{width:38,height:38,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
               <div>
                 <span style={{ fontFamily:"'MariellaNove',sans-serif", fontSize:18, color:C.white, display:"block", lineHeight:1, marginBottom:2 }}>FYLTRA</span>
                 <div style={{ fontSize:7, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
