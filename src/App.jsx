@@ -1536,10 +1536,10 @@ ${recentTrades}`;
           <button key={m.k} onClick={()=>setTradeMode(m.k)} style={{flex:1,padding:"10px 12px",borderRadius:11,border:"none",background:tradeMode===m.k?"radial-gradient(ellipse 90% 90% at 50% 50%, rgba(252,252,252,0.96) 0%, rgba(218,218,218,0.88) 55%, rgba(235,235,235,0.92) 100%)":"transparent",color:tradeMode===m.k?"#111":"rgba(255,255,255,0.55)",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:tradeMode===m.k?600:300,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.22s cubic-bezier(.4,0,.2,1)",position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:tradeMode===m.k?"0 6px 20px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(0,0,0,0.12)":"none",transform:"translateY(0)"}}>
             {m.label}
             {m.k==="scalping" && tradeMode==="scalping" && (
-              <span style={{background:"linear-gradient(135deg,rgba(232,212,193,0.2),rgba(232,212,193,0.06))",border:"1px solid rgba(232,212,193,0.3)",color:"rgba(232,212,193,0.9)",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.2em",padding:"2px 7px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>Saisie rapide</span>
+              <span style={{background:"linear-gradient(135deg,rgba(232,205,169,0.2),rgba(232,205,169,0.06))",border:"1px solid rgba(232,205,169,0.3)",color:"rgba(232,205,169,0.9)",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.2em",padding:"2px 7px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>Saisie rapide</span>
             )}
             {m.k==="scalping" && tradeMode!=="scalping" && (
-              <span style={{background:"rgba(232,212,193,0.12)",border:"1px solid rgba(232,212,193,0.35)",color:"rgba(232,212,193,0.8)",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:400,letterSpacing:"0.18em",padding:"2px 8px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>Saisie rapide</span>
+              <span style={{background:"rgba(232,205,169,0.12)",border:"1px solid rgba(232,205,169,0.35)",color:"rgba(232,205,169,0.8)",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:400,letterSpacing:"0.18em",padding:"2px 8px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>Saisie rapide</span>
             )}
           </button>
         ))}
@@ -2233,7 +2233,7 @@ ${recentTrades}`;
 
       {/* Header card */}
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px 18px",marginBottom:16,display:"flex",alignItems:"center",gap:14}}>
-        <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,rgba(232,212,193,0.18),rgba(232,212,193,0.06))",border:"1px solid rgba(232,212,193,0.25)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(232,212,193,0.85)",fontSize:20,flexShrink:0}}>◆</div>
+        <div style={{width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,rgba(232,205,169,0.18),rgba(232,205,169,0.06))",border:"1px solid rgba(232,205,169,0.25)",display:"flex",alignItems:"center",justifyContent:"center",color:"rgba(232,205,169,0.85)",fontSize:20,flexShrink:0}}>◆</div>
         <div>
           <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.06em",marginBottom:3}}>Coach IA</div>
           <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em",lineHeight:1.6}}>Détecte les patterns dans tes {trades.length} trades — jours, sessions, émotions, instruments, winners coupés.</div>
@@ -2254,7 +2254,7 @@ ${recentTrades}`;
       </div>
 
       {/* Trigger button */}
-      <button onClick={analyzeAI} disabled={aiLoading} style={{width:"100%",padding:"14px",borderRadius:8,border:"none",background:aiLoading?"rgba(232,212,193,0.12)":"linear-gradient(135deg,rgba(232,212,193,0.25),rgba(232,212,193,0.1))",color:aiLoading?"rgba(232,212,193,0.5)":"rgba(232,212,193,0.95)",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",cursor:aiLoading?"not-allowed":"pointer",border:"1px solid rgba(232,212,193,0.3)",marginBottom:20,transition:"all 0.2s"}}>
+      <button onClick={analyzeAI} disabled={aiLoading} style={{width:"100%",padding:"14px",borderRadius:8,border:"none",background:aiLoading?"rgba(232,205,169,0.12)":"linear-gradient(135deg,rgba(232,205,169,0.25),rgba(232,205,169,0.1))",color:aiLoading?"rgba(232,205,169,0.5)":"rgba(232,205,169,0.95)",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",cursor:aiLoading?"not-allowed":"pointer",border:"1px solid rgba(232,205,169,0.3)",marginBottom:20,transition:"all 0.2s"}}>
         {aiLoading ? "Analyse en cours…" : "Lancer l'analyse"}
       </button>
 
@@ -2268,16 +2268,16 @@ ${recentTrades}`;
       {/* Result */}
       {aiText && (
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,padding:"20px 18px"}}>
-          <div style={{fontSize:10,color:"rgba(232,212,193,0.7)",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:16}}>Analyse IA</div>
+          <div style={{fontSize:10,color:"rgba(232,205,169,0.7)",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",marginBottom:16}}>Analyse IA</div>
           {aiText.split(/\n(?=🔍|✂️|⚠️|🏆|📌)/).map((section, i) => {
             const isPatterns = section.startsWith("🔍");
             const isCut      = section.startsWith("✂️");
             const isDanger   = section.startsWith("⚠️");
             const isEdge     = section.startsWith("🏆");
             const isRules    = section.startsWith("📌");
-            const accent = isRules ? "rgba(232,212,193,0.85)" : isEdge ? "#2a6e3a" : isDanger ? "#c0392b" : isCut ? "rgba(180,140,255,0.85)" : "rgba(232,212,193,0.5)";
-            const bg     = isRules ? "rgba(232,212,193,0.06)" : isEdge ? "rgba(42,110,58,0.06)" : isDanger ? "rgba(192,57,43,0.06)" : "transparent";
-            const border = isRules ? "rgba(232,212,193,0.2)" : isEdge ? "rgba(42,110,58,0.2)" : isDanger ? "rgba(192,57,43,0.2)" : C.border;
+            const accent = isRules ? "rgba(232,205,169,0.85)" : isEdge ? "#2a6e3a" : isDanger ? "#c0392b" : isCut ? "rgba(180,140,255,0.85)" : "rgba(232,205,169,0.5)";
+            const bg     = isRules ? "rgba(232,205,169,0.06)" : isEdge ? "rgba(42,110,58,0.06)" : isDanger ? "rgba(192,57,43,0.06)" : "transparent";
+            const border = isRules ? "rgba(232,205,169,0.2)" : isEdge ? "rgba(42,110,58,0.2)" : isDanger ? "rgba(192,57,43,0.2)" : C.border;
             return (
               <div key={i} style={{background:bg, border:`1px solid ${border}`, borderRadius:8, padding:"14px 16px", marginBottom:10}}>
                 {section.split("\n").map((line, j) => {
@@ -2376,7 +2376,7 @@ ${recentTrades}`;
             <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5,textAlign:"center"}}>Compte personnel avec ton propre capital</div>
           </button>
           <button disabled style={{padding:"32px 16px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bg2,cursor:"not-allowed",display:"flex",flexDirection:"column",alignItems:"center",gap:12,opacity:0.5,gridColumn:"1 / -1",position:"relative"}}>
-            <span style={{position:"absolute",top:12,right:12,background:"linear-gradient(135deg,rgba(232,212,193,0.2),rgba(232,212,193,0.06))",border:"1px solid rgba(232,212,193,0.3)",color:"rgba(232,212,193,0.9)",fontSize:8,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.22em",padding:"3px 8px",borderRadius:4,textTransform:"uppercase"}}>bientôt</span>
+            <span style={{position:"absolute",top:12,right:12,background:"linear-gradient(135deg,rgba(232,205,169,0.2),rgba(232,205,169,0.06))",border:"1px solid rgba(232,205,169,0.3)",color:"rgba(232,205,169,0.9)",fontSize:8,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.22em",padding:"3px 8px",borderRadius:4,textTransform:"uppercase"}}>bientôt</span>
             <div style={{fontSize:28,color:C.dim}}>⟳</div>
             <div style={{fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,color:C.white,letterSpacing:"0.1em",textTransform:"uppercase"}}>MT4 / MT5</div>
             <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5,textAlign:"center"}}>Importe automatiquement tes trades depuis MetaTrader</div>
@@ -2617,7 +2617,7 @@ ${recentTrades}`;
                       return (
                         <div>
                           <div style={{height:4,background:"rgba(0,0,0,0.1)",borderRadius:2,marginBottom:4}}>
-                            <div style={{width:gaugePct+"%",height:"100%",borderRadius:2,background:isOver?"rgba(192,57,43,0.7)":gaugePct>=80?"rgba(232,212,193,0.6)":C.accent,transition:"width 0.5s"}}/>
+                            <div style={{width:gaugePct+"%",height:"100%",borderRadius:2,background:isOver?"rgba(192,57,43,0.7)":gaugePct>=80?"rgba(232,205,169,0.6)":C.accent,transition:"width 0.5s"}}/>
                           </div>
                           <div style={{fontSize:10,color:isOver?"rgba(192,57,43,0.8)":C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>
                             {isOver ? "Limite de consistance atteinte" : `${(maxD-todayGain).toFixed(0)}${currency} restants`}
@@ -2637,7 +2637,7 @@ ${recentTrades}`;
 
 
             {editingPf?.id !== pf.id && alerts.map((a,i) => (
-              <div key={i} style={{padding:"8px 10px",borderRadius:4,marginTop:6,background:a.type==="danger"?"rgba(192,57,43,0.08)":a.type==="warn"?"rgba(232,212,193,0.08)":a.type==="success"?"rgba(42,110,58,0.08)":"rgba(0,0,0,0.04)",border:`1px solid ${a.type==="danger"?"rgba(192,57,43,0.25)":a.type==="warn"?"rgba(232,212,193,0.25)":a.type==="success"?"rgba(42,110,58,0.25)":C.border}`}}>
+              <div key={i} style={{padding:"8px 10px",borderRadius:4,marginTop:6,background:a.type==="danger"?"rgba(192,57,43,0.08)":a.type==="warn"?"rgba(232,205,169,0.08)":a.type==="success"?"rgba(42,110,58,0.08)":"rgba(0,0,0,0.04)",border:`1px solid ${a.type==="danger"?"rgba(192,57,43,0.25)":a.type==="warn"?"rgba(232,205,169,0.25)":a.type==="success"?"rgba(42,110,58,0.25)":C.border}`}}>
                 <div style={{fontSize:12,color:C.white,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5}}>{a.msg}</div>
               </div>
             ))}
@@ -2819,7 +2819,7 @@ ${recentTrades}`;
               <div style={{textAlign:"right"}}>
                 <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:4}}>Consistance · max {maxD.toFixed(0)}{currency}</div>
                 <div style={{width:120,height:6,background:C.gray3,borderRadius:3,marginLeft:"auto",marginBottom:4}}>
-                  <div style={{width:gp+"%",height:"100%",borderRadius:3,background:over?"rgba(192,57,43,0.8)":gp>=80?"rgba(232,212,193,0.6)":"#2a6e3a",transition:"width 0.5s"}}/>
+                  <div style={{width:gp+"%",height:"100%",borderRadius:3,background:over?"rgba(192,57,43,0.8)":gp>=80?"rgba(232,205,169,0.6)":"#2a6e3a",transition:"width 0.5s"}}/>
                 </div>
                 <div style={{fontSize:10,color:over?"rgba(192,57,43,0.8)":C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{over?"🔴 Limite atteinte":`${(maxD-g).toFixed(0)}${currency} restants`}</div>
               </div>
@@ -3076,7 +3076,7 @@ ${recentTrades}`;
 
         {/* ── ALERTS ── */}
         {alerts.map((a,i)=>(
-          <div key={i} style={{padding:"8px 12px",borderRadius:6,marginBottom:8,background:a.type==="danger"?"rgba(192,57,43,0.08)":a.type==="warn"?"rgba(232,212,193,0.08)":a.type==="success"?"rgba(42,110,58,0.08)":"rgba(0,0,0,0.04)",border:`1px solid ${a.type==="danger"?"rgba(192,57,43,0.25)":a.type==="warn"?"rgba(232,212,193,0.25)":a.type==="success"?"rgba(42,110,58,0.25)":C.border}`}}>
+          <div key={i} style={{padding:"8px 12px",borderRadius:6,marginBottom:8,background:a.type==="danger"?"rgba(192,57,43,0.08)":a.type==="warn"?"rgba(232,205,169,0.08)":a.type==="success"?"rgba(42,110,58,0.08)":"rgba(0,0,0,0.04)",border:`1px solid ${a.type==="danger"?"rgba(192,57,43,0.25)":a.type==="warn"?"rgba(232,205,169,0.25)":a.type==="success"?"rgba(42,110,58,0.25)":C.border}`}}>
             <div style={{fontSize:12,color:C.white,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5}}>{a.msg}</div>
           </div>
         ))}
@@ -3382,7 +3382,7 @@ ${recentTrades}`;
             </button>
           ))}
         </div>
-        {lang!=="fr"&&<div style={{marginTop:10,padding:"8px 12px",borderRadius:6,background:"rgba(232,212,193,0.08)",border:"1px solid rgba(232,212,193,0.2)",fontSize:11,color:"rgba(232,212,193,0.9)",fontFamily:"'Josefin Sans',sans-serif"}}>La traduction complète sera disponible prochainement.</div>}
+        {lang!=="fr"&&<div style={{marginTop:10,padding:"8px 12px",borderRadius:6,background:"rgba(232,205,169,0.08)",border:"1px solid rgba(232,205,169,0.2)",fontSize:11,color:"rgba(232,205,169,0.9)",fontFamily:"'Josefin Sans',sans-serif"}}>La traduction complète sera disponible prochainement.</div>}
       </div>
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
@@ -3443,7 +3443,7 @@ ${recentTrades}`;
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12,opacity:0.6}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
           <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>Compte MT4 / MT5</div>
-          <span style={{background:"linear-gradient(135deg,rgba(232,212,193,0.2),rgba(232,212,193,0.06))",border:"1px solid rgba(232,212,193,0.3)",color:"rgba(232,212,193,0.9)",fontSize:8,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.22em",padding:"3px 8px",borderRadius:4,textTransform:"uppercase"}}>bientôt</span>
+          <span style={{background:"linear-gradient(135deg,rgba(232,205,169,0.2),rgba(232,205,169,0.06))",border:"1px solid rgba(232,205,169,0.3)",color:"rgba(232,205,169,0.9)",fontSize:8,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.22em",padding:"3px 8px",borderRadius:4,textTransform:"uppercase"}}>bientôt</span>
         </div>
         <div style={{fontSize:12,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.6}}>Connecte ton compte MT4/MT5 pour importer tes trades automatiquement.</div>
       </div>
