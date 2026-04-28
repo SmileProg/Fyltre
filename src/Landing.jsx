@@ -218,7 +218,7 @@ function DashboardMockup() {
       {/* top bar */}
       <div style={{ padding:"14px 20px", borderBottom:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between", background:"rgba(255,255,255,0.02)" }}>
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <img src="/fyltra_logo_white.svg" style={{ width:18, height:18, opacity:0.6 }} alt="" />
+          <img src="/fyltra-white.svg" style={{ width:18, height:18, opacity:0.6 }} alt="" />
           <span style={{ fontWeight:700, fontSize:12, letterSpacing:"0.06em", opacity:0.7 }}>FYLTRA</span>
           {["Compte","Trade","IA"].map(t => (
             <div key={t} style={{ padding:"4px 12px", borderRadius:6, background: t==="Compte" ? "rgba(240,180,60,0.12)" : "transparent", border: t==="Compte" ? "1px solid rgba(240,180,60,0.2)" : "1px solid transparent", fontSize:11, color: t==="Compte" ? "#F0B43C" : "rgba(255,255,255,0.35)", cursor:"default" }}>{t}</div>
@@ -363,7 +363,7 @@ export default function Landing() {
       {/* ─── NAV ─── */}
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:500, padding:"0 5vw", height: scrolled ? 58 : 72, display:"flex", alignItems:"center", justifyContent:"space-between", transition:"all .4s cubic-bezier(.16,1,.3,1)", background: scrolled ? "rgba(6,6,8,0.88)" : "transparent", backdropFilter: scrolled ? "blur(20px)" : "none", borderBottom: scrolled ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <img src="/fyltra_logo_white.svg" style={{ width:26, height:26 }} alt="" />
+          <img src="/fyltra-white.svg" style={{ width:26, height:26 }} alt="" />
           <span style={{ fontWeight:700, fontSize:15, letterSpacing:"0.05em" }}>FYLTRA</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
@@ -532,7 +532,7 @@ export default function Landing() {
       {/* ─── FOOTER ─── */}
       <footer style={{ borderTop:"1px solid rgba(255,255,255,0.05)", padding:"30px 5vw", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <img src="/fyltra_logo_white.svg" style={{ width:20, height:20, opacity:0.45 }} alt="" />
+          <img src="/fyltra-white.svg" style={{ width:20, height:20, opacity:0.45 }} alt="" />
           <span style={{ fontWeight:700, fontSize:12, color:"rgba(255,255,255,0.22)", letterSpacing:"0.05em" }}>FYLTRA</span>
         </div>
         <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:"rgba(255,255,255,0.1)", letterSpacing:"0.1em" }}>© 2025 Fyltra · Trading Journal</span>
