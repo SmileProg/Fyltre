@@ -196,7 +196,7 @@ function PillNav({ view, setView, darkMode }) {
         return (
           <button key={item.key} onClick={() => setView(item.key)} onMouseEnter={() => setHovered(item.key)} onMouseLeave={() => setHovered(null)} style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:2, padding:"8px 14px", borderRadius:44, border:"none", cursor:"pointer", background:active ? "radial-gradient(ellipse 90% 90% at 50% 50%, rgba(252,252,252,0.93) 0%, rgba(225,225,225,0.85) 55%, rgba(200,200,200,0.75) 100%)" : isHovered ? "rgba(255,255,255,0.05)" : "transparent", boxShadow:active ? "0 0 26px 8px rgba(255,255,255,0.22), 0 0 50px 16px rgba(255,255,255,0.09), 0 6px 20px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3)" : "none", transform:"translateY(0)", transition:"all 0.25s cubic-bezier(.4,0,.2,1)", minWidth:52, position:"relative", zIndex:1 }}>
             <span style={{ fontSize:16, lineHeight:1, color:active ? "#111" : "rgba(255,255,255,0.4)", transition:"color 0.2s" }}>{item.icon}</span>
-            <span style={{ fontSize:8, fontFamily:"'CoolveticaHv',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", color:active ? "#222" : "rgba(255,255,255,0.35)", transition:"color 0.2s" }}>{item.label}</span>
+            <span style={{ fontSize:8, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", color:active ? "#222" : "rgba(255,255,255,0.35)", transition:"color 0.2s" }}>{item.label}</span>
           </button>
         );
       })}
@@ -232,7 +232,7 @@ function Sidebar({ view, setView, darkMode, onSignOut }) {
         position:"relative", zIndex:1,
       }}>
         <span style={{ fontSize:17, color:active ? "#111" : "rgba(255,255,255,0.4)", lineHeight:1, width:22, textAlign:"center", transition:"color 0.25s" }}>{item.icon}</span>
-        <span style={{ fontSize:11, fontFamily:"'CoolveticaHv',sans-serif", fontWeight: active ? 700 : 300, letterSpacing:"0.1em", textTransform:"uppercase", color:active ? "#222" : "rgba(255,255,255,0.4)", transition:"color 0.25s", whiteSpace:"nowrap" }}>{item.label}</span>
+        <span style={{ fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight: active ? 700 : 300, letterSpacing:"0.1em", textTransform:"uppercase", color:active ? "#222" : "rgba(255,255,255,0.4)", transition:"color 0.25s", whiteSpace:"nowrap" }}>{item.label}</span>
       </button>
     );
   };
@@ -244,7 +244,7 @@ function Sidebar({ view, setView, darkMode, onSignOut }) {
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
           <img src={darkMode?"/fyltra-creme.svg":"/fyltra-black.svg"} style={{width:42,height:42,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
           <div>
-            <div style={{ fontFamily:"'CoolveticaHv',sans-serif", fontSize:20, color:C.white, lineHeight:1 }}>FYLTRA</div>
+            <div style={{ fontFamily:"'MariellaNove',sans-serif", fontSize:20, color:C.white, lineHeight:1 }}>FYLTRA</div>
             <div style={{ fontSize:8, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
           </div>
         </div>
@@ -272,11 +272,18 @@ function Sidebar({ view, setView, darkMode, onSignOut }) {
       </div>
 
       {/* Footer */}
-      <div style={{ padding:"12px 20px", borderTop:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <div style={{ fontSize:9, color:C.gray2, fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.08em" }}>v1.0 · Fyltra</div>
-        <button onClick={() => onSignOut()} style={{ background:"none", border:"none", cursor:"pointer", fontSize:9, color:"rgba(229,100,100,0.55)", fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.1em", textTransform:"uppercase", padding:"4px 8px", borderRadius:6, transition:"color 0.2s" }}>
-          Déconnexion
-        </button>
+      <div style={{ padding:"0 12px 16px" }}>
+        <div style={pillStyle}>
+          <button onClick={() => onSignOut()} onMouseEnter={e => e.currentTarget.style.background="rgba(229,100,100,0.12)"} onMouseLeave={e => e.currentTarget.style.background="rgba(229,100,100,0.06)"} style={{
+            display:"flex", alignItems:"center", gap:14, width:"100%",
+            padding:"10px 14px", borderRadius:16, border:"1px solid rgba(229,100,100,0.2)",
+            cursor:"pointer", background:"rgba(229,100,100,0.06)",
+            marginBottom:0, transition:"all 0.25s cubic-bezier(.4,0,.2,1)",
+          }}>
+            <span style={{ fontSize:15, color:"rgba(229,100,100,0.7)", lineHeight:1, width:22, textAlign:"center" }}>⏻</span>
+            <span style={{ fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight:400, letterSpacing:"0.1em", textTransform:"uppercase", color:"rgba(229,100,100,0.7)", whiteSpace:"nowrap" }}>Déconnexion</span>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -2221,7 +2228,7 @@ ${recentTrades}`;
 
   // ── AI JSX ──
   const aiContent = (
-    <div>
+    <div style={{ maxWidth:680, margin:"0 auto" }}>
       <PageTitle sub="Intelligence" title="Analyse IA" />
 
       {/* Header card */}
@@ -3354,7 +3361,7 @@ ${recentTrades}`;
 
   // ── Settings Content ──
   const settingsContent = (
-    <div>
+    <div style={{ maxWidth:680, margin:"0 auto" }}>
       <PageTitle sub="Paramètres" title="Réglages" />
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:14}}>Devise</div>
@@ -3443,7 +3450,7 @@ ${recentTrades}`;
 
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px"}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Version</div>
-        <div style={{fontSize:13,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{fontFamily:"'CoolveticaHv',sans-serif",fontSize:16}}>FYLTRA</span> v1.0 · Trading Journal</div>
+        <div style={{fontSize:13,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{fontFamily:"'MariellaNove',sans-serif",fontSize:16}}>FYLTRA</span> v1.0 · Trading Journal</div>
         <div style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",marginTop:4,letterSpacing:"0.06em"}}>Créé par Smile</div>
       </div>
     </div>
@@ -3479,7 +3486,7 @@ ${recentTrades}`;
             <div style={{ display:"flex", alignItems:"center", gap:9 }}>
               <img src={darkMode?"/fyltra-creme.svg":"/fyltra-black.svg"} style={{width:38,height:38,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
               <div>
-                <span style={{ fontFamily:"'CoolveticaHv',sans-serif", fontSize:18, color:C.white, display:"block", lineHeight:1, marginBottom:2 }}>FYLTRA</span>
+                <span style={{ fontFamily:"'MariellaNove',sans-serif", fontSize:18, color:C.white, display:"block", lineHeight:1, marginBottom:2 }}>FYLTRA</span>
                 <div style={{ fontSize:7, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
               </div>
             </div>
@@ -3513,7 +3520,7 @@ ${recentTrades}`;
                 {[{k:"history",l:"Statistiques",i:"≡"},{k:"strategy",l:"Plan",i:"◈"},{k:"settings",l:"Paramètres",i:"◎"}].map(item=>(
                   <button key={item.k} onClick={()=>{setView(item.k);setShowMenu(false);}} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",borderRadius:12,border:"none",cursor:"pointer",background:"transparent",transition:"background 0.15s"}}>
                     <span style={{fontSize:17,color:"rgba(255,255,255,0.6)",lineHeight:1,width:20,textAlign:"center"}}>{item.i}</span>
-                    <span style={{fontSize:13,fontFamily:"'CoolveticaHv',sans-serif",fontWeight:300,letterSpacing:"0.06em",color:"rgba(255,255,255,0.7)"}}>{item.l}</span>
+                    <span style={{fontSize:13,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.06em",color:"rgba(255,255,255,0.7)"}}>{item.l}</span>
                   </button>
                 ))}
                 <div style={{height:1,background:"rgba(255,255,255,0.06)",margin:"2px 8px"}}/>
