@@ -90,9 +90,9 @@ function getC(dark) {
     border:       "rgba(255,255,255,0.07)",
     cardBg:       "rgba(255,255,255,0.03)",
     cardBgH:      "rgba(255,255,255,0.07)",
-    patternFill:  "rgba(212,170,50,0.35)",
-    tickerBg:     "rgba(240,180,60,0.03)",
-    tickerBorder: "rgba(240,180,60,0.08)",
+    patternFill:  "rgba(232,205,169,0.35)",
+    tickerBg:     "rgba(232,205,169,0.04)",
+    tickerBorder: "rgba(232,205,169,0.1)",
     navBg:        "rgba(6,6,8,0.88)",
     scrollBg:     "rgba(255,255,255,0.1)",
   } : {
@@ -105,8 +105,8 @@ function getC(dark) {
     cardBg:       "rgba(0,0,0,0.025)",
     cardBgH:      "rgba(0,0,0,0.055)",
     patternFill:  "rgba(0,0,0,0.13)",
-    tickerBg:     "rgba(180,130,20,0.05)",
-    tickerBorder: "rgba(180,130,20,0.12)",
+    tickerBg:     "rgba(232,205,169,0.07)",
+    tickerBorder: "rgba(232,205,169,0.18)",
     navBg:        "rgba(248,247,245,0.92)",
     scrollBg:     "rgba(0,0,0,0.12)",
   };
@@ -210,7 +210,7 @@ function ContainerScroll({ titleComponent, children, C }) {
         <div style={{ position:"absolute", top:0, inset:"0 0 auto 0", height:100, background:`linear-gradient(to bottom,${C.bg},transparent)`, pointerEvents:"none", zIndex:10 }}/>
         <div style={{ position:"absolute", bottom:0, inset:"auto 0 0 0", height:140, background:`linear-gradient(to top,${C.bg},transparent)`, pointerEvents:"none", zIndex:10 }}/>
 
-        <div className="l-scroll-title" style={{ textAlign:"center", marginBottom:40, padding:"0 24px", transform:`scale(${titleScl}) translateY(${titleY}px)`, opacity:titleOp, zIndex:5, position:"relative" }}>
+        <div className="l-scroll-title" style={{ textAlign:"center", marginBottom:32, padding:"0 24px", transform:`scale(${titleScl}) translateY(${titleY}px)`, opacity:titleOp, zIndex:5, position:"relative", maxWidth:900 }}>
           {titleComponent}
         </div>
 
@@ -225,81 +225,220 @@ function ContainerScroll({ titleComponent, children, C }) {
 }
 
 /* ─── Dashboard Mockup ───────────────────────────────────────────── */
-function DashboardMockup({ C }) {
-  const trades = [
-    { pair:"NQ",      dir:"LONG",  r:"+2.4R", pnl:"+$312", ok:true  },
-    { pair:"XAUUSD",  dir:"SHORT", r:"+1.8R", pnl:"+$241", ok:true  },
-    { pair:"MNQ",     dir:"LONG",  r:"-1.0R", pnl:"-$134", ok:false },
-    { pair:"EUR/USD", dir:"LONG",  r:"+3.1R", pnl:"+$417", ok:true  },
-    { pair:"BTC",     dir:"SHORT", r:"+0.9R", pnl:"+$122", ok:true  },
+function DashboardMockup() {
+  const BG   = "#0f0f0f";
+  const BG2  = "#1a1a1a";
+  const BG3  = "#242424";
+  const TXT  = "#f0ede8";
+  const DIM  = "rgba(240,237,232,0.45)";
+  const DIM2 = "rgba(240,237,232,0.2)";
+  const BDR  = "rgba(255,255,255,0.08)";
+  const ACC  = "#e8cda9";
+
+  const PILL = { background:"linear-gradient(180deg,rgba(60,60,60,0.97) 0%,rgba(18,18,18,0.99) 55%,rgba(8,8,8,1) 100%)", borderRadius:18, padding:"8px", display:"flex", flexDirection:"column", gap:3, boxShadow:"0 6px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.12),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -2px 0 rgba(0,0,0,0.8)" };
+
+  const navItems = [
+    {icon:"◉",label:"Compte",active:true},
+    {icon:"＋",label:"Trade",active:false},
+    {icon:"≡",label:"Statistiques",active:false},
+    {icon:"◈",label:"Plan",active:false},
   ];
-  const pts = [[0,80],[60,72],[120,68],[180,58],[240,62],[300,50],[360,40],[420,32],[480,20],[540,28],[600,10]];
+
+  const trades = [
+    {pair:"NQ",    dir:"LONG",  emo:"Confiant", sess:"London",   pnl:"+312$", r:"+2.4R", ok:true },
+    {pair:"XAUUSD",dir:"SHORT", emo:"Neutre",   sess:"New York", pnl:"+241$", r:"+1.8R", ok:true },
+    {pair:"MNQ",   dir:"LONG",  emo:"Anxieux",  sess:"London",   pnl:"-134$", r:"-1.0R", ok:false},
+    {pair:"EUR/USD",dir:"LONG", emo:"Confiant", sess:"Overlap",  pnl:"+417$", r:"+3.1R", ok:true },
+    {pair:"BTC",   dir:"SHORT", emo:"Patient",  sess:"Asia",     pnl:"+122$", r:"+0.9R", ok:true },
+  ];
+
+  const pts = [[0,92],[55,80],[110,74],[165,62],[220,68],[275,52],[330,42],[385,34],[440,22],[495,30],[550,12],[600,6]];
   const pathD = pts.map((p,i)=>`${i===0?"M":"L"}${p[0]},${p[1]}`).join(" ");
 
-  const isDark = C.bg === "#060608";
+  const calDays = [
+    {d:1,v:null},{d:2,v:1},{d:3,v:-1},{d:4,v:null},{d:5,v:1},
+    {d:6,v:null},{d:7,v:null},{d:8,v:1},{d:9,v:1},{d:10,v:-1},
+    {d:11,v:1},{d:12,v:null},{d:13,v:1},{d:14,v:-1},{d:15,v:1},
+    {d:16,v:1},{d:17,v:null},{d:18,v:1},{d:19,v:1},{d:20,v:null},
+    {d:21,v:-1},{d:22,v:1},{d:23,v:null},{d:24,v:1},{d:25,v:1},
+    {d:26,v:null},{d:27,v:-1},{d:28,v:1},{d:29,v:1},{d:30,v:null},
+  ];
+
+  const sessions = [
+    {name:"London",  wr:78, pnl:"+$2 140"},
+    {name:"New York",wr:55, pnl:"+$893"},
+    {name:"Asia",    wr:40, pnl:"-$210"},
+    {name:"Overlap", wr:66, pnl:"+$580"},
+  ];
 
   return (
-    <div className="l-dash-card" style={{ width:"100%", height:520, background: isDark ? "#0e0f12" : "#ffffff", border:`1px solid ${C.border}`, borderRadius:20, overflow:"hidden", display:"flex", flexDirection:"column", boxShadow: isDark ? "0 40px 120px rgba(0,0,0,0.8),0 0 0 1px rgba(255,255,255,0.06)" : "0 40px 80px rgba(0,0,0,0.12),0 0 0 1px rgba(0,0,0,0.06)" }}>
-      {/* top bar */}
-      <div style={{ padding:"14px 20px", borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-          <img src="/fyltra-white.svg" style={{ width:18, height:18, opacity:0.6, filter: isDark ? "none" : "invert(1)" }} alt="" />
-          <span style={{ fontWeight:700, fontSize:12, letterSpacing:"0.06em", color:C.textDim }}>FYLTRA</span>
-          {["Compte","Trade","IA"].map(t => (
-            <div key={t} style={{ padding:"4px 12px", borderRadius:6, background:t==="Compte"?"rgba(240,180,60,0.12)":"transparent", border:`1px solid ${t==="Compte"?"rgba(240,180,60,0.2)":"transparent"}`, fontSize:11, color:t==="Compte"?"#F0B43C":C.textDim, cursor:"default" }}>{t}</div>
-          ))}
+    <div className="l-dash-card" style={{ width:"100%", height:540, background:BG, borderRadius:20, overflow:"hidden", display:"flex", flexDirection:"column", boxShadow:"0 40px 120px rgba(0,0,0,0.85),0 0 0 1px rgba(255,255,255,0.07)", fontFamily:"'Josefin Sans','Outfit',sans-serif" }}>
+
+      {/* ── macOS window bar ── */}
+      <div style={{ padding:"10px 16px", borderBottom:`1px solid ${BDR}`, display:"flex", alignItems:"center", justifyContent:"space-between", background:"rgba(255,255,255,0.015)", flexShrink:0 }}>
+        <div style={{ display:"flex", gap:7 }}>
+          {["#ff5f57","#febc2e","#28c840"].map(c=><div key={c} style={{ width:10,height:10,borderRadius:"50%",background:c,opacity:0.8 }}/>)}
         </div>
-        <div style={{ display:"flex", gap:8 }}>{["#ff5f57","#febc2e","#28c840"].map(c=><div key={c} style={{ width:10, height:10, borderRadius:"50%", background:c, opacity:0.7 }}/>)}</div>
+        <span style={{ fontSize:10, color:DIM2, letterSpacing:"0.12em", textTransform:"uppercase" }}>Fyltra · Journal</span>
+        <div style={{width:52}}/>
       </div>
 
-      {/* body */}
-      <div className="l-dash-body" style={{ flex:1, display:"grid", gridTemplateColumns:"1fr 300px", overflow:"hidden" }}>
-        <div style={{ padding:"20px", borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", gap:16, overflow:"hidden" }}>
-          <div className="l-stat-row" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10 }}>
-            {[{ label:"P&L Total",val:"+$4 217",sub:"+18.3%",up:true},{ label:"Win Rate",val:"68%",sub:"34/50",up:true},{ label:"Profit Factor",val:"2.4",sub:"bon",up:true},{ label:"Trades",val:"50",sub:"ce mois",up:null}].map(s=>(
-              <div key={s.label} style={{ background: isDark?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.03)", border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 14px" }}>
-                <div style={{ fontSize:9, color:C.textDimmer, marginBottom:4, letterSpacing:"0.06em", textTransform:"uppercase" }}>{s.label}</div>
-                <div style={{ fontSize:16, fontWeight:700, color:s.up===true?"#4ade80":s.up===false?"#f87171":C.text }}>{s.val}</div>
-                <div style={{ fontSize:9, color:C.textDimmer, marginTop:2 }}>{s.sub}</div>
+      {/* ── main layout ── */}
+      <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
+
+        {/* sidebar */}
+        <div className="l-dash-right" style={{ width:188, background:BG2, borderRight:`1px solid ${BDR}`, display:"flex", flexDirection:"column", padding:"16px 10px", gap:8, flexShrink:0 }}>
+          {/* logo */}
+          <div style={{ padding:"4px 8px 14px", borderBottom:`1px solid ${BDR}`, marginBottom:4 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <img src="/fyltra-white.svg" style={{ width:28,height:28,borderRadius:6,flexShrink:0 }} alt="" />
+              <div>
+                <div style={{ fontSize:13, fontWeight:700, color:TXT, letterSpacing:"0.04em", lineHeight:1 }}>FYLTRA</div>
+                <div style={{ fontSize:6.5, color:DIM2, letterSpacing:"0.18em", textTransform:"uppercase", marginTop:2 }}>Carnet de santé trading</div>
+              </div>
+            </div>
+          </div>
+
+          {/* main pill */}
+          <div style={PILL}>
+            {navItems.map(item=>(
+              <div key={item.label} style={{ display:"flex", alignItems:"center", gap:10, padding:item.active?"8px 12px":"8px 10px", borderRadius:12, background:item.active?"radial-gradient(ellipse at 50% 35%,rgba(252,252,252,0.92) 0%,rgba(215,215,215,0.85) 55%,rgba(200,200,200,0.75) 100%)":"transparent", boxShadow:item.active?"0 0 24px 6px rgba(255,255,255,0.18),0 4px 14px rgba(0,0,0,0.4)":"none", transition:"all .2s" }}>
+                <span style={{ fontSize:13, color:item.active?"#111":"rgba(255,255,255,0.35)", width:18, textAlign:"center", lineHeight:1 }}>{item.icon}</span>
+                <span style={{ fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", fontWeight:item.active?700:300, color:item.active?"#222":"rgba(255,255,255,0.35)", whiteSpace:"nowrap" }}>{item.label}</span>
               </div>
             ))}
           </div>
-          <div style={{ flex:1, background: isDark?"rgba(255,255,255,0.02)":"rgba(0,0,0,0.02)", border:`1px solid ${C.border}`, borderRadius:12, padding:"16px", minHeight:0 }}>
-            <div style={{ fontSize:10, fontWeight:600, color:C.textDim, marginBottom:10, letterSpacing:"0.06em", textTransform:"uppercase" }}>Equity Curve</div>
-            <svg width="100%" height="120" viewBox="0 0 600 100" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="rgba(240,180,60,0.22)"/>
-                  <stop offset="100%" stopColor="rgba(240,180,60,0)"/>
-                </linearGradient>
-              </defs>
-              <path d={`${pathD} L600,100 L0,100 Z`} fill="url(#cg)"/>
-              <path d={pathD} fill="none" stroke="#F0B43C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="600" style={{ animation:"lChartLine 2s ease forwards" }}/>
-              {pts.filter((_,i)=>i%2===0).map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3" fill="#F0B43C" opacity="0.6"/>)}
-            </svg>
+
+          {/* IA pill */}
+          <div style={PILL}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:12 }}>
+              <span style={{ fontSize:13, color:"rgba(255,255,255,0.35)", width:18, textAlign:"center" }}>◆</span>
+              <span style={{ fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", fontWeight:300, color:"rgba(255,255,255,0.35)" }}>IA</span>
+            </div>
+          </div>
+
+          {/* settings pill */}
+          <div style={{ ...PILL, marginTop:"auto" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:12 }}>
+              <span style={{ fontSize:13, color:"rgba(255,255,255,0.35)", width:18, textAlign:"center" }}>◎</span>
+              <span style={{ fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", fontWeight:300, color:"rgba(255,255,255,0.35)" }}>Paramètres</span>
+            </div>
           </div>
         </div>
 
-        <div className="l-dash-right" style={{ padding:"16px", display:"flex", flexDirection:"column" }}>
-          <div style={{ fontSize:9, fontWeight:600, color:C.textDimmer, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:12 }}>Derniers trades</div>
-          {trades.map((t,i)=>(
-            <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 0", borderBottom:`1px solid ${C.border}` }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                <div style={{ width:6, height:6, borderRadius:"50%", background:t.ok?"#4ade80":"#f87171" }}/>
-                <div>
-                  <div style={{ fontSize:12, fontWeight:600, color:C.text }}>{t.pair}</div>
-                  <div style={{ fontSize:9, color:C.textDim }}>{t.dir}</div>
+        {/* main content */}
+        <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
+          {/* header */}
+          <div style={{ padding:"10px 16px 0", flexShrink:0 }}>
+            <div style={{ fontSize:8, color:DIM2, letterSpacing:"0.2em", textTransform:"uppercase", marginBottom:2 }}>Tableau de bord</div>
+            <div style={{ fontSize:14, fontWeight:700, color:TXT, letterSpacing:"-0.01em" }}>Performance</div>
+          </div>
+
+          {/* scroll area */}
+          <div style={{ flex:1, padding:"10px 16px 14px", overflowY:"auto", display:"flex", gap:12, flexDirection:"column" }}>
+
+            {/* stat cards */}
+            <div className="l-stat-row" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, flexShrink:0 }}>
+              {[
+                {l:"P&L Total",  v:"+$4 217", sub:"+18.3%", color:"#4ade80"},
+                {l:"Win Rate",   v:"68%",     sub:"34 / 50",color:"#4ade80"},
+                {l:"RR Moyen",   v:"2.4:1",   sub:"bon",    color:DIM},
+                {l:"Bilan",      v:"34W/16L", sub:"ce mois",color:TXT},
+              ].map(s=>(
+                <div key={s.l} style={{ background:BG3, border:`1px solid ${BDR}`, borderRadius:8, padding:"9px 10px", boxShadow:"0 4px 16px rgba(0,0,0,0.45),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.22)" }}>
+                  <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>{s.l}</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:s.color, lineHeight:1 }}>{s.v}</div>
+                  <div style={{ fontSize:7, color:DIM2, marginTop:2 }}>{s.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* chart + calendar row */}
+            <div style={{ display:"grid", gridTemplateColumns:"1.4fr 1fr", gap:10, flexShrink:0 }}>
+              {/* equity curve */}
+              <div style={{ background:BG2, border:`1px solid ${BDR}`, borderRadius:10, padding:"12px", boxShadow:"0 4px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.18)" }}>
+                <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:8 }}>Évolution P&L</div>
+                <svg width="100%" height="72" viewBox="0 0 600 100" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="rgba(232,205,169,0.22)"/>
+                      <stop offset="100%" stopColor="rgba(232,205,169,0)"/>
+                    </linearGradient>
+                  </defs>
+                  <path d={`${pathD} L600,100 L0,100 Z`} fill="url(#cg2)"/>
+                  <path d={pathD} fill="none" stroke={ACC} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="800" style={{ animation:"lChartLine 2.2s ease forwards" }}/>
+                  {pts.filter((_,i)=>i%3===0).map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3.5" fill={ACC} opacity="0.5"/>)}
+                </svg>
+              </div>
+
+              {/* calendar */}
+              <div style={{ background:BG2, border:`1px solid ${BDR}`, borderRadius:10, padding:"10px 12px", boxShadow:"0 4px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.18)" }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:7 }}>
+                  <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.14em" }}>Avril 2025</div>
+                  <div style={{ display:"flex", gap:6 }}>
+                    <span style={{ fontSize:9, color:DIM2, cursor:"default" }}>‹</span>
+                    <span style={{ fontSize:9, color:DIM2, cursor:"default" }}>›</span>
+                  </div>
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2 }}>
+                  {["L","M","M","J","V","S","D"].map(d=><div key={d} style={{ fontSize:6, color:DIM2, textAlign:"center", paddingBottom:2 }}>{d}</div>)}
+                  {/* 2 empty cells (Tue start) */}
+                  <div/><div/>
+                  {calDays.map(({d,v})=>(
+                    <div key={d} style={{ aspectRatio:"1", borderRadius:3, display:"flex", alignItems:"center", justifyContent:"center", fontSize:6, fontWeight:600, background:v===1?"rgba(74,222,128,0.18)":v===-1?"rgba(248,113,113,0.18)":"rgba(255,255,255,0.04)", color:v===1?"#4ade80":v===-1?"#f87171":DIM2, border:`1px solid ${v===1?"rgba(74,222,128,0.15)":v===-1?"rgba(248,113,113,0.15)":"transparent"}` }}>{d}</div>
+                  ))}
                 </div>
               </div>
-              <div style={{ textAlign:"right" }}>
-                <div style={{ fontSize:12, fontWeight:600, color:t.ok?"#4ade80":"#f87171" }}>{t.pnl}</div>
-                <div style={{ fontSize:9, color:C.textDimmer, fontFamily:"'JetBrains Mono',monospace" }}>{t.r}</div>
+            </div>
+
+            {/* sessions + trades row */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, flexShrink:0 }}>
+              {/* sessions */}
+              <div style={{ background:BG2, border:`1px solid ${BDR}`, borderRadius:10, padding:"12px", boxShadow:"0 4px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.18)" }}>
+                <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:9 }}>Performance par session</div>
+                {sessions.map(s=>(
+                  <div key={s.name} style={{ marginBottom:8 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
+                      <span style={{ fontSize:8, color:TXT, letterSpacing:"0.06em", textTransform:"uppercase" }}>{s.name}</span>
+                      <span style={{ fontSize:8, color:s.pnl.startsWith("+")?"#4ade80":"#f87171", fontWeight:600 }}>{s.wr}% · {s.pnl}</span>
+                    </div>
+                    <div style={{ height:2, background:"rgba(255,255,255,0.06)", borderRadius:2 }}>
+                      <div style={{ width:`${s.wr}%`, height:"100%", borderRadius:2, background:s.wr>=60?"#4ade80":"rgba(248,113,113,0.7)", transition:"width .8s" }}/>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* trades */}
+              <div style={{ background:BG2, border:`1px solid ${BDR}`, borderRadius:10, padding:"12px", boxShadow:"0 4px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.18)" }}>
+                <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:9 }}>Derniers trades</div>
+                {trades.map((t,i)=>(
+                  <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", paddingBottom:6, marginBottom:6, borderBottom:`1px solid ${i<trades.length-1?BDR:"transparent"}` }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                      <div style={{ width:5,height:5,borderRadius:"50%",background:t.ok?"#4ade80":"#f87171",flexShrink:0 }}/>
+                      <div>
+                        <div style={{ fontSize:9, fontWeight:600, color:TXT, lineHeight:1 }}>{t.pair} · <span style={{ color:DIM, fontWeight:300 }}>{t.dir}</span></div>
+                        <div style={{ fontSize:7, color:DIM2, marginTop:1 }}>{t.sess} · {t.emo}</div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign:"right" }}>
+                      <div style={{ fontSize:9, fontWeight:600, color:t.ok?"#4ade80":"#f87171", lineHeight:1 }}>{t.pnl}</div>
+                      <div style={{ fontSize:7, color:DIM2, marginTop:1 }}>{t.r}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-          <div style={{ marginTop:12, background:"rgba(240,180,60,0.06)", border:"1px solid rgba(240,180,60,0.15)", borderRadius:10, padding:"12px" }}>
-            <div style={{ fontSize:9, color:"#F0B43C", fontWeight:600, marginBottom:6, letterSpacing:"0.06em" }}>◆ IA COACH</div>
-            <div style={{ fontSize:10, color:C.textDim, lineHeight:1.6 }}>London + Confiant = 78% WR. Évite le Vendredi.</div>
+
+            {/* IA coach banner */}
+            <div style={{ background:`rgba(232,205,169,0.05)`, border:`1px solid rgba(232,205,169,0.14)`, borderRadius:10, padding:"10px 14px", display:"flex", alignItems:"flex-start", gap:10, flexShrink:0 }}>
+              <span style={{ fontSize:12, color:ACC, lineHeight:1, marginTop:1 }}>◆</span>
+              <div>
+                <div style={{ fontSize:8, color:ACC, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:3 }}>IA Coach · LLaMA 3.3 70B</div>
+                <div style={{ fontSize:9, color:DIM, lineHeight:1.55 }}>London + Confiant → <strong style={{color:TXT}}>78% WR</strong>. Évite le <strong style={{color:"#f87171"}}>Vendredi</strong> (P&L cumulé: -$312). Si Anxieux, passe ton tour.</div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -312,9 +451,9 @@ function GlassCard({ icon, title, desc, delay = 0, C }) {
   const [h, setH] = useState(false);
   return (
     <R delay={delay}>
-      <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{ background:h?C.cardBgH:C.cardBg, border:`1px solid ${h?"rgba(240,180,60,0.35)":C.border}`, borderRadius:18, padding:"28px 24px", transition:"all .32s cubic-bezier(.16,1,.3,1)", transform:h?"translateY(-6px)":"none", boxShadow:h?"0 24px 60px rgba(0,0,0,0.15),0 0 0 1px rgba(240,180,60,0.1)":"0 4px 20px rgba(0,0,0,0.06)", cursor:"default", position:"relative", overflow:"hidden" }}>
-        {h && <div style={{ position:"absolute", top:-40, right:-40, width:120, height:120, borderRadius:"50%", background:"radial-gradient(circle,rgba(240,180,60,0.1) 0%,transparent 70%)", pointerEvents:"none" }}/>}
-        <div style={{ width:42, height:42, borderRadius:11, background:h?"rgba(240,180,60,0.15)":C.cardBg, border:`1px solid ${h?"rgba(240,180,60,0.25)":C.border}`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:18, fontSize:20, transition:"all .3s", color:C.text }}>{icon}</div>
+      <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{ background:h?C.cardBgH:C.cardBg, border:`1px solid ${h?"rgba(232,205,169,0.35)":C.border}`, borderRadius:18, padding:"28px 24px", transition:"all .32s cubic-bezier(.16,1,.3,1)", transform:h?"translateY(-6px)":"none", boxShadow:h?"0 24px 60px rgba(0,0,0,0.15),0 0 0 1px rgba(232,205,169,0.1)":"0 4px 20px rgba(0,0,0,0.06)", cursor:"default", position:"relative", overflow:"hidden" }}>
+        {h && <div style={{ position:"absolute", top:-40, right:-40, width:120, height:120, borderRadius:"50%", background:"radial-gradient(circle,rgba(232,205,169,0.1) 0%,transparent 70%)", pointerEvents:"none" }}/>}
+        <div style={{ width:42, height:42, borderRadius:11, background:h?"rgba(232,205,169,0.15)":C.cardBg, border:`1px solid ${h?"rgba(232,205,169,0.25)":C.border}`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:18, fontSize:20, transition:"all .3s", color:C.text }}>{icon}</div>
         <h3 style={{ fontWeight:600, fontSize:16, marginBottom:8, color:C.text }}>{title}</h3>
         <p style={{ fontSize:13, lineHeight:1.7, color:C.textDim }}>{desc}</p>
       </div>
@@ -380,7 +519,7 @@ function AuthModal({ onClose, navigate, initialMode = "login" }) {
     setLoading(false);
   };
 
-  const gold = "#F0B43C";
+  const gold = "#e8cda9";
   const fieldStyle = {
     width:"100%", background:"rgba(255,255,255,0.04)", border:"1px solid rgba(255,255,255,0.1)",
     borderRadius:10, padding:"13px 16px", color:"#fff", fontFamily:"'Outfit',sans-serif",
@@ -419,9 +558,9 @@ function AuthModal({ onClose, navigate, initialMode = "login" }) {
             <button key={m} onClick={()=>{ setMode(m); setError(""); setSuccess(""); }}
               style={{ flex:1, padding:"9px 0", borderRadius:8, border:"none", cursor:"pointer", fontFamily:"'Outfit',sans-serif",
                 fontWeight:600, fontSize:13, transition:"all .2s",
-                background: mode===m ? "rgba(240,180,60,0.15)" : "transparent",
+                background: mode===m ? "rgba(232,205,169,0.15)" : "transparent",
                 color: mode===m ? gold : "rgba(255,255,255,0.35)",
-                boxShadow: mode===m ? `inset 0 0 0 1px rgba(240,180,60,0.25)` : "none" }}>
+                boxShadow: mode===m ? `inset 0 0 0 1px rgba(232,205,169,0.25)` : "none" }}>
               {l}
             </button>
           ))}
@@ -430,13 +569,13 @@ function AuthModal({ onClose, navigate, initialMode = "login" }) {
         {/* fields */}
         <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:20 }}>
           <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}
-            style={fieldStyle} onFocus={e=>e.target.style.borderColor="rgba(240,180,60,0.4)"}
+            style={fieldStyle} onFocus={e=>e.target.style.borderColor="rgba(232,205,169,0.4)"}
             onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
           <div style={{ position:"relative" }}>
             <input type={showPwd?"text":"password"} placeholder="Mot de passe" value={password}
               onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}
               style={{...fieldStyle, paddingRight:46}}
-              onFocus={e=>e.target.style.borderColor="rgba(240,180,60,0.4)"}
+              onFocus={e=>e.target.style.borderColor="rgba(232,205,169,0.4)"}
               onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
             <button onClick={()=>setShowPwd(p=>!p)} style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)",
               background:"none", border:"none", cursor:"pointer", color:"rgba(255,255,255,0.3)", fontSize:12, padding:4 }}>
@@ -449,10 +588,10 @@ function AuthModal({ onClose, navigate, initialMode = "login" }) {
         {success && <div style={{ background:"rgba(80,200,100,0.1)", border:"1px solid rgba(80,200,100,0.2)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#80e090", marginBottom:14 }}>{success}</div>}
 
         <button onClick={submit} disabled={loading}
-          style={{ width:"100%", background:`linear-gradient(135deg,${gold},#E89020)`, color:"#000", border:"none",
+          style={{ width:"100%", background:`linear-gradient(135deg,${gold},#c9aa82)`, color:"#000", border:"none",
             borderRadius:12, padding:"14px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14,
             cursor:loading?"wait":"pointer", opacity:loading?0.7:1, transition:"all .22s",
-            boxShadow:"0 0 28px rgba(240,180,60,0.2)" }}>
+            boxShadow:"0 0 28px rgba(232,205,169,0.2)" }}>
           {loading ? "..." : mode === "login" ? "Se connecter →" : "Créer mon compte →"}
         </button>
       </div>
@@ -484,7 +623,7 @@ export default function Landing() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const gold = "#F0B43C";
+  const gold = "#e8cda9";
 
   return (
     <div onMouseMove={e => setMouse({ x:e.clientX, y:e.clientY })} style={{ fontFamily:"'Outfit',sans-serif", background:C.bg, color:C.text, minHeight:"100vh", transition:"background .4s,color .4s" }}>
@@ -493,7 +632,7 @@ export default function Landing() {
       {showAuth && <AuthModal onClose={()=>setShowAuth(false)} navigate={navigate} initialMode={authMode}/>}
 
       {/* cursor glow */}
-      <div style={{ position:"fixed", left:mouse.x-220, top:mouse.y-220, width:440, height:440, borderRadius:"50%", background:`radial-gradient(circle,rgba(240,180,60,0.05) 0%,transparent 70%)`, pointerEvents:"none", zIndex:9999, transition:"left .08s,top .08s" }}/>
+      <div style={{ position:"fixed", left:mouse.x-220, top:mouse.y-220, width:440, height:440, borderRadius:"50%", background:`radial-gradient(circle,rgba(232,205,169,0.05) 0%,transparent 70%)`, pointerEvents:"none", zIndex:9999, transition:"left .08s,top .08s" }}/>
 
       {/* ─── NAV ─── */}
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:500, padding:"0 5vw", height:scrolled?58:72, display:"flex", alignItems:"center", justifyContent:"space-between", transition:"all .4s cubic-bezier(.16,1,.3,1)", background:scrolled?C.navBg:"transparent", backdropFilter:scrolled?"blur(20px)":"none", borderBottom:scrolled?`1px solid ${C.border}`:"none" }}>
@@ -514,14 +653,14 @@ export default function Landing() {
 
           {/* theme toggle */}
           <button onClick={() => setDarkMode(d=>!d)} style={{ width:36, height:36, borderRadius:10, background:C.cardBg, border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center", color:C.text, cursor:"pointer", transition:"all .22s", marginLeft:4 }}
-            onMouseEnter={e=>{ e.currentTarget.style.background=C.cardBgH; e.currentTarget.style.borderColor=`rgba(240,180,60,0.35)`; }}
+            onMouseEnter={e=>{ e.currentTarget.style.background=C.cardBgH; e.currentTarget.style.borderColor=`rgba(232,205,169,0.35)`; }}
             onMouseLeave={e=>{ e.currentTarget.style.background=C.cardBg; e.currentTarget.style.borderColor=C.border; }}>
             {darkMode ? <SunIcon /> : <MoonIcon />}
           </button>
 
-          <button onClick={() => { setAuthMode("login"); setShowAuth(true); }} style={{ marginLeft:4, background:"rgba(240,180,60,0.12)", border:"1px solid rgba(240,180,60,0.3)", borderRadius:10, padding:"9px 20px", fontFamily:"'Outfit',sans-serif", fontWeight:600, fontSize:13, color:gold, cursor:"pointer", transition:"all .22s" }}
-            onMouseEnter={e=>{ e.currentTarget.style.background="rgba(240,180,60,0.22)"; e.currentTarget.style.boxShadow="0 0 20px rgba(240,180,60,0.2)"; }}
-            onMouseLeave={e=>{ e.currentTarget.style.background="rgba(240,180,60,0.12)"; e.currentTarget.style.boxShadow="none"; }}>
+          <button onClick={() => { setAuthMode("login"); setShowAuth(true); }} style={{ marginLeft:4, background:"rgba(232,205,169,0.12)", border:"1px solid rgba(232,205,169,0.3)", borderRadius:10, padding:"9px 20px", fontFamily:"'Outfit',sans-serif", fontWeight:600, fontSize:13, color:gold, cursor:"pointer", transition:"all .22s" }}
+            onMouseEnter={e=>{ e.currentTarget.style.background="rgba(232,205,169,0.22)"; e.currentTarget.style.boxShadow="0 0 20px rgba(232,205,169,0.2)"; }}
+            onMouseLeave={e=>{ e.currentTarget.style.background="rgba(232,205,169,0.12)"; e.currentTarget.style.boxShadow="none"; }}>
             Se connecter
           </button>
         </div>
@@ -530,9 +669,12 @@ export default function Landing() {
       {/* ─── CONTAINER SCROLL HERO ─── */}
       <ContainerScroll C={C}
         titleComponent={
-          <h1 className="l-hero-title" style={{ fontWeight:900, fontSize:"clamp(64px,14vw,180px)", lineHeight:1, letterSpacing:"-0.045em", background:`linear-gradient(160deg,${C.text} 40%,${darkMode?"rgba(255,255,255,0.45)":"rgba(0,0,0,0.35)"} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", animation:"lFadeUp .9s .1s both" }}>
-            FYLTRA
-          </h1>
+          <div style={{ animation:"lFadeUp .9s .1s both" }}>
+            <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:"clamp(9px,1vw,11px)", letterSpacing:"0.25em", textTransform:"uppercase", color:"#e8cda9", marginBottom:14, opacity:0.7 }}>FYLTRA · JOURNAL DE TRADING</div>
+            <h1 className="l-hero-title" style={{ fontWeight:900, fontSize:"clamp(30px,5.5vw,72px)", lineHeight:1.1, letterSpacing:"-0.03em", background:`linear-gradient(160deg,${C.text} 40%,${darkMode?"rgba(255,255,255,0.45)":"rgba(0,0,0,0.35)"} 100%)`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", maxWidth:800 }}>
+              Votre carnet de santé trading.
+            </h1>
+          </div>
         }
       >
         <DashboardMockup C={C} />
@@ -545,7 +687,7 @@ export default function Landing() {
       <div style={{ background:C.tickerBg, borderTop:`1px solid ${C.tickerBorder}`, borderBottom:`1px solid ${C.tickerBorder}`, padding:"13px 0", overflow:"hidden" }}>
         <div style={{ display:"flex", width:"max-content", animation:"lTicker 35s linear infinite" }}>
           {[1,2].map(n => TICKER.map(item => (
-            <span key={`${n}-${item}`} style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, fontWeight:500, color:"rgba(240,180,60,0.55)", letterSpacing:"0.2em", textTransform:"uppercase", paddingRight:64, whiteSpace:"nowrap" }}>{item}</span>
+            <span key={`${n}-${item}`} style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, fontWeight:500, color:"rgba(232,205,169,0.55)", letterSpacing:"0.2em", textTransform:"uppercase", paddingRight:64, whiteSpace:"nowrap" }}>{item}</span>
           )))}
         </div>
       </div>
@@ -561,7 +703,7 @@ export default function Landing() {
               </div>
               <h2 style={{ fontWeight:800, fontSize:"clamp(28px,4vw,52px)", lineHeight:1.1, letterSpacing:"-0.025em", color:C.text }}>
                 Tout ce qu'il faut pour{" "}
-                <span style={{ background:"linear-gradient(135deg,#F0B43C,#FFD880)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>trader avec précision.</span>
+                <span style={{ background:"linear-gradient(135deg,#e8cda9,#e8cda9)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>trader avec précision.</span>
               </h2>
             </div>
           </R>
@@ -592,10 +734,10 @@ export default function Landing() {
       <section className="l-section" style={{ padding:"120px 5vw", textAlign:"center" }}>
         <div style={{ maxWidth:760, margin:"0 auto" }}>
           <R>
-            <div style={{ fontSize:36, color:"rgba(240,180,60,0.35)", marginBottom:20 }}>"</div>
+            <div style={{ fontSize:36, color:"rgba(232,205,169,0.35)", marginBottom:20 }}>"</div>
             <blockquote style={{ fontWeight:600, fontSize:"clamp(18px,3vw,34px)", lineHeight:1.45, letterSpacing:"-0.02em", color:C.text }}>
               Les meilleurs traders ne sont pas ceux qui ont les meilleures entrées. Ce sont ceux qui{" "}
-              <span style={{ background:"linear-gradient(135deg,#F0B43C,#FFD880)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>se connaissent le mieux.</span>
+              <span style={{ background:"linear-gradient(135deg,#e8cda9,#e8cda9)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>se connaissent le mieux.</span>
             </blockquote>
           </R>
         </div>
@@ -611,7 +753,7 @@ export default function Landing() {
               </div>
               <h2 style={{ fontWeight:800, fontSize:"clamp(28px,4vw,50px)", letterSpacing:"-0.025em", color:C.text }}>
                 Simple.{" "}
-                <span style={{ background:"linear-gradient(135deg,#F0B43C,#FFD880)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Transparent.</span>
+                <span style={{ background:"linear-gradient(135deg,#e8cda9,#e8cda9)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Transparent.</span>
               </h2>
             </div>
           </R>
@@ -624,8 +766,8 @@ export default function Landing() {
                   {["Comptes illimités","Trades illimités","IA Coach — LLaMA 3.3 70B","Statistiques avancées","Sync multi-appareils","Layout personnalisable","Connexion MT5 / MetaAPI","Mises à jour incluses"].map((item,i,arr)=>(
                     <div key={item} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 0", borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none" }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="11" stroke="rgba(240,180,60,0.3)" strokeWidth="1.5"/>
-                        <polyline points="7 12 10.5 15.5 17 9" stroke="#F0B43C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="12" r="11" stroke="rgba(232,205,169,0.3)" strokeWidth="1.5"/>
+                        <polyline points="7 12 10.5 15.5 17 9" stroke="#e8cda9" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       <span style={{ fontSize:13, fontWeight:400, color:C.textDim }}>{item}</span>
                     </div>
@@ -640,18 +782,18 @@ export default function Landing() {
       {/* ─── CTA ─── */}
       <section className="l-section" style={{ padding:"150px 5vw", textAlign:"center", position:"relative", overflow:"hidden", borderTop:`1px solid ${C.border}` }}>
         <BGPattern variant="diagonal-stripes" mask="fade-y" size={24} fill={C.patternFill} />
-        <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:600, height:600, borderRadius:"50%", background:"radial-gradient(circle,rgba(240,180,60,0.055) 0%,transparent 65%)", pointerEvents:"none" }}/>
+        <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:600, height:600, borderRadius:"50%", background:"radial-gradient(circle,rgba(232,205,169,0.055) 0%,transparent 65%)", pointerEvents:"none" }}/>
         <R>
           <div style={{ position:"relative", zIndex:1 }}>
             <h2 style={{ fontWeight:800, fontSize:"clamp(32px,6vw,80px)", lineHeight:1.05, letterSpacing:"-0.03em", marginBottom:16, color:C.text }}>
               Votre journal.<br/>
-              <span style={{ background:"linear-gradient(135deg,#F0B43C 0%,#FFD880 50%,#E89020 100%)", backgroundSize:"200% 200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", animation:"lGrad 4s ease infinite" }}>Votre progression.</span>
+              <span style={{ background:"linear-gradient(135deg,#e8cda9 0%,#e8cda9 50%,#c9aa82 100%)", backgroundSize:"200% 200%", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", animation:"lGrad 4s ease infinite" }}>Votre progression.</span>
             </h2>
             <p style={{ fontSize:14, color:C.textDim, marginBottom:44 }}>$24.99 / mois · Résiliable à tout moment.</p>
             <div className="l-cta-btns" style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-              <button onClick={() => { setAuthMode("signup"); setShowAuth(true); }} style={{ background:"linear-gradient(135deg,#F0B43C,#E89020)", color:"#000", border:"none", borderRadius:14, padding:"17px 50px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:15, cursor:"pointer", boxShadow:"0 0 40px rgba(240,180,60,0.28),0 4px 20px rgba(0,0,0,0.2)", transition:"all .25s cubic-bezier(.16,1,.3,1)" }}
-                onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px) scale(1.03)"; e.currentTarget.style.boxShadow="0 0 60px rgba(240,180,60,0.5),0 8px 28px rgba(0,0,0,0.3)"; }}
-                onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 0 40px rgba(240,180,60,0.28),0 4px 20px rgba(0,0,0,0.2)"; }}>
+              <button onClick={() => { setAuthMode("signup"); setShowAuth(true); }} style={{ background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#000", border:"none", borderRadius:14, padding:"17px 50px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:15, cursor:"pointer", boxShadow:"0 0 40px rgba(232,205,169,0.28),0 4px 20px rgba(0,0,0,0.2)", transition:"all .25s cubic-bezier(.16,1,.3,1)" }}
+                onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-3px) scale(1.03)"; e.currentTarget.style.boxShadow="0 0 60px rgba(232,205,169,0.5),0 8px 28px rgba(0,0,0,0.3)"; }}
+                onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 0 40px rgba(232,205,169,0.28),0 4px 20px rgba(0,0,0,0.2)"; }}>
                 Créer mon compte →
               </button>
             </div>
@@ -680,18 +822,18 @@ export default function Landing() {
 function PriceLeft({ onAuth, C }) {
   const [h, setH] = useState(false);
   return (
-    <div className="l-price-left" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{ padding:"48px 40px", background:h?"rgba(240,180,60,0.04)":C.cardBg, border:`1px solid ${h?"rgba(240,180,60,0.3)":"rgba(240,180,60,0.15)"}`, borderRadius:"18px 0 0 18px", position:"relative", overflow:"hidden", transition:"all .4s cubic-bezier(.16,1,.3,1)", boxShadow:h?"0 0 60px rgba(240,180,60,0.08)":"none" }}>
-      <div style={{ position:"absolute", top:-50, right:-50, width:180, height:180, borderRadius:"50%", background:"radial-gradient(circle,rgba(240,180,60,0.1) 0%,transparent 70%)", pointerEvents:"none" }}/>
-      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"rgba(240,180,60,0.5)", letterSpacing:"0.3em", textTransform:"uppercase", display:"block", marginBottom:32 }}>Accès complet</span>
+    <div className="l-price-left" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{ padding:"48px 40px", background:h?"rgba(232,205,169,0.04)":C.cardBg, border:`1px solid ${h?"rgba(232,205,169,0.3)":"rgba(232,205,169,0.15)"}`, borderRadius:"18px 0 0 18px", position:"relative", overflow:"hidden", transition:"all .4s cubic-bezier(.16,1,.3,1)", boxShadow:h?"0 0 60px rgba(232,205,169,0.08)":"none" }}>
+      <div style={{ position:"absolute", top:-50, right:-50, width:180, height:180, borderRadius:"50%", background:"radial-gradient(circle,rgba(232,205,169,0.1) 0%,transparent 70%)", pointerEvents:"none" }}/>
+      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"rgba(232,205,169,0.5)", letterSpacing:"0.3em", textTransform:"uppercase", display:"block", marginBottom:32 }}>Accès complet</span>
       <div style={{ display:"flex", alignItems:"flex-start", gap:4, marginBottom:4 }}>
         <span style={{ fontSize:20, color:C.textDim, marginTop:16, fontWeight:300 }}>$</span>
         <span style={{ fontWeight:800, fontSize:100, lineHeight:1, letterSpacing:"-0.04em", color:C.text }}>24</span>
         <span style={{ fontSize:32, color:C.textDim, marginTop:24, fontWeight:400 }}>.99</span>
       </div>
       <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.textDimmer, letterSpacing:"0.15em", display:"block", marginBottom:40 }}>PAR MOIS · RÉSILIABLE</span>
-      <button onClick={() => onAuth("signup")} style={{ width:"100%", background:"linear-gradient(135deg,#F0B43C,#E89020)", color:"#000", border:"none", borderRadius:12, padding:"14px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14, cursor:"pointer", boxShadow:"0 0 28px rgba(240,180,60,0.2)", transition:"all .22s cubic-bezier(.16,1,.3,1)" }}
-        onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 0 44px rgba(240,180,60,0.42)"; }}
-        onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 0 28px rgba(240,180,60,0.2)"; }}>
+      <button onClick={() => onAuth("signup")} style={{ width:"100%", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#000", border:"none", borderRadius:12, padding:"14px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14, cursor:"pointer", boxShadow:"0 0 28px rgba(232,205,169,0.2)", transition:"all .22s cubic-bezier(.16,1,.3,1)" }}
+        onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 0 44px rgba(232,205,169,0.42)"; }}
+        onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 0 28px rgba(232,205,169,0.2)"; }}>
         Commencer maintenant →
       </button>
       <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.textDimmer, textAlign:"center", marginTop:12, letterSpacing:"0.08em" }}>Aucune carte requise</div>
