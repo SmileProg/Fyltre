@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Navigate } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, PieChart, Pie, Cell, BarChart, Bar, CartesianGrid, LabelList, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
 import { supabase } from "./supabase";
 
@@ -3533,7 +3534,7 @@ ${recentTrades}`;
       <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.2em", textTransform:"uppercase" }}>Chargement...</div>
     </div>
   );
-  if (!user) return <AuthScreen />;
+  if (!user) return <Navigate to="/" replace />;
 
   return (
     <div style={{ minHeight:"100vh", background:C.bg, color:C.white, fontFamily:"'Josefin Sans',sans-serif" }}>
