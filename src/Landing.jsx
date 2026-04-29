@@ -488,6 +488,22 @@ function GlassCard({ icon, title, desc, delay = 0, C }) {
 }
 
 /* ─── ZoomParallaxFeatures ───────────────────────────────────────── */
+function TileCard({ icon, title, shadow }) {
+  return (
+    <div style={{
+      background: shadow.isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.84)",
+      border: `1px solid ${shadow.border}`,
+      borderRadius: 16, padding: "22px 22px",
+      boxShadow: shadow.isDark
+        ? "0 6px 24px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.08),inset 0 1px 0 rgba(255,255,255,0.26)"
+        : "0 6px 20px rgba(0,0,0,0.09),0 0 0 1px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.95)",
+    }}>
+      <div style={{ fontSize: 22, marginBottom: 10, color: shadow.text }}>{icon}</div>
+      <div style={{ fontWeight: 700, fontSize: 13, color: shadow.text, letterSpacing: "-0.01em" }}>{title}</div>
+    </div>
+  );
+}
+
 function ZoomParallaxFeatures({ C }) {
   const containerRef = useRef();
   const [prog, setProg] = useState(0);
@@ -504,106 +520,112 @@ function ZoomParallaxFeatures({ C }) {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const t = Math.min(1, prog / 0.72);
-  const e = t < 0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
-
+  const t  = Math.min(1, prog / 0.75);
+  const e  = t < 0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
   const isDark = C.bg === "#060608";
 
-  const cW  = 50 + 46 * e;
-  const cH  = 60 + 38 * e;
-  const cR  = 20 * (1 - e);
-  const sideOp = Math.max(0, 1 - e * 1.6);
+  /* Main card: closed card → full screen */
+  const cW = 22 + 74 * e;     // vw: 22 → 96
+  const cH = 36 + 56 * e;     // vh: 36 → 92
+  const cR = 18 * (1 - e);    // border-radius → 0
 
-  const shadow3d = (hover) => isDark
-    ? hover
-      ? "0 8px 32px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.1),inset 0 1px 0 rgba(255,255,255,0.32),0 -2px 24px rgba(255,255,255,0.06)"
-      : "0 4px 22px rgba(0,0,0,0.55),0 0 0 1px rgba(255,255,255,0.07),inset 0 1px 0 rgba(255,255,255,0.22)"
-    : hover
-      ? "0 8px 28px rgba(0,0,0,0.14),0 0 0 1px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.9)"
-      : "0 4px 16px rgba(0,0,0,0.08),0 0 0 1px rgba(0,0,0,0.04),inset 0 1px 0 rgba(255,255,255,0.8)";
+  /* Side cards fade when main expands */
+  const sideOp = Math.max(0, 1 - e * 1.9);
 
+  /* Content inside main: hidden until card is almost fully open */
+  const contentOp = Math.max(0, (e - 0.72) / 0.28);
+  const titleOp   = Math.max(0, 1 - e * 2.5);   // closed-card title fades as it opens
+
+  const shadow = { isDark, border: C.border, text: C.text };
+
+  /* 6 tiles in a tight polaroid collage around the main card */
+  /* bx/by = base offset from center (CSS string), dx/dy = drift on expand (px) */
   const tiles = [
-    { icon:"◉", title:"Multi-comptes",   style:{ top:"7%",    left:"2vw"  }, dx:-1, dy:-1 },
-    { icon:"◆", title:"IA Coach",        style:{ top:"7%",    right:"2vw" }, dx:1,  dy:-1 },
-    { icon:"▦", title:"Stats profondes", style:{ top:"39%",   left:"1vw"  }, dx:-1, dy:0  },
-    { icon:"◈", title:"Plan de trading", style:{ top:"39%",   right:"1vw" }, dx:1,  dy:0  },
-    { icon:"⊞", title:"Layout custom",   style:{ bottom:"7%", left:"2vw"  }, dx:-1, dy:1  },
-    { icon:"◎", title:"Sync temps réel", style:{ bottom:"7%", right:"2vw" }, dx:1,  dy:1  },
+    { icon:"◉", title:"Multi-comptes",   bx:"-24vw", by:"-15vh", rot:-3, dx:-70, dy:-45 },
+    { icon:"◆", title:"IA Coach",        bx:"-5vw",  by:"-19vh", rot:2,  dx:-10, dy:-65 },
+    { icon:"▦", title:"Stats profondes", bx:"16vw",  by:"-13vh", rot:-2, dx:65,  dy:-40 },
+    { icon:"◈", title:"Plan de trading", bx:"18vw",  by:"8vh",   rot:4,  dx:70,  dy:30  },
+    { icon:"⊞", title:"Layout custom",   bx:"-3vw",  by:"17vh",  rot:-2, dx:-5,  dy:65  },
+    { icon:"◎", title:"Sync temps réel", bx:"-22vw", by:"8vh",   rot:3,  dx:-70, dy:30  },
   ];
 
   return (
-    <div ref={containerRef} id="features" style={{ height:"300vh", position:"relative" }}>
-      <div style={{ position:"sticky", top:0, height:"100vh", overflow:"hidden", background:C.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+    <div ref={containerRef} id="features" style={{ height:"320vh", position:"relative" }}>
+      <div style={{
+        position:"sticky", top:0, height:"100vh", overflow:"hidden",
+        background:C.bg, display:"flex", alignItems:"center", justifyContent:"center",
+      }}>
         <BGPattern variant="dots" mask="fade-edges" size={32} fill={C.patternFill} />
 
-        {/* ── Surrounding title-only cards ── */}
-        {tiles.map(tile => {
-          const [hover, setHover] = useState(false);
-          return (
-            <div key={tile.title}
-              onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}
-              style={{
-                position:"absolute", ...tile.style, width:"clamp(140px,19vw,220px)", zIndex:2,
-                transform:`translate(${tile.dx*e*50}px,${tile.dy*e*36}px) scale(${1-e*0.08})`,
-                opacity:sideOp, pointerEvents:sideOp<0.05?"none":"auto",
-                transition:"box-shadow .3s",
-              }}>
-              <div style={{
-                background: isDark
-                  ? (hover?"rgba(255,255,255,0.06)":"rgba(255,255,255,0.03)")
-                  : (hover?"rgba(255,255,255,0.95)":"rgba(255,255,255,0.72)"),
-                border:`1px solid ${hover?"rgba(232,205,169,0.28)":C.border}`,
-                borderRadius:16, padding:"22px 22px",
-                boxShadow: shadow3d(hover),
-                transition:"all .28s cubic-bezier(.16,1,.3,1)",
-                transform: hover?"translateY(-4px) perspective(500px) rotateX(1.5deg)":"none",
-              }}>
-                <div style={{ fontSize:22, marginBottom:10, color:C.text }}>{tile.icon}</div>
-                <div style={{ fontWeight:700, fontSize:14, letterSpacing:"-0.01em", color:C.text }}>{tile.title}</div>
-              </div>
-            </div>
-          );
-        })}
+        {/* ── 6 surrounding title cards (collage) ── */}
+        {tiles.map(tile => (
+          <div key={tile.title} style={{
+            position:"absolute", top:"50%", left:"50%",
+            width:"clamp(118px,16vw,190px)",
+            transform:`translate(calc(-50% + ${tile.bx}), calc(-50% + ${tile.by})) translate(${tile.dx*e}px,${tile.dy*e}px) rotate(${tile.rot*(1-e)}deg) scale(${1-e*0.08})`,
+            opacity: sideOp,
+            zIndex: 2,
+            pointerEvents: sideOp < 0.05 ? "none" : "auto",
+          }}>
+            <TileCard icon={tile.icon} title={tile.title} shadow={shadow} />
+          </div>
+        ))}
 
-        {/* ── Main center card ── */}
+        {/* ── Main card (closed → opens on scroll) ── */}
         <div style={{
           position:"absolute", top:"50%", left:"50%",
           transform:"translate(-50%,-50%)",
           width:`${cW}vw`, height:`${cH}vh`,
-          borderRadius:cR, overflow:"hidden", zIndex:5,
+          borderRadius: cR, overflow:"hidden", zIndex:5,
           background: isDark ? "#0e0f12" : "#ffffff",
-          border: cR>1 ? `1px solid ${C.border}` : "none",
-          boxShadow: cR>1
-            ? (isDark
-                ? "0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.07),inset 0 1px 0 rgba(255,255,255,0.18)"
-                : "0 24px 60px rgba(0,0,0,0.12),0 0 0 1px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.85)")
+          border: cR > 0.5 ? `1px solid ${C.border}` : "none",
+          boxShadow: cR > 0.5
+            ? isDark
+              ? "0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.07),inset 0 1px 0 rgba(255,255,255,0.2)"
+              : "0 24px 60px rgba(0,0,0,0.13),0 0 0 1px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.9)"
             : "none",
         }}>
-          <div style={{ padding:"clamp(28px,4vw,52px)", height:"100%", overflowY:"auto" }}>
-            {/* header */}
-            <div style={{ marginBottom:28 }}>
-              <div style={{ display:"inline-block", background:isDark?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)", border:`1px solid ${C.border}`, borderRadius:100, padding:"5px 16px", marginBottom:14 }}>
+
+          {/* Closed-card state: just the title, centered */}
+          <div style={{
+            position:"absolute", inset:0,
+            display:"flex", alignItems:"center", justifyContent:"center",
+            padding:"24px", opacity: titleOp, pointerEvents: titleOp < 0.1 ? "none" : "auto",
+          }}>
+            <div style={{ textAlign:"center" }}>
+              <div style={{ fontSize:"clamp(13px,1.8vw,18px)", fontWeight:700, letterSpacing:"-0.02em", color:C.text, lineHeight:1.3 }}>
+                Tout ce qu'il faut<br/>pour trader<br/>
+                <span style={{ background:"linear-gradient(135deg,#e8cda9,#c9aa82)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>avec précision.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Open-card state: full feature grid */}
+          <div style={{
+            padding:"clamp(24px,4vw,52px)", height:"100%", overflowY:"auto",
+            opacity: contentOp, pointerEvents: contentOp < 0.2 ? "none" : "auto",
+          }}>
+            <div style={{ marginBottom:24 }}>
+              <div style={{ display:"inline-block", background:isDark?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)", border:`1px solid ${C.border}`, borderRadius:100, padding:"5px 16px", marginBottom:12 }}>
                 <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.textDim, letterSpacing:"0.2em", textTransform:"uppercase" }}>Fonctionnalités</span>
               </div>
-              <h2 style={{ fontWeight:800, fontSize:"clamp(20px,3vw,40px)", lineHeight:1.1, letterSpacing:"-0.025em", color:C.text }}>
+              <h2 style={{ fontWeight:800, fontSize:"clamp(20px,2.8vw,38px)", lineHeight:1.1, letterSpacing:"-0.025em", color:C.text }}>
                 Tout ce qu'il faut pour{" "}
                 <span style={{ background:"linear-gradient(135deg,#e8cda9,#c9aa82)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>trader avec précision.</span>
               </h2>
             </div>
-
-            {/* feature cards inside */}
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:12 }}>
-              {FEATURES.map((f,i) => (
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:11 }}>
+              {FEATURES.map(f => (
                 <div key={f.title} style={{
                   background: isDark?"rgba(255,255,255,0.025)":"rgba(0,0,0,0.025)",
-                  border:`1px solid ${C.border}`, borderRadius:13, padding:"18px 18px",
+                  border:`1px solid ${C.border}`, borderRadius:12, padding:"17px",
                   boxShadow: isDark
                     ? "0 4px 14px rgba(0,0,0,0.4),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.18)"
                     : "0 3px 10px rgba(0,0,0,0.06),0 0 0 1px rgba(0,0,0,0.03),inset 0 1px 0 rgba(255,255,255,0.7)",
                 }}>
-                  <div style={{ fontSize:18, marginBottom:8, color:C.text }}>{f.icon}</div>
+                  <div style={{ fontSize:17, marginBottom:7, color:C.text }}>{f.icon}</div>
                   <div style={{ fontWeight:600, fontSize:13, marginBottom:5, color:C.text }}>{f.title}</div>
-                  <div style={{ fontSize:12, color:C.textDim, lineHeight:1.65 }}>{f.desc}</div>
+                  <div style={{ fontSize:11.5, color:C.textDim, lineHeight:1.6 }}>{f.desc}</div>
                 </div>
               ))}
             </div>
