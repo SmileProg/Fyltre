@@ -254,7 +254,7 @@ function Sidebar({ view, setView, darkMode, onSignOut, nickname, firstName }) {
       {/* Logo */}
       <div style={{ padding:"0 20px 24px", borderBottom:`1px solid ${C.border}` }}>
         <div style={{ marginBottom:12 }}>
-          <img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{height:76,width:"auto"}} alt="Fyltra"/>
+          <img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{height:38,width:"auto"}} alt="Fyltra"/>
           <div style={{ fontSize:8, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300, marginTop:3 }}>Carnet de santé trading</div>
         </div>
         {(nickname || firstName) && (
@@ -729,7 +729,7 @@ function AuthScreen() {
       {/* ── NAV ── */}
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:200, display:"flex", alignItems:"center", justifyContent:"space-between", padding:`0 ${PAD}`, height:56, background:"rgba(6,6,9,0.88)", backdropFilter:"blur(20px)", borderBottom:`1px solid ${BDR}` }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <img src="/fyltra-logo-black.svg" style={{ height:60, width:"auto" }} alt="Fyltra" />
+          <img src="/fyltra-logo-black.svg" style={{ height:30, width:"auto" }} alt="Fyltra" />
         </div>
         <div style={{ display:"flex", gap:28, position:"absolute", left:"50%", transform:"translateX(-50%)" }}>
           {["Features","Pricing","About"].map(l => (
@@ -872,7 +872,7 @@ function AuthScreen() {
       {/* ── FOOTER ── */}
       <footer style={{ padding:`22px ${PAD}`, borderTop:`1px solid ${BDR}`, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-          <img src="/fyltra-logo-black.svg" style={{ height:40, width:"auto", opacity:0.5 }} alt="Fyltra" />
+          <img src="/fyltra-logo-black.svg" style={{ height:20, width:"auto", opacity:0.5 }} alt="Fyltra" />
         </div>
         <span style={{ fontSize:10, color:DIM2, letterSpacing:"0.08em" }}>© 2025 Fyltra · Trading Journal</span>
       </footer>
@@ -883,7 +883,7 @@ function AuthScreen() {
           <div onClick={e=>e.stopPropagation()} style={{ background:"rgba(10,10,16,0.98)", border:CARD_BDR, borderRadius:20, padding:"40px 36px", maxWidth:380, width:"100%", boxShadow:"0 40px 80px rgba(0,0,0,0.85)", boxSizing:"border-box" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:32 }}>
               <div>
-                <img src="/fyltra-logo-black.svg" style={{ height:56, width:"auto" }} alt="Fyltra" />
+                <img src="/fyltra-logo-black.svg" style={{ height:28, width:"auto" }} alt="Fyltra" />
                 <div style={{ fontSize:10, color:DIM, letterSpacing:"0.15em", textTransform:"uppercase", marginTop:3, fontFamily:JF }}>Connexion</div>
               </div>
               <button onClick={()=>setAuthModal(false)} style={{ background:"none", border:"none", color:DIM, cursor:"pointer", fontSize:22, lineHeight:1, padding:0 }}>×</button>
@@ -3772,7 +3772,7 @@ ${recentTrades}`;
 
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px"}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Version</div>
-        <div style={{fontSize:13,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}><img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{height:32,width:"auto",verticalAlign:"middle"}} alt="Fyltra"/> v1.0 · Trading Journal</div>
+        <div style={{fontSize:13,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}><img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{height:16,width:"auto",verticalAlign:"middle"}} alt="Fyltra"/> v1.0 · Trading Journal</div>
         <div style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",marginTop:4,letterSpacing:"0.06em"}}>Créé par Smile</div>
       </div>
     </div>
@@ -3807,7 +3807,7 @@ ${recentTrades}`;
         <div style={{ minHeight:"100vh", paddingBottom:100 }}>
           <div style={{ padding:"16px 20px", background:`linear-gradient(180deg,${C.bg2},${C.bg})`, borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:50, backdropFilter:"blur(16px)", flexWrap:"wrap" }}>
             <div style={{ display:"flex", alignItems:"center", gap:9 }}>
-              <img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{height:88,width:"auto",flexShrink:0}} alt="Fyltra"/>
+              <img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{height:44,width:"auto",flexShrink:0}} alt="Fyltra"/>
               <div>
                 <div style={{ fontSize:7, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
               </div>

@@ -88,7 +88,7 @@ export default function Setup() {
 
         {/* logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 36 }}>
-          <img src="/fyltra-logo-black.svg" style={{ height: 76, width: "auto" }} alt="Fyltra" />
+          <img src="/fyltra-logo-black.svg" style={{ height: 38, width: "auto" }} alt="Fyltra" />
         </div>
 
         {success ? (
