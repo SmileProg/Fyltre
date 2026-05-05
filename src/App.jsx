@@ -3,6 +3,15 @@ import { Navigate } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, PieChart, Pie, Cell, BarChart, Bar, CartesianGrid, LabelList, RadarChart, PolarGrid, PolarAngleAxis, Radar } from "recharts";
 import { supabase } from "./supabase";
 
+/* ─── Money formatter (virgule décimale, 2 décimales si non-entier) */
+const fmtMoney = n => {
+  if (n == null || isNaN(n)) return "0";
+  const v = Math.round(n * 100) / 100;
+  return v % 1 === 0
+    ? v.toLocaleString("fr-FR")
+    : v.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
 /* ─── Constants ─────────────────────────────────────────────────── */
 const BASE_INSTRUMENTS = ["BTC","XAUUSD","EUR/USD","GC","MGC","NQ","MNQ"];
 const EMOTIONS = ["Confiant","Neutre","Anxieux","Euphorique","Frustré","Patient"];
@@ -341,7 +350,7 @@ function Calendar({ filtered, calMonth, calYear, onPrev, onNext, onDayClick, cur
               const bg = hasTrade ? (pnl >= 0 ? `rgba(42,110,58,${intensity})` : `rgba(192,57,43,${intensity})`) : "transparent";
               const isToday = todayStr === `${yr}-${String(m+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
               return (
-                <div key={i} onClick={()=>{ if(onDayClick&&!isToday&&hasTrade){onDayClick({day,month:m,year:yr,pnl});}}} title={hasTrade ? `${pnl >= 0 ? "+" : ""}${pnl.toFixed(0)}${cur||"€"}` : ""} style={{ aspectRatio:"1", borderRadius:8, background:bg, border:isToday ? `1px solid ${C.accent}` : `1px solid ${hasTrade ? "transparent" : C.gray3}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:hasTrade&&!isToday?"pointer":"default", boxShadow:hasTrade ? "0 3px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.3)" : "none", transform:hasTrade ? "translateY(-1px)" : "none", transition:"all 0.15s" }}>
+                <div key={i} onClick={()=>{ if(onDayClick&&!isToday&&hasTrade){onDayClick({day,month:m,year:yr,pnl});}}} title={hasTrade ? `${pnl >= 0 ? "+" : ""}${fmtMoney(pnl)}${cur||"€"}` : ""} style={{ aspectRatio:"1", borderRadius:8, background:bg, border:isToday ? `1px solid ${C.accent}` : `1px solid ${hasTrade ? "transparent" : C.gray3}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:hasTrade&&!isToday?"pointer":"default", boxShadow:hasTrade ? "0 3px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.3)" : "none", transform:hasTrade ? "translateY(-1px)" : "none", transition:"all 0.15s" }}>
                   <span style={{ fontSize:9, color:hasTrade ? "#fff" : C.gray1, fontFamily:"'Josefin Sans',sans-serif", lineHeight:1, fontWeight:hasTrade ? 600 : 300 }}>{day}</span>
                   {hasTrade && <span style={{ fontSize:7, color:"rgba(255,255,255,0.9)", lineHeight:1, marginTop:1 }}>{pnl >= 0 ? "+" : ""}{Math.round(pnl)}</span>}
                 </div>
@@ -406,8 +415,8 @@ function PnlChart({ filtered, capital, pnlSum, height, cur }) {
           content={({active,payload}) => active && payload?.length ? (
             <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:6,padding:"8px 12px"}}>
               {payload[0].payload.date && <div style={{fontSize:10,color:C.gray1,marginBottom:3,fontFamily:"'Josefin Sans',sans-serif"}}>{payload[0].payload.date}{payload[0].payload.instrument?" · "+payload[0].payload.instrument:""}</div>}
-              <div style={{fontSize:13,color:payload[0].payload.pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{payload[0].payload.pnl>=0?"+":""}{payload[0].payload.pnl?.toFixed(0)}{cur||"€"}</div>
-              <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>Cumulé : {payload[0].value>=0?"+":""}{payload[0].value?.toFixed(0)}{cur||"€"}</div>
+              <div style={{fontSize:13,color:payload[0].payload.pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{payload[0].payload.pnl>=0?"+":""}{fmtMoney(payload[0].payload.pnl??0)}{cur||"€"}</div>
+              <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>Cumulé : {payload[0].value>=0?"+":""}{fmtMoney(payload[0].value??0)}{cur||"€"}</div>
             </div>
           ) : null}
         />
@@ -1388,7 +1397,7 @@ export default function App() {
     };
     const fmt = (m) => Object.entries(m)
       .sort((a,b) => b[1].pnl - a[1].pnl)
-      .map(([k,v]) => `  ${k}: ${v.count} trades | WR ${v.count ? Math.round(v.wins/v.count*100) : 0}% | P&L ${v.pnl >= 0 ? "+" : ""}${v.pnl.toFixed(0)}${currency}`)
+      .map(([k,v]) => `  ${k}: ${v.count} trades | WR ${v.count ? Math.round(v.wins/v.count*100) : 0}% | P&L ${v.pnl >= 0 ? "+" : ""}${fmtMoney(v.pnl)}${currency}`)
       .join("\n");
 
     // Polarity map from custom emotions
@@ -1413,12 +1422,12 @@ export default function App() {
     const negStats = groupByPolarity(negEmotions);
     const polaritySection = (posEmotions.length || negEmotions.length) ? `
 📊 PAR POLARITÉ ÉMOTIONNELLE:
-  Émotions POSITIVES (${posEmotions.join(", ") || "aucune"}): ${posStats.count} trades | WR ${posStats.count ? Math.round(posStats.wins/posStats.count*100) : 0}% | P&L ${posStats.pnl >= 0 ? "+" : ""}${posStats.pnl.toFixed(0)}${currency}
-  Émotions NÉGATIVES (${negEmotions.join(", ") || "aucune"}): ${negStats.count} trades | WR ${negStats.count ? Math.round(negStats.wins/negStats.count*100) : 0}% | P&L ${negStats.pnl >= 0 ? "+" : ""}${negStats.pnl.toFixed(0)}${currency}` : "";
+  Émotions POSITIVES (${posEmotions.join(", ") || "aucune"}): ${posStats.count} trades | WR ${posStats.count ? Math.round(posStats.wins/posStats.count*100) : 0}% | P&L ${posStats.pnl >= 0 ? "+" : ""}${fmtMoney(posStats.pnl)}${currency}
+  Émotions NÉGATIVES (${negEmotions.join(", ") || "aucune"}): ${negStats.count} trades | WR ${negStats.count ? Math.round(negStats.wins/negStats.count*100) : 0}% | P&L ${negStats.pnl >= 0 ? "+" : ""}${fmtMoney(negStats.pnl)}${currency}` : "";
 
     const fmtEmotion = (m) => Object.entries(m)
       .sort((a,b) => b[1].pnl - a[1].pnl)
-      .map(([k,v]) => { const pol = polarityMap[k]; const tag = pol === "positive" ? " [✓ POSITIVE]" : pol === "negative" ? " [✗ NÉGATIVE]" : ""; return `  ${k}${tag}: ${v.count} trades | WR ${v.count ? Math.round(v.wins/v.count*100) : 0}% | P&L ${v.pnl >= 0 ? "+" : ""}${v.pnl.toFixed(0)}${currency}`; })
+      .map(([k,v]) => { const pol = polarityMap[k]; const tag = pol === "positive" ? " [✓ POSITIVE]" : pol === "negative" ? " [✗ NÉGATIVE]" : ""; return `  ${k}${tag}: ${v.count} trades | WR ${v.count ? Math.round(v.wins/v.count*100) : 0}% | P&L ${v.pnl >= 0 ? "+" : ""}${fmtMoney(v.pnl)}${currency}`; })
       .join("\n");
 
     const winners = trades.filter(t => t.result === "WIN" && parseFloat(t.rr) > 0);
@@ -1436,7 +1445,7 @@ export default function App() {
     });
 
     const recentTrades = [...trades].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 40).reverse()
-      .map(t => `${t.date}|${t.instrument}|${t.direction}|${t.session||"—"}|${t.emotion||"—"}|RR:${t.rr||"—"}|${t.pnl >= 0 ? "+" : ""}${(t.pnl||0).toFixed(0)}${currency}|${t.result}`)
+      .map(t => `${t.date}|${t.instrument}|${t.direction}|${t.session||"—"}|${t.emotion||"—"}|RR:${t.rr||"—"}|${t.pnl >= 0 ? "+" : ""}${fmtMoney(t.pnl||0)}${currency}|${t.result}`)
       .join("\n");
 
     return `📅 PAR JOUR DE LA SEMAINE:
@@ -1491,7 +1500,7 @@ ${recentTrades}`;
       {!desktop && <PageTitle sub="Tableau de bord" title={total === 0 ? "Aucun trade" : "Performance"} />}
       <div style={{ display:"grid", gridTemplateColumns:desktop ? "repeat(4,1fr)" : "1fr 1fr", gap:10, marginBottom:20 }}>
         <StatCard label="Win Rate"  value={`${winRate}%`}                              color={winRate >= 50 ? C.accent : C.gray1} small={desktop} />
-        <StatCard label="P&L Total" value={`${pnlSum >= 0 ? "+" : ""}${pnlSum.toFixed(0)}${currency}`} color={pnlSum >= 0 ? C.accent : C.gray1} small={desktop} />
+        <StatCard label="P&L Total" value={`${pnlSum >= 0 ? "+" : ""}${fmtMoney(pnlSum)}${currency}`} color={pnlSum >= 0 ? C.accent : C.gray1} small={desktop} />
         <StatCard label="RR Moyen"  value={`${avgRR}:1`}                               color={C.dim}   small={desktop} />
         <StatCard label="Bilan" value={`${wins}W / ${total - wins}L`} color={C.accent} small={desktop} />
       </div>
@@ -1550,7 +1559,7 @@ ${recentTrades}`;
             <div key={s.name} style={{ marginBottom:12 }}>
               <div style={{ display:"flex", justifyContent:"space-between", marginBottom:5 }}>
                 <span style={{ fontSize:11, color:C.white, letterSpacing:"0.06em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif" }}>{s.name}</span>
-                <span style={{ fontSize:12, fontFamily:"'Josefin Sans',sans-serif", fontWeight:300, color:s.pnl >= 0 ? C.accent : C.gray1, letterSpacing:"0.03em" }}>{s.pnl >= 0 ? "+" : ""}{s.pnl.toFixed(0)}{currency} · {s.wr}%</span>
+                <span style={{ fontSize:12, fontFamily:"'Josefin Sans',sans-serif", fontWeight:300, color:s.pnl >= 0 ? C.accent : C.gray1, letterSpacing:"0.03em" }}>{s.pnl >= 0 ? "+" : ""}{fmtMoney(s.pnl)}{currency} · {s.wr}%</span>
               </div>
               <div style={{ height:3, background:C.gray3, borderRadius:2 }}>
                 <div style={{ width:`${s.wr}%`, height:"100%", borderRadius:2, background:C.accent, transition:"width 0.7s" }} />
@@ -1675,13 +1684,13 @@ ${recentTrades}`;
               <button onClick={()=>setBeSign(1)} style={{padding:"7px 16px",border:"none",background:beSign===1?"#2a6e3a":"transparent",color:beSign===1?"#fff":C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,cursor:"pointer",transition:"all 0.2s"}}>+ Positif</button>
               <button onClick={()=>setBeSign(-1)} style={{padding:"7px 16px",border:"none",background:beSign===-1?"#c0392b":"transparent",color:beSign===-1?"#fff":C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,cursor:"pointer",transition:"all 0.2s"}}>− Négatif</button>
             </div>
-            {pnlRaw && <span style={{fontSize:12,color:beSign===1?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{beSign===1?"+":"-"}{parseFloat(pnlRaw).toFixed(2)}{currency}</span>}
+            {pnlRaw && <span style={{fontSize:12,color:beSign===1?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{beSign===1?"+":"-"}{fmtMoney(parseFloat(pnlRaw))}{currency}</span>}
           </div>
         )}
         {pnlRaw && !isNaN(parseFloat(pnlRaw)) && form.result !== "BREAKEVEN" && (
           <div style={{ marginTop:5, fontSize:12, fontFamily:"'Josefin Sans',sans-serif" }}>
-            {form.result === "WIN" && <span style={{color:"#2a6e3a"}}>{`✓ Gain : +${parseFloat(pnlRaw).toFixed(2)} ${currency}`}</span>}
-            {form.result === "LOSS" && <span style={{color:"#c0392b"}}>{`✗ Perte : −${parseFloat(pnlRaw).toFixed(2)} ${currency}`}</span>}
+            {form.result === "WIN" && <span style={{color:"#2a6e3a"}}>{`✓ Gain : +${fmtMoney(parseFloat(pnlRaw))} ${currency}`}</span>}
+            {form.result === "LOSS" && <span style={{color:"#c0392b"}}>{`✗ Perte : −${fmtMoney(parseFloat(pnlRaw))} ${currency}`}</span>}
           </div>
         )}
       </Field>}
@@ -1930,7 +1939,7 @@ ${recentTrades}`;
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.2em",fontFamily:ff,fontWeight:600,marginBottom:8}}>Métriques Avancées</div>
             <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)",gap:8,marginBottom:10}}>
               {[
-                {l:"Espérance / Trade",v:`${expectancy>=0?"+":""}${expectancy.toFixed(0)}${currency}`,c:expectancy>=0?"#4caf6e":"#e05a5a",sub:"Gain moyen espéré par trade"},
+                {l:"Espérance / Trade",v:`${expectancy>=0?"+":""}${fmtMoney(expectancy)}${currency}`,c:expectancy>=0?"#4caf6e":"#e05a5a",sub:"Gain moyen espéré par trade"},
                 {l:"Drawdown Max",v:`${maxDD.toFixed(1)}%`,c:maxDD<10?"#4caf6e":maxDD<25?"#d4c060":"#e05a5a",sub:`Actuel : ${currentDD.toFixed(1)}%`},
                 {l:"Facteur de Profit",v:pf>=99?"∞":pf.toFixed(2),c:pf>=1.5?"#4caf6e":pf>=1?"#d4c060":"#e05a5a",sub:"Gains bruts / Pertes brutes"},
                 {l:"Critère de Kelly",v:`${Math.max(0,kelly).toFixed(1)}%`,c:kelly>0?"#4caf6e":"#e05a5a",sub:"Taille de position optimale"},
@@ -1990,7 +1999,7 @@ ${recentTrades}`;
                       </div>
                       <div style={{fontSize:11,color:C.gray1,fontFamily:ff,textAlign:"center"}}>{e.count}</div>
                       <div style={{fontSize:11,fontFamily:ff,textAlign:"center",fontWeight:600,color:e.wr>=50?"#4caf6e":"#e05a5a"}}>{e.wr}%</div>
-                      <div style={{fontSize:11,fontFamily:ff,textAlign:"center",fontWeight:600,color:e.pnl>=0?"#4caf6e":"#e05a5a"}}>{e.pnl>=0?"+":""}{e.pnl.toFixed(0)}{currency}</div>
+                      <div style={{fontSize:11,fontFamily:ff,textAlign:"center",fontWeight:600,color:e.pnl>=0?"#4caf6e":"#e05a5a"}}>{e.pnl>=0?"+":""}{fmtMoney(e.pnl)}{currency}</div>
                     </div>
                   ))}
                 </div>
@@ -2029,7 +2038,7 @@ ${recentTrades}`;
                   {otDays.length>0 && otDays.slice(0,2).map(d=>(
                     <div key={d.date} style={{display:"flex",justifyContent:"space-between",padding:"5px 8px",background:"rgba(224,90,90,0.08)",borderRadius:6,marginBottom:4,border:"1px solid rgba(224,90,90,0.15)"}}>
                       <span style={{fontSize:9,color:C.gray1,fontFamily:ff}}>{d.date} · <strong style={{color:"#e05a5a",fontFamily:ff}}>{d.count} trades</strong></span>
-                      <span style={{fontSize:9,fontFamily:ff,fontWeight:600,color:d.pnl>=0?"#4caf6e":"#e05a5a"}}>{d.pnl>=0?"+":""}{d.pnl.toFixed(0)}{currency}</span>
+                      <span style={{fontSize:9,fontFamily:ff,fontWeight:600,color:d.pnl>=0?"#4caf6e":"#e05a5a"}}>{d.pnl>=0?"+":""}{fmtMoney(d.pnl)}{currency}</span>
                     </div>
                   ))}
                   {otDays.length===0 && <div style={{fontSize:10,color:"#4caf6e",fontFamily:ff,padding:"6px 10px",background:"rgba(76,175,110,0.08)",borderRadius:6,border:"1px solid rgba(76,175,110,0.15)"}}>✓ Aucun surtrading détecté</div>}
@@ -2057,7 +2066,7 @@ ${recentTrades}`;
                 ].map(s=>(
                   <div key={s.l} style={{background:isDark?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)",borderRadius:8,padding:"12px 10px",textAlign:"center"}}>
                     <div style={{fontSize:7,color:C.dim,fontFamily:ff,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:6}}>{s.l}</div>
-                    <div style={{fontSize:18,fontFamily:ff,fontWeight:300,color:s.v>=0?"#4caf6e":"#e05a5a",letterSpacing:"0.04em",lineHeight:1}}>{s.v>=0?"+":""}{s.v.toFixed(0)}{currency}</div>
+                    <div style={{fontSize:18,fontFamily:ff,fontWeight:300,color:s.v>=0?"#4caf6e":"#e05a5a",letterSpacing:"0.04em",lineHeight:1}}>{s.v>=0?"+":""}{fmtMoney(s.v)}{currency}</div>
                     <div style={{fontSize:8,color:C.gray2,fontFamily:ff,marginTop:4}}>{s.desc}</div>
                   </div>
                 ))}
@@ -2111,7 +2120,7 @@ ${recentTrades}`;
                           <span style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:i===0?600:300}}>{item.name}</span>
                         </div>
                         <div style={{textAlign:"right"}}>
-                          <span style={{fontSize:13,color:item.pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{item.pnl>=0?"+":""}{item.pnl.toFixed(0)}{currency}</span>
+                          <span style={{fontSize:13,color:item.pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{item.pnl>=0?"+":""}{fmtMoney(item.pnl)}{currency}</span>
                           <span style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginLeft:6}}>{item.wr}% · {item.count}T</span>
                         </div>
                       </div>
@@ -2144,7 +2153,7 @@ ${recentTrades}`;
                     <span style={{ marginLeft:8, fontSize:10, color:C.gray1, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.1em" }}>{t.direction}</span>
                   </div>
                   <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    <span style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:16, fontWeight:300, color:isWin ? "#4ade80" : isLoss ? "#f87171" : C.dim, letterSpacing:"0.03em" }}>{pnl >= 0 ? "+" : ""}{pnl.toFixed(0)} €</span>
+                    <span style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:16, fontWeight:300, color:isWin ? "#4ade80" : isLoss ? "#f87171" : C.dim, letterSpacing:"0.03em" }}>{pnl >= 0 ? "+" : ""}{fmtMoney(pnl)} €</span>
                     {confirmDeleteTradeId === t.id ? (
                       <div style={{ display:"flex", alignItems:"center", gap:5 }}>
                         <span style={{ fontSize:10, color:C.gray1, fontFamily:"'Josefin Sans',sans-serif" }}>Supprimer ?</span>
@@ -2414,8 +2423,8 @@ ${recentTrades}`;
     if (pf.type === "propfirm") {
       const remaining = target - pnl;
       if (pnl >= target) alerts.push({ type:"success", msg:"Profit target atteint — Félicitations." });
-      else if (remaining <= target * 0.2) alerts.push({ type:"warn", msg:`Encore ${remaining.toFixed(0)}${currency} pour valider le profit target.` });
-      else alerts.push({ type:"info", msg:`Il vous manque ${remaining.toFixed(0)}${currency} pour valider.` });
+      else if (remaining <= target * 0.2) alerts.push({ type:"warn", msg:`Encore ${fmtMoney(remaining)}${currency} pour valider le profit target.` });
+      else alerts.push({ type:"info", msg:`Il vous manque ${fmtMoney(remaining)}${currency} pour valider.` });
       if (drawdown >= maxLoss) alerts.push({ type:"danger", msg:"Max drawdown atteint — Arrêtez de trader." });
       else if (drawdown >= maxLoss * 0.8) alerts.push({ type:"danger", msg:`Attention — vous êtes à ${Math.round(drawdown/maxLoss*100)}% du max drawdown.` });
     }
@@ -2424,7 +2433,7 @@ ${recentTrades}`;
       const todayPnl = trades.filter(t => t.date === new Date().toISOString().split("T")[0]).reduce((s,t)=>s+(t.pnl||0),0);
       const todayLoss = Math.abs(Math.min(0, todayPnl));
       if (todayLoss >= dailyLoss) alerts.push({ type:"danger", msg:"Daily loss limit atteinte — Arrêtez de trader aujourd'hui." });
-      else if (todayLoss >= dailyLoss * 0.7) alerts.push({ type:"warn", msg:`Daily loss : ${todayLoss.toFixed(0)}${currency} / ${dailyLoss}${currency} utilisés.` });
+      else if (todayLoss >= dailyLoss * 0.7) alerts.push({ type:"warn", msg:`Daily loss : ${fmtMoney(todayLoss)}${currency} / ${dailyLoss}${currency} utilisés.` });
     }
     return alerts;
   };
@@ -2484,11 +2493,11 @@ ${recentTrades}`;
             </Field>
             <Field label={pfPctMode?"Profit Target * (%)":`Profit Target * (${currency})`}>
               <input type="text" inputMode="numeric" placeholder="" value={pfPctMode?pfPctValues.target:pfForm.target} onChange={e=>{const v=e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"");if(pfPctMode){setPfPctValues(p=>({...p,target:v}));pfSet("target",pfForm.capital?String((parseFloat(pfForm.capital)*(parseFloat(v)||0)/100).toFixed(0)):"");}else pfSet("target",v);}} style={iStyle}/>
-              {pfPctMode&&pfPctValues.target&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.target)||0)/100).toFixed(0)}{currency}</div>}
+              {pfPctMode&&pfPctValues.target&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {fmtMoney(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.target)||0)/100)}{currency}</div>}
             </Field>
             <Field label={pfPctMode?"Max Drawdown * (%)":`Max Drawdown * (${currency})`}>
               <input type="text" inputMode="numeric" placeholder="" value={pfPctMode?pfPctValues.maxLoss:pfForm.maxLoss} onChange={e=>{const v=e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"");if(pfPctMode){setPfPctValues(p=>({...p,maxLoss:v}));pfSet("maxLoss",pfForm.capital?String((parseFloat(pfForm.capital)*(parseFloat(v)||0)/100).toFixed(0)):"");}else pfSet("maxLoss",v);}} style={iStyle}/>
-              {pfPctMode&&pfPctValues.maxLoss&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.maxLoss)||0)/100).toFixed(0)}{currency}</div>}
+              {pfPctMode&&pfPctValues.maxLoss&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {fmtMoney(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.maxLoss)||0)/100)}{currency}</div>}
             </Field>
           </div>
           <Divider/>
@@ -2501,7 +2510,7 @@ ${recentTrades}`;
           {pfForm.hasDailyLoss && (
             <Field label={pfPctMode?"Daily Loss (%)":"Daily Loss (€)"}>
               <input type="text" inputMode="numeric" placeholder="" value={pfPctMode?pfPctValues.dailyLoss:pfForm.dailyLoss} onChange={e=>{const v=e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"");if(pfPctMode){setPfPctValues(p=>({...p,dailyLoss:v}));pfSet("dailyLoss",pfForm.capital?String((parseFloat(pfForm.capital)*(parseFloat(v)||0)/100).toFixed(0)):"");}else pfSet("dailyLoss",v);}} style={iStyle}/>
-              {pfPctMode&&pfPctValues.dailyLoss&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.dailyLoss)||0)/100).toFixed(0)}{currency}</div>}
+              {pfPctMode&&pfPctValues.dailyLoss&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {fmtMoney(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.dailyLoss)||0)/100)}{currency}</div>}
             </Field>
           )}
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12,marginTop:4}}>
@@ -2560,7 +2569,7 @@ ${recentTrades}`;
           {pfForm.hasDailyLoss && (
             <Field label={pfPctMode?"Daily Loss (%)":"Daily Loss (€)"}>
               <input type="text" inputMode="numeric" placeholder="" value={pfPctMode?pfPctValues.dailyLoss:pfForm.dailyLoss} onChange={e=>{const v=e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"");if(pfPctMode){setPfPctValues(p=>({...p,dailyLoss:v}));pfSet("dailyLoss",pfForm.capital?String((parseFloat(pfForm.capital)*(parseFloat(v)||0)/100).toFixed(0)):"");}else pfSet("dailyLoss",v);}} style={iStyle}/>
-              {pfPctMode&&pfPctValues.dailyLoss&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.dailyLoss)||0)/100).toFixed(0)}{currency}</div>}
+              {pfPctMode&&pfPctValues.dailyLoss&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {fmtMoney(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.dailyLoss)||0)/100)}{currency}</div>}
             </Field>
           )}
           <Divider/>
@@ -2636,12 +2645,12 @@ ${recentTrades}`;
                 <div>
                   <div style={{fontFamily:"'Barlow',sans-serif",fontWeight:600,fontSize:16,color:C.white,letterSpacing:"0.08em"}}>{pf.firm||"Fond Propre"}</div>
                   {pf.name && <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{pf.name}</div>}
-                  <div style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",marginTop:4,textTransform:"uppercase"}}>{cap.toLocaleString()}{currency}{pf.type==="propfirm"?` · ${progress.toFixed(0)}% / ${target.toLocaleString()}${currency}`:" · Fond Propre"}</div>
+                  <div style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",marginTop:4,textTransform:"uppercase"}}>{cap.toLocaleString()}{currency}{pf.type==="propfirm"?` · ${fmtMoney(progress)}% / ${target.toLocaleString()}${currency}`:" · Fond Propre"}</div>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <div style={{textAlign:"right"}}>
-                    <div style={{fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,fontSize:20,color:pnl>=0?"#2a6e3a":"#c0392b",letterSpacing:"0.03em"}}>{(cap+pnl).toFixed(0)}{currency}</div>
-                    <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{pnl>=0?"+":""}{pnl.toFixed(0)}{currency} · Capital actuel</div>
+                    <div style={{fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,fontSize:20,color:pnl>=0?"#2a6e3a":"#c0392b",letterSpacing:"0.03em"}}>{fmtMoney(cap+pnl)}{currency}</div>
+                    <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{pnl>=0?"+":""}{fmtMoney(pnl)}{currency} · Capital actuel</div>
                   </div>
 
                 </div>
@@ -2651,7 +2660,7 @@ ${recentTrades}`;
             {editingPf?.id !== pf.id && pf.type==="propfirm" && <div style={{marginBottom:10}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                 <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Profit Target</span>
-                <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{progress.toFixed(0)}%</span>
+                <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{fmtMoney(progress)}%</span>
               </div>
               <div style={{height:5,background:C.gray3,borderRadius:3,marginBottom:pf.hasDailyLoss&&parseFloat(pf.dailyLoss)>0?8:0}}>
                 <div style={{width:progress+"%",height:"100%",borderRadius:3,background:"#2a6e3a",transition:"width 0.5s"}}/>
@@ -2666,7 +2675,7 @@ ${recentTrades}`;
                   <div>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                       <span style={{fontSize:10,color:over?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Daily Loss</span>
-                      <span style={{fontSize:10,color:over?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{todayLoss.toFixed(0)}{currency} / {dl}€</span>
+                      <span style={{fontSize:10,color:over?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{fmtMoney(todayLoss)}{currency} / {dl}€</span>
                     </div>
                     <div style={{height:5,background:C.gray3,borderRadius:3}}>
                       <div style={{width:dlPct+"%",height:"100%",borderRadius:3,background:over?"rgba(192,57,43,0.9)":dlPct>=70?"rgba(192,57,43,0.5)":"rgba(192,57,43,0.3)",transition:"width 0.5s"}}/>
@@ -2679,7 +2688,7 @@ ${recentTrades}`;
             {pf.type==="propfirm" && <div style={{marginBottom:12}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                 <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Drawdown</span>
-                <span style={{fontSize:10,color:ddProgress>=80?"rgba(192,57,43,0.8)":C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{drawdown.toFixed(0)}{currency} / {maxLoss}{currency}</span>
+                <span style={{fontSize:10,color:ddProgress>=80?"rgba(192,57,43,0.8)":C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{fmtMoney(drawdown)}{currency} / {maxLoss}{currency}</span>
               </div>
               <div style={{height:5,background:C.gray3,borderRadius:3}}>
                 <div style={{width:ddProgress+"%",height:"100%",borderRadius:3,background:ddProgress>=80?"rgba(192,57,43,0.9)":ddProgress>=50?"rgba(192,57,43,0.5)":"rgba(192,57,43,0.25)",transition:"width 0.5s"}}/>
@@ -2743,11 +2752,11 @@ ${recentTrades}`;
                       <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif"}}>Aujourd'hui</div>
                       {pf.hasConsistency && pf.consistencyPct && pf.target && (
                         <div style={{fontSize:9,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em"}}>
-                          max {(parseFloat(pf.target)*parseFloat(pf.consistencyPct)/100).toFixed(0)}{currency}
+                          max {fmtMoney(parseFloat(pf.target)*parseFloat(pf.consistencyPct)/100)}{currency}
                         </div>
                       )}
                     </div>
-                    <div style={{fontSize:14,color:todayPnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,marginBottom:pf.hasConsistency&&pf.consistencyPct&&pf.target?8:0}}>{todayPnl>=0?"+":""}{todayPnl.toFixed(0)}{currency} · {todayTrades.length} trade{todayTrades.length!==1?"s":""}</div>
+                    <div style={{fontSize:14,color:todayPnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,marginBottom:pf.hasConsistency&&pf.consistencyPct&&pf.target?8:0}}>{todayPnl>=0?"+":""}{fmtMoney(todayPnl)}{currency} · {todayTrades.length} trade{todayTrades.length!==1?"s":""}</div>
                     {pf.hasConsistency && pf.consistencyPct && pf.target && (() => {
                       const maxD = parseFloat(pf.target)*parseFloat(pf.consistencyPct)/100;
                       const todayGain = Math.max(0, todayPnl);
@@ -2759,7 +2768,7 @@ ${recentTrades}`;
                             <div style={{width:gaugePct+"%",height:"100%",borderRadius:2,background:isOver?"rgba(192,57,43,0.7)":gaugePct>=80?"rgba(var(--gold-rgb),0.6)":C.accent,transition:"width 0.5s"}}/>
                           </div>
                           <div style={{fontSize:10,color:isOver?"rgba(192,57,43,0.8)":C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>
-                            {isOver ? "Limite de consistance atteinte" : `${(maxD-todayGain).toFixed(0)}${currency} restants`}
+                            {isOver ? "Limite de consistance atteinte" : `${fmtMoney(maxD-todayGain)}${currency} restants`}
                           </div>
                         </div>
                       );
@@ -2906,7 +2915,7 @@ ${recentTrades}`;
         <div style={{marginBottom:10}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
             <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Profit Target</span>
-            <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{allPnl.toFixed(0)}{currency} / {target}{currency} · {progress.toFixed(0)}%</span>
+            <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{fmtMoney(allPnl)}{currency} / {target}{currency} · {fmtMoney(progress)}%</span>
           </div>
           <div style={{height:6,background:C.gray3,borderRadius:3}}>
             <div style={{width:progress+"%",height:"100%",borderRadius:3,background:"#2a6e3a",transition:"width 0.6s"}}/>
@@ -2915,7 +2924,7 @@ ${recentTrades}`;
         <div>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
             <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Drawdown Max</span>
-            <span style={{fontSize:10,color:ddProgress>=80?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{drawdown.toFixed(0)}{currency} / {maxLoss}{currency}</span>
+            <span style={{fontSize:10,color:ddProgress>=80?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{fmtMoney(drawdown)}{currency} / {maxLoss}{currency}</span>
           </div>
           <div style={{height:6,background:C.gray3,borderRadius:3}}>
             <div style={{width:ddProgress+"%",height:"100%",borderRadius:3,background:ddProgress>=80?"rgba(192,57,43,0.9)":ddProgress>=50?"rgba(192,57,43,0.5)":"rgba(192,57,43,0.25)",transition:"width 0.6s"}}/>
@@ -2930,7 +2939,7 @@ ${recentTrades}`;
             <div style={{marginTop:10}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                 <span style={{fontSize:10,color:over?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>Daily Loss</span>
-                <span style={{fontSize:10,color:over?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{todayLossDL.toFixed(0)}{currency} / {dl}€{over?" 🔴":""}</span>
+                <span style={{fontSize:10,color:over?"rgba(192,57,43,0.9)":C.dim,fontFamily:"'Josefin Sans',sans-serif"}}>{fmtMoney(todayLossDL)}{currency} / {dl}€{over?" 🔴":""}</span>
               </div>
               <div style={{height:6,background:C.gray3,borderRadius:3}}>
                 <div style={{width:dlPct+"%",height:"100%",borderRadius:3,background:over?"rgba(192,57,43,0.9)":dlPct>=70?"rgba(192,57,43,0.5)":"rgba(192,57,43,0.3)",transition:"width 0.6s"}}/>
@@ -2946,7 +2955,7 @@ ${recentTrades}`;
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:pf.hasConsistency&&pf.consistencyPct&&pf.target?10:0}}>
           <div>
             <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Aujourd'hui</div>
-            <div style={{fontSize:22,color:todayPnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300}}>{todayPnl>=0?"+":""}{todayPnl.toFixed(0)}{currency}</div>
+            <div style={{fontSize:22,color:todayPnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300}}>{todayPnl>=0?"+":""}{fmtMoney(todayPnl)}{currency}</div>
             <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{todayTrades.length} trade{todayTrades.length!==1?"s":""}</div>
           </div>
           {pf.hasConsistency&&pf.consistencyPct&&pf.target&&(()=>{
@@ -2956,11 +2965,11 @@ ${recentTrades}`;
             const over=g>=maxD;
             return (
               <div style={{textAlign:"right"}}>
-                <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:4}}>Consistance · max {maxD.toFixed(0)}{currency}</div>
+                <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:4}}>Consistance · max {fmtMoney(maxD)}{currency}</div>
                 <div style={{width:120,height:6,background:C.gray3,borderRadius:3,marginLeft:"auto",marginBottom:4}}>
                   <div style={{width:gp+"%",height:"100%",borderRadius:3,background:over?"rgba(192,57,43,0.8)":gp>=80?"rgba(var(--gold-rgb),0.6)":"#2a6e3a",transition:"width 0.5s"}}/>
                 </div>
-                <div style={{fontSize:10,color:over?"rgba(192,57,43,0.8)":C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{over?"🔴 Limite atteinte":`${(maxD-g).toFixed(0)}${currency} restants`}</div>
+                <div style={{fontSize:10,color:over?"rgba(192,57,43,0.8)":C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{over?"🔴 Limite atteinte":`${fmtMoney(maxD-g)}${currency} restants`}</div>
               </div>
             );
           })()}
@@ -3050,7 +3059,7 @@ ${recentTrades}`;
                   <div style={{fontSize:11,color:C.white,fontWeight:700,marginBottom:4,letterSpacing:"0.1em"}}>{label}</div>
                   <div style={{fontSize:10,color:C.gray1,marginBottom:2}}>{item.count} trade{item.count!==1?"s":""} · {item.usagePct}%</div>
                   <div style={{fontSize:10,color:C.gray1,marginBottom:2}}>WR {item.dwr}%</div>
-                  <div style={{fontSize:10,color:item.dpnl>=0?"#4caf6e":"#e05a5a",fontWeight:600}}>{item.dpnl>=0?"+":""}{item.dpnl.toFixed(0)}{currency}</div>
+                  <div style={{fontSize:10,color:item.dpnl>=0?"#4caf6e":"#e05a5a",fontWeight:600}}>{item.dpnl>=0?"+":""}{fmtMoney(item.dpnl)}{currency}</div>
                 </div>
               );
             };
@@ -3073,7 +3082,7 @@ ${recentTrades}`;
                     <div key={x.d} style={{flex:1,background:isDark?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)",borderRadius:8,padding:"8px 10px"}}>
                       <div style={{fontSize:9,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:3}}>{x.d}</div>
                       <div style={{fontSize:12,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:700}}>{x.count}T · {x.dwr}%<span style={{fontWeight:400,color:C.gray1}}> WR</span></div>
-                      <div style={{fontSize:10,color:x.dpnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginTop:1}}>{x.dpnl>=0?"+":""}{x.dpnl.toFixed(0)}{currency}</div>
+                      <div style={{fontSize:10,color:x.dpnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginTop:1}}>{x.dpnl>=0?"+":""}{fmtMoney(x.dpnl)}{currency}</div>
                     </div>
                   ))}
                 </div>
@@ -3093,7 +3102,7 @@ ${recentTrades}`;
               <div key={s.name} style={{marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                   <span style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.06em",textTransform:"uppercase"}}>{s.name}</span>
-                  <span style={{fontSize:11,color:s.pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{s.pnl>=0?"+":""}{s.pnl.toFixed(0)}{currency} · {s.wr}% · {s.count}T</span>
+                  <span style={{fontSize:11,color:s.pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{s.pnl>=0?"+":""}{fmtMoney(s.pnl)}{currency} · {s.wr}% · {s.count}T</span>
                 </div>
                 <div style={{height:5,background:C.gray3,borderRadius:3}}>
                   <div style={{width:s.wr+"%",height:"100%",borderRadius:3,background:s.pnl>=0?"#2a6e3a":"#c0392b",transition:"width 0.5s"}}/>
@@ -3110,7 +3119,7 @@ ${recentTrades}`;
               <div key={i.name} style={{marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                   <span style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{i.name}</span>
-                  <span style={{fontSize:11,color:i.pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{i.pnl>=0?"+":""}{i.pnl.toFixed(0)}{currency} · {i.wr}% · {i.count}T</span>
+                  <span style={{fontSize:11,color:i.pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{i.pnl>=0?"+":""}{fmtMoney(i.pnl)}{currency} · {i.wr}% · {i.count}T</span>
                 </div>
                 <div style={{height:4,background:C.gray3,borderRadius:2}}>
                   <div style={{width:i.wr+"%",height:"100%",borderRadius:2,background:i.pnl>=0?"#2a6e3a":"#c0392b",transition:"width 0.5s"}}/>
@@ -3136,7 +3145,7 @@ ${recentTrades}`;
                       <span style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif"}}>{e.name}</span>
                       <span style={{fontSize:10,color:e.wr>=50?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{e.wr}%</span>
                     </div>
-                    <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{e.count}T · {e.pnl>=0?"+":""}{e.pnl.toFixed(0)}{currency}</div>
+                    <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>{e.count}T · {e.pnl>=0?"+":""}{fmtMoney(e.pnl)}{currency}</div>
                     <div style={{height:3,background:C.gray2,borderRadius:2,marginTop:6}}>
                       <div style={{width:e.wr+"%",height:"100%",borderRadius:2,background:e.wr>=50?"#2a6e3a":"#c0392b"}}/>
                     </div>
@@ -3173,7 +3182,7 @@ ${recentTrades}`;
                 <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{t.date} · {t.session} · {t.emotion}</div>
               </div>
               <div style={{textAlign:"right"}}>
-                <div style={{fontSize:15,fontWeight:300,color:pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{pnl>=0?"+":""}{pnl.toFixed(0)}{currency}</div>
+                <div style={{fontSize:15,fontWeight:300,color:pnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{pnl>=0?"+":""}{fmtMoney(pnl)}{currency}</div>
                 {t.rr && <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}>RR {t.rr}</div>}
               </div>
             </div>
@@ -3202,7 +3211,7 @@ ${recentTrades}`;
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",textTransform:"uppercase",letterSpacing:"0.1em"}}>{pf.type==="propfirm"?"Prop Firm":"Fond Propre"} · {cap.toLocaleString()}€</div>
-              <div style={{fontSize:20,color:allPnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300}}>{allPnl>=0?"+":""}{allPnl.toFixed(0)}{currency} <span style={{fontSize:12,color:cap>0?(allPnl/cap*100>=0?"#2a6e3a":"#c0392b"):C.dim}}>{cap>0?`(${(allPnl/cap*100).toFixed(1)}%)`:"" }</span></div>
+              <div style={{fontSize:20,color:allPnl>=0?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300}}>{allPnl>=0?"+":""}{fmtMoney(allPnl)}{currency} <span style={{fontSize:12,color:cap>0?(allPnl/cap*100>=0?"#2a6e3a":"#c0392b"):C.dim}}>{cap>0?`(${(allPnl/cap*100).toFixed(1)}%)`:"" }</span></div>
             </div>
           </div>
         </div>
@@ -3378,7 +3387,7 @@ ${recentTrades}`;
     const summary = [...todayTrades].sort(cmpTrades).map(t=>`${t.instrument}|${t.direction}|${t.session}|${t.emotion}|RR:${t.rr||"—"}|P&L:${t.pnl}€|${t.result}${t.notes?`|"${t.notes}"`:""}`).join("\n");
     const todayPnl = todayTrades.reduce((s,t)=>s+(t.pnl||0),0);
     const systemMsg = "Tu es un coach de trading direct et exigeant. Fais un debriefing de fin de journée. Analyse : 1) ✅ Ce qui s'est bien passé 2) ❌ Ce qui doit être amélioré 3) 📌 1 règle à appliquer demain. Sois court, direct, sans blabla. Réponds en français.";
-    const userMsg = `Compte: ${pf.firm}${pf.name?" "+pf.name:""}\nP&L du jour: ${todayPnl>=0?"+":""}${todayPnl.toFixed(0)}${currency}\n${todayTrades.length} trades:\n${summary}`;
+    const userMsg = `Compte: ${pf.firm}${pf.name?" "+pf.name:""}\nP&L du jour: ${todayPnl>=0?"+":""}${fmtMoney(todayPnl)}${currency}\n${todayTrades.length} trades:\n${summary}`;
     try {
       const res = await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({summary:userMsg,customSystem:systemMsg})});
       if(!res.ok){const e=await res.json().catch(()=>({}));setEodText("Erreur: "+(e?.error||"inconnue"));setEodLoading(false);return;}
@@ -3852,7 +3861,7 @@ ${recentTrades}`;
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
                   <div>
                     <div style={{fontSize:13,color:"rgba(255,255,255,0.9)",fontFamily:"'Barlow',sans-serif",fontWeight:600,letterSpacing:"0.08em"}}>{new Date(selectedDay.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</div>
-                    <div style={{fontSize:20,color:selectedDay.pnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,marginTop:2}}>{selectedDay.pnl>=0?"+":""}{selectedDay.pnl.toFixed(0)}{currency} · {selectedDay.trades.length} trade{selectedDay.trades.length!==1?"s":""}</div>
+                    <div style={{fontSize:20,color:selectedDay.pnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,marginTop:2}}>{selectedDay.pnl>=0?"+":""}{fmtMoney(selectedDay.pnl)}{currency} · {selectedDay.trades.length} trade{selectedDay.trades.length!==1?"s":""}</div>
                   </div>
                   <button onClick={closeDay} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:50,width:32,height:32,color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
                 </div>
@@ -3895,14 +3904,14 @@ ${recentTrades}`;
                               {dayEmotions.map(e=>(
                                 <div key={e.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                                   <span style={{fontSize:10,color:"rgba(255,255,255,0.55)",fontFamily:"'Josefin Sans',sans-serif"}}>{e.name}</span>
-                                  <span style={{fontSize:10,color:e.wr>=50?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{e.wr}% · {e.pnl>=0?"+":""}{e.pnl.toFixed(0)}{currency}</span>
+                                  <span style={{fontSize:10,color:e.wr>=50?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{e.wr}% · {e.pnl>=0?"+":""}{fmtMoney(e.pnl)}{currency}</span>
                                 </div>
                               ))}
                               {daySess.length>0&&<div style={{fontSize:7,color:"rgba(255,255,255,0.3)",textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>Sessions</div>}
                               {daySess.map(s=>(
                                 <div key={s.name} style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                                   <span style={{fontSize:10,color:"rgba(255,255,255,0.45)",fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.04em"}}>{s.name}</span>
-                                  <span style={{fontSize:10,color:s.pnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif"}}>{s.wr}% · {s.pnl>=0?"+":""}{s.pnl.toFixed(0)}{currency}</span>
+                                  <span style={{fontSize:10,color:s.pnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif"}}>{s.wr}% · {s.pnl>=0?"+":""}{fmtMoney(s.pnl)}{currency}</span>
                                 </div>
                               ))}
                             </div>
@@ -3922,7 +3931,7 @@ ${recentTrades}`;
                       <ResponsiveContainer width="100%" height={70}>
                         <LineChart data={pd} margin={{top:4,right:4,left:0,bottom:0}}>
                           <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1}/>
-                          <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${v.toFixed(0)}${currency}`,"Cumulé"]} labelFormatter={l=>pd.find(d=>d.label===l)?.instrument||""}/>
+                          <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${fmtMoney(v)}${currency}`,"Cumulé"]} labelFormatter={l=>pd.find(d=>d.label===l)?.instrument||""}/>
                           <Line type="monotone" dataKey="v" stroke={dayTotalPnl>=0?"#4caf6e":"#e05a5a"} strokeWidth={2} dot={{r:2,fill:dayTotalPnl>=0?"#4caf6e":"#e05a5a",strokeWidth:0}} activeDot={{r:4,fill:dayTotalPnl>=0?"#4caf6e":"#e05a5a",strokeWidth:0}}/>
                         </LineChart>
                       </ResponsiveContainer>
@@ -4003,7 +4012,7 @@ ${recentTrades}`;
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
                   <div>
                     <div style={{fontSize:14,color:"rgba(255,255,255,0.9)",fontFamily:"'Barlow',sans-serif",fontWeight:600,letterSpacing:"0.08em"}}>{new Date(selectedDay.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})}</div>
-                    <div style={{fontSize:24,color:selectedDay.pnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,marginTop:4}}>{selectedDay.pnl>=0?"+":""}{selectedDay.pnl.toFixed(0)}{currency} · {selectedDay.trades.length} trade{selectedDay.trades.length!==1?"s":""}</div>
+                    <div style={{fontSize:24,color:selectedDay.pnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,marginTop:4}}>{selectedDay.pnl>=0?"+":""}{fmtMoney(selectedDay.pnl)}{currency} · {selectedDay.trades.length} trade{selectedDay.trades.length!==1?"s":""}</div>
                   </div>
                   <button onClick={closeDay} style={{background:"rgba(255,255,255,0.08)",border:"none",borderRadius:50,width:36,height:36,color:"rgba(255,255,255,0.5)",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>×</button>
                 </div>
@@ -4046,14 +4055,14 @@ ${recentTrades}`;
                           {dayEmotions.map(e=>(
                             <div key={e.name} style={{display:"flex",justifyContent:"space-between"}}>
                               <span style={{fontSize:11,color:"rgba(255,255,255,0.6)",fontFamily:"'Josefin Sans',sans-serif"}}>{e.name}</span>
-                              <span style={{fontSize:11,color:e.wr>=50?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{e.wr}% · {e.pnl>=0?"+":""}{e.pnl.toFixed(0)}{currency}</span>
+                              <span style={{fontSize:11,color:e.wr>=50?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{e.wr}% · {e.pnl>=0?"+":""}{fmtMoney(e.pnl)}{currency}</span>
                             </div>
                           ))}
                           {daySess.length>0&&<div style={{fontSize:7,color:"rgba(255,255,255,0.3)",textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>Sessions</div>}
                           {daySess.map(s=>(
                             <div key={s.name} style={{display:"flex",justifyContent:"space-between"}}>
                               <span style={{fontSize:11,color:"rgba(255,255,255,0.5)",fontFamily:"'Josefin Sans',sans-serif"}}>{s.name}</span>
-                              <span style={{fontSize:11,color:s.pnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif"}}>{s.pnl>=0?"+":""}{s.pnl.toFixed(0)}{currency}</span>
+                              <span style={{fontSize:11,color:s.pnl>=0?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif"}}>{s.pnl>=0?"+":""}{fmtMoney(s.pnl)}{currency}</span>
                             </div>
                           ))}
                         </div>
@@ -4077,7 +4086,7 @@ ${recentTrades}`;
                             <ResponsiveContainer width="100%" height={80}>
                               <LineChart data={dpd} margin={{top:4,right:4,left:0,bottom:0}}>
                                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" strokeWidth={1}/>
-                                <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${v.toFixed(0)}${currency}`,"Cumulé"]} labelFormatter={l=>dpd.find(d=>d.label===l)?.instrument||""}/>
+                                <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${fmtMoney(v)}${currency}`,"Cumulé"]} labelFormatter={l=>dpd.find(d=>d.label===l)?.instrument||""}/>
                                 <Line type="monotone" dataKey="v" stroke={dtPnl>=0?"#4caf6e":"#e05a5a"} strokeWidth={2} dot={{r:3,fill:dtPnl>=0?"#4caf6e":"#e05a5a",strokeWidth:0}} activeDot={{r:5,strokeWidth:0}}/>
                               </LineChart>
                             </ResponsiveContainer>
