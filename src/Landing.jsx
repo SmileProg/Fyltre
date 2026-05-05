@@ -322,7 +322,7 @@ function DashboardMockup() {
           <div style={{ padding:"4px 8px 14px", borderBottom:`1px solid ${BDR}`, marginBottom:4 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8 }}>
               <div>
-                <img src="/fyltra-logo-black.svg" style={{ height:11, width:"auto" }} alt="Fyltra"/>
+                <img src="/fyltra-logo-black.svg" style={{ height:22, width:"auto" }} alt="Fyltra"/>
                 <div style={{ fontSize:6.5, color:DIM2, letterSpacing:"0.18em", textTransform:"uppercase", marginTop:2 }}>Carnet de santé trading</div>
               </div>
             </div>
@@ -1056,7 +1056,7 @@ function AuthModal({ onClose, navigate, initialMode = "login" }) {
 
         {/* logo */}
         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:32 }}>
-          <img src="/fyltra-logo-black.svg" style={{ height:26, width:"auto", opacity:0.8 }} alt="Fyltra"/>
+          <img src="/fyltra-logo-black.svg" style={{ height:52, width:"auto", opacity:0.8 }} alt="Fyltra"/>
         </div>
 
         <h2 style={{ fontFamily:"'Outfit',sans-serif", fontWeight:800, fontSize:24, color:"#fff", marginBottom:6, letterSpacing:"-0.02em" }}>
@@ -1146,7 +1146,7 @@ export default function Landing() {
       {/* ─── NAV ─── */}
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:500, padding:"0 5vw", height:scrolled?58:72, display:"flex", alignItems:"center", justifyContent:"space-between", transition:"all .4s cubic-bezier(.16,1,.3,1)", background:scrolled?C.navBg:"transparent", backdropFilter:scrolled?"blur(20px)":"none", borderBottom:scrolled?`1px solid ${C.border}`:"none" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{ height:30, width:"auto" }} alt="Fyltra"/>
+          <img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{ height:60, width:"auto" }} alt="Fyltra"/>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
           <div className="l-nav-links" style={{ display:"flex", gap:4 }}>
@@ -1255,7 +1255,7 @@ export default function Landing() {
       {/* ─── FOOTER ─── */}
       <footer style={{ borderTop:`1px solid ${C.border}`, padding:"30px 5vw", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{ height:20, width:"auto", opacity:0.5 }} alt="Fyltra"/>
+          <img src={darkMode?"/fyltra-logo-black.svg":"/fyltra-logo-white.svg"} style={{ height:40, width:"auto", opacity:0.5 }} alt="Fyltra"/>
         </div>
         <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:10, color:C.textDimmer, letterSpacing:"0.1em" }}>© 2026 Fyltra · Trading Journal</span>
         <div style={{ display:"flex", gap:20, flexWrap:"wrap", alignItems:"center" }}>

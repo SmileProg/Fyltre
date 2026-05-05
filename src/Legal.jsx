@@ -263,7 +263,7 @@ export default function Legal() {
       {/* Nav */}
       <nav style={{ position: "sticky", top: 0, zIndex: 100, padding: "0 5vw", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(6,6,8,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <button onClick={() => navigate("/")} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer" }}>
-          <img src="/fyltra-logo-black.svg" style={{ height: 30, width: "auto" }} alt="Fyltra" />
+          <img src="/fyltra-logo-black.svg" style={{ height: 60, width: "auto" }} alt="Fyltra" />
         </button>
         <button onClick={() => navigate(-1)} style={{ background: "none", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "6px 14px", color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
           ← Retour
