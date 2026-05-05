@@ -15,6 +15,7 @@ const fmtMoney = n => {
 /* ─── Constants ─────────────────────────────────────────────────── */
 const BASE_INSTRUMENTS = ["BTC","XAUUSD","EUR/USD","GC","MGC","NQ","MNQ"];
 const EMOTIONS = ["Confiant","Neutre","Anxieux","Euphorique","Frustré","Patient"];
+const EMOTION_POLARITY = { "Confiant":"positive","Neutre":"positive","Patient":"positive","Anxieux":"negative","Euphorique":"negative","Frustré":"negative" };
 const SESSIONS = ["Asia","London","New York","Overlap"];
 const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const MONTHS_SH = ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"];
@@ -352,7 +353,7 @@ function Calendar({ filtered, calMonth, calYear, onPrev, onNext, onDayClick, cur
               return (
                 <div key={i} onClick={()=>{ if(onDayClick&&!isToday&&hasTrade){onDayClick({day,month:m,year:yr,pnl});}}} title={hasTrade ? `${pnl >= 0 ? "+" : ""}${fmtMoney(pnl)}${cur||"€"}` : ""} style={{ aspectRatio:"1", borderRadius:8, background:bg, border:isToday ? `1px solid ${C.accent}` : `1px solid ${hasTrade ? "transparent" : C.gray3}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:hasTrade&&!isToday?"pointer":"default", boxShadow:hasTrade ? "0 3px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.3)" : "none", transform:hasTrade ? "translateY(-1px)" : "none", transition:"all 0.15s" }}>
                   <span style={{ fontSize:9, color:hasTrade ? "#fff" : C.gray1, fontFamily:"'Josefin Sans',sans-serif", lineHeight:1, fontWeight:hasTrade ? 600 : 300 }}>{day}</span>
-                  {hasTrade && <span style={{ fontSize:7, color:"rgba(255,255,255,0.9)", lineHeight:1, marginTop:1 }}>{pnl >= 0 ? "+" : ""}{Math.round(pnl)}</span>}
+                  {hasTrade && <span style={{ fontSize:7, color:"rgba(255,255,255,0.9)", lineHeight:1, marginTop:1 }}>{pnl >= 0 ? "+" : ""}{fmtMoney(pnl)}</span>}
                 </div>
               );
             })}
@@ -1401,7 +1402,7 @@ export default function App() {
       .join("\n");
 
     // Polarity map from custom emotions
-    const polarityMap = {};
+    const polarityMap = { ...EMOTION_POLARITY };
     extraEmotions.forEach(e => { if (typeof e === "object" && e.polarity) polarityMap[e.label] = e.polarity; });
 
     const byDay     = group(t => DAYS[new Date(t.date+"T12:00:00").getDay()]);
@@ -1628,7 +1629,7 @@ ${recentTrades}`;
       {(tradeMode==="swing" || scalpFields.emotion) && (
         <Field label="État émotionnel">
           <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-            {EMOTIONS.map(e => <Chip key={e} label={e} active={form.emotion===e} onClick={()=>set("emotion",e)}/>)}
+            {EMOTIONS.map(e => { const pol = EMOTION_POLARITY[e]; return <Chip key={e} label={e} active={form.emotion===e} onClick={()=>set("emotion",e)} dot={pol==="positive"?"#4caf6e":pol==="negative"?"#e05a5a":null}/>; })}
             {extraEmotions.map(e => {
               const lbl = typeof e === "string" ? e : e.label;
               const pol = typeof e === "string" ? null : e.polarity;
@@ -2846,7 +2847,8 @@ ${recentTrades}`;
     }).filter(s=>s.count>0);
 
     // Emotion breakdown
-    const emotionData = EMOTIONS.map(e => {
+    const allEmotionLabels = [...EMOTIONS, ...extraEmotions.map(e => typeof e === "string" ? e : e.label)];
+    const emotionData = allEmotionLabels.map(e => {
       const et = acctTrades.filter(t=>t.emotion===e);
       const wr = et.length ? Math.round(et.filter(t=>t.result==="WIN").length/et.length*100) : 0;
       return { name:e, count:et.length, wr, pnl:et.reduce((a,t)=>a+(t.pnl||0),0) };
@@ -3130,7 +3132,8 @@ ${recentTrades}`;
         );
         })()}
         {(() => {
-          const todayEmotions = EMOTIONS.map(e => {
+          const allEmotions = [...EMOTIONS, ...extraEmotions.map(e => typeof e === "string" ? e : e.label)];
+          const todayEmotions = allEmotions.map(e => {
             const et = (acctView==="global"?acctTrades:todayTrades).filter(t=>t.emotion===e);
             const wr = et.length ? Math.round(et.filter(t=>t.result==="WIN").length/et.length*100) : 0;
             return { name:e, count:et.length, wr, pnl:et.reduce((a,t)=>a+(t.pnl||0),0) };
