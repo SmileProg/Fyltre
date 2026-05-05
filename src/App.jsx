@@ -34,7 +34,7 @@ let C = LIGHT_THEME;
 
 /* ─── Fonts / Global CSS ─────────────────────────────────────────── */
 const FONTS = `
-  @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Barlow:wght@500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Barlow:wght@500;600;700&family=Outfit:wght@700;800;900&display=swap');
   @font-face { font-family: 'MariellaNove'; src: url('/mariella-noeve.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
   @font-face { font-family: 'CoolveticaHv'; src: url('/coolvetica-hv-comp.otf') format('opentype'); font-weight: normal; font-style: normal; font-display: swap; }
   @font-face { font-family: 'Coolvetica'; src: url('/coolvetica-rg.otf') format('opentype'); font-weight: normal; font-style: normal; font-display: swap; }
@@ -212,9 +212,10 @@ const FULL_NAV = [
   { key:"history",   icon:"≡",  label:"Statistiques" },
   { key:"strategy",  icon:"◈",  label:"Plan" },
   { key:"ai",        icon:"◆",  label:"IA" },
+  { key:"profil",    icon:"◐",  label:"Profil" },
   { key:"settings",  icon:"◎",  label:"Paramètres" },
 ];
-function Sidebar({ view, setView, darkMode, onSignOut }) {
+function Sidebar({ view, setView, darkMode, onSignOut, nickname, firstName }) {
   const [hovered, setHovered] = useState(null);
   const pillStyle = { background:"linear-gradient(180deg, rgba(60,60,60,0.97) 0%, rgba(18,18,18,0.99) 55%, rgba(8,8,8,1) 100%)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderRadius:24, padding:"10px", display:"flex", flexDirection:"column", gap:4, boxShadow:"0 6px 20px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.4), 0 0 60px rgba(255,255,255,0.11), 0 0 0 1px rgba(255,255,255,0.13), inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -2px 0 rgba(0,0,0,0.8)", border:"1px solid rgba(255,255,255,0.1)" };
 
@@ -242,13 +243,17 @@ function Sidebar({ view, setView, darkMode, onSignOut }) {
     <div style={{ width:220, minHeight:"100vh", background:C.bg2, borderRight:`1px solid ${C.border}`, flexDirection:"column", position:"fixed", left:0, top:0, padding:"28px 0", zIndex:50, display:"flex", boxShadow:"4px 0 24px rgba(0,0,0,0.12)" }}>
       {/* Logo */}
       <div style={{ padding:"0 20px 24px", borderBottom:`1px solid ${C.border}` }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
-          <img src={darkMode?"/fyltra-white.svg":"/fyltra-black.svg"} style={{width:42,height:42,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
-          <div>
-            <div style={{ fontFamily:"'MariellaNove',sans-serif", fontSize:20, color:C.white, lineHeight:1 }}>FYLTRA</div>
-            <div style={{ fontSize:8, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
-          </div>
+        <div style={{ marginBottom:12 }}>
+          <img src={darkMode?"/fyltra-logo-white.svg":"/fyltra-logo-black.svg"} style={{height:28,width:"auto"}} alt="Fyltra"/>
+          <div style={{ fontSize:8, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300, marginTop:3 }}>Carnet de santé trading</div>
         </div>
+        {(nickname || firstName) && (
+          <div style={{ background:"linear-gradient(135deg, rgba(201,170,130,0.12) 0%, rgba(201,170,130,0.06) 100%)", border:"1px solid rgba(201,170,130,0.22)", borderRadius:12, padding:"10px 13px", position:"relative", overflow:"hidden" }}>
+            <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:"linear-gradient(90deg, transparent, rgba(201,170,130,0.5), transparent)" }} />
+            <div style={{ fontSize:8, color:"rgba(201,170,130,0.6)", letterSpacing:"0.28em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, marginBottom:4 }}>Trader</div>
+            <div style={{ fontFamily:"'Outfit',sans-serif", fontSize:16, fontWeight:800, background:"linear-gradient(135deg, #e8cda9 0%, #c9aa82 50%, #a8845a 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", lineHeight:1.2, letterSpacing:"0.02em" }}>{nickname || firstName}</div>
+          </div>
+        )}
       </div>
 
       {/* Main nav pill */}
@@ -268,6 +273,7 @@ function Sidebar({ view, setView, darkMode, onSignOut }) {
       {/* Settings pill */}
       <div style={{ padding:"0 12px 16px" }}>
         <div style={pillStyle}>
+          <NavBtn item={{key:"profil",icon:"◐",label:"Profil"}} />
           <NavBtn item={{key:"settings",icon:"◎",label:"Paramètres"}} />
         </div>
       </div>
@@ -292,25 +298,22 @@ function Sidebar({ view, setView, darkMode, onSignOut }) {
 
 /* ─── Calendar ───────────────────────────────────────────────────── */
 function Calendar({ filtered, calMonth, calYear, onPrev, onNext, onDayClick, cur }) {
-  const now = new Date();
-  const m = calMonth;
-  const yr = calYear;
-  const daysInMonth = new Date(yr, m + 1, 0).getDate();
-  const firstDay = new Date(yr, m, 1).getDay();
-  const offset = firstDay === 0 ? 6 : firstDay - 1;
+  const m = calMonth, yr = calYear;
+  const daysInMonth = new Date(Date.UTC(yr, m + 1, 0)).getUTCDate();
+  const firstDayJS  = new Date(Date.UTC(yr, m, 1)).getUTCDay(); // 0=Sun, timezone-safe
+  const offset      = firstDayJS === 0 ? 6 : firstDayJS - 1;   // convert to Mon-first
+  const todayStr = new Date().toISOString().split("T")[0];
   const byDay = {};
   filtered.forEach(t => {
-    const d = new Date(t.date + "T12:00:00");
-    if (d.getFullYear() === yr && d.getMonth() === m) {
-      byDay[d.getDate()] = (byDay[d.getDate()] || 0) + (t.pnl || 0);
-    }
+    const [ty, tm, td] = t.date.split("-").map(Number);
+    if (ty === yr && tm - 1 === m) byDay[td] = (byDay[td] || 0) + (t.pnl || 0);
   });
   const maxAbs = Math.max(...Object.values(byDay).map(Math.abs), 1);
   let cells = [...Array(offset).fill(null), ...Array.from({ length:daysInMonth }, (_, i) => i + 1)];
   while (cells.length % 7 !== 0) cells.push(null);
   const weeks = [];
   for (let w = 0; w < cells.length / 7; w++) weeks.push(cells.slice(w * 7, (w + 1) * 7));
-  const DAYS = ["L","M","M","J","V","S","D"];
+  const DAYS = ["Lu","Ma","Me","Je","Ve","Sa","Di"];
 
   return (
     <div>
@@ -336,9 +339,9 @@ function Calendar({ filtered, calMonth, calYear, onPrev, onNext, onDayClick, cur
               const pnl = byDay[day]; const hasTrade = pnl !== undefined;
               const intensity = hasTrade ? Math.min(0.9, 0.2 + 0.7 * (Math.abs(pnl) / maxAbs)) : 0;
               const bg = hasTrade ? (pnl >= 0 ? `rgba(42,110,58,${intensity})` : `rgba(192,57,43,${intensity})`) : "transparent";
-              const isToday = now.getDate() === day && now.getMonth() === m && now.getFullYear() === yr;
+              const isToday = todayStr === `${yr}-${String(m+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
               return (
-                <div key={day} onClick={()=>{ if(onDayClick&&!isToday&&hasTrade){onDayClick({day,month:m,year:yr,pnl});}}} title={hasTrade ? `${pnl >= 0 ? "+" : ""}${pnl.toFixed(0)}${cur||"€"}` : ""} style={{ aspectRatio:"1", borderRadius:8, background:bg, border:isToday ? `1px solid ${C.accent}` : `1px solid ${hasTrade ? "transparent" : C.gray3}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:hasTrade&&!isToday?"pointer":"default", boxShadow:hasTrade ? "0 3px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.3)" : "none", transform:hasTrade ? "translateY(-1px)" : "none", transition:"all 0.15s" }}>
+                <div key={i} onClick={()=>{ if(onDayClick&&!isToday&&hasTrade){onDayClick({day,month:m,year:yr,pnl});}}} title={hasTrade ? `${pnl >= 0 ? "+" : ""}${pnl.toFixed(0)}${cur||"€"}` : ""} style={{ aspectRatio:"1", borderRadius:8, background:bg, border:isToday ? `1px solid ${C.accent}` : `1px solid ${hasTrade ? "transparent" : C.gray3}`, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:hasTrade&&!isToday?"pointer":"default", boxShadow:hasTrade ? "0 3px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.3)" : "none", transform:hasTrade ? "translateY(-1px)" : "none", transition:"all 0.15s" }}>
                   <span style={{ fontSize:9, color:hasTrade ? "#fff" : C.gray1, fontFamily:"'Josefin Sans',sans-serif", lineHeight:1, fontWeight:hasTrade ? 600 : 300 }}>{day}</span>
                   {hasTrade && <span style={{ fontSize:7, color:"rgba(255,255,255,0.9)", lineHeight:1, marginTop:1 }}>{pnl >= 0 ? "+" : ""}{Math.round(pnl)}</span>}
                 </div>
@@ -575,14 +578,14 @@ function AuthScreen() {
   const CV = "'CoolveticaHv',sans-serif";
   const MN = "'MariellaNove',sans-serif";
 
-  const [authModal, setAuthModal] = useState(null);
-  const [mode, setMode]           = useState("login");
+  const [authModal, setAuthModal] = useState(false);
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
   const [showPwd, setShowPwd]     = useState(false);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState("");
   const [success, setSuccess]     = useState("");
+  const [paywall, setPaywall]     = useState(false);
 
   const ctaRef  = useRef(null);
   const glowRef = useRef(null);
@@ -607,18 +610,34 @@ function AuthScreen() {
   };
   const offMagnet = () => { if (ctaRef.current) ctaRef.current.style.transform = "translate(0,0) scale(1)"; };
 
-  const openAuth = (m) => { setMode(m); setAuthModal(true); setError(""); setSuccess(""); };
+  const openAuth = () => { setAuthModal(true); setError(""); setSuccess(""); setPaywall(false); };
 
   const submit = async () => {
     if (!email || !password) { setError("Remplis tous les champs."); return; }
-    setLoading(true); setError(""); setSuccess("");
-    if (mode === "login") {
-      const { error: e } = await supabase.auth.signInWithPassword({ email, password });
-      if (e) setError(e.message === "Invalid login credentials" ? "Email ou mot de passe incorrect." : e.message);
-    } else {
-      const { error: e } = await supabase.auth.signUp({ email, password });
-      if (e) setError(e.message);
+    setLoading(true); setError(""); setSuccess(""); setPaywall(false);
+
+    // Tentative de connexion
+    const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (!loginErr) { setLoading(false); return; } // connecté
+
+    // Compte inexistant → vérifier si l'email a un achat
+    if (loginErr.message === "Invalid login credentials") {
+      try {
+        const check = await fetch(`/api/check-purchase?email=${encodeURIComponent(email)}`);
+        const { authorized } = await check.json();
+        if (!authorized) { setPaywall(true); setLoading(false); return; }
+      } catch {
+        setError("Erreur de vérification. Réessaie.");
+        setLoading(false);
+        return;
+      }
+      // Achat confirmé → créer le compte automatiquement
+      const { error: signUpErr } = await supabase.auth.signUp({ email, password });
+      if (signUpErr) { setError(signUpErr.message); }
       else setSuccess("Compte créé ! Vérifie ton email pour confirmer.");
+    } else {
+      setError(loginErr.message);
     }
     setLoading(false);
   };
@@ -694,8 +713,7 @@ function AuthScreen() {
       {/* ── NAV ── */}
       <nav style={{ position:"fixed", top:0, left:0, right:0, zIndex:200, display:"flex", alignItems:"center", justifyContent:"space-between", padding:`0 ${PAD}`, height:56, background:"rgba(6,6,9,0.88)", backdropFilter:"blur(20px)", borderBottom:`1px solid ${BDR}` }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <img src="/fyltra-white.svg" style={{ width:26, height:26 }} alt="" />
-          <span style={{ fontFamily:MN, fontSize:17, color:CR }}>FYLTRA</span>
+          <img src="/fyltra-logo-white.svg" style={{ height:22, width:"auto" }} alt="Fyltra" />
         </div>
         <div style={{ display:"flex", gap:28, position:"absolute", left:"50%", transform:"translateX(-50%)" }}>
           {["Features","Pricing","About"].map(l => (
@@ -708,9 +726,9 @@ function AuthScreen() {
           <button onClick={()=>openAuth("login")} style={{ background:"none", border:"none", color:DIM, fontSize:12, cursor:"pointer", padding:"8px 12px", borderRadius:7, transition:"all 0.15s" }}
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color=CR;}}
             onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color=DIM;}}>Se connecter</button>
-          <button onClick={()=>openAuth("signup")} style={{ background:CR, color:BG, border:"none", borderRadius:7, padding:"8px 18px", fontSize:12, fontWeight:700, letterSpacing:"0.04em", cursor:"pointer", transition:"opacity 0.15s" }}
+          <a href="#tarifs" style={{ background:CR, color:BG, border:"none", borderRadius:7, padding:"8px 18px", fontSize:12, fontWeight:700, letterSpacing:"0.04em", cursor:"pointer", textDecoration:"none", transition:"opacity 0.15s" }}
             onMouseEnter={e=>e.currentTarget.style.opacity="0.86"}
-            onMouseLeave={e=>e.currentTarget.style.opacity="1"}>Commencer</button>
+            onMouseLeave={e=>e.currentTarget.style.opacity="1"}>Commencer</a>
         </div>
       </nav>
 
@@ -739,11 +757,11 @@ function AuthScreen() {
 
         {/* CTAs */}
         <div className="ln3" style={{ display:"flex", gap:12, flexWrap:"wrap", justifyContent:"center", marginBottom:80, position:"relative", zIndex:1 }}>
-          <button ref={ctaRef} onClick={()=>openAuth("signup")}
+          <button ref={ctaRef} onClick={()=>openAuth()}
             onMouseMove={onMagnet} onMouseLeave={offMagnet}
             className="cta-primary"
             style={{ background:CR, color:BG, border:"none", borderRadius:9, padding:"14px 32px", fontSize:13, fontWeight:700, letterSpacing:"0.04em", cursor:"pointer", transition:"transform 0.2s cubic-bezier(.23,1,.32,1), opacity 0.15s", display:"flex", alignItems:"center", gap:9 }}>
-            Commencer gratuitement
+            Accéder à Fyltra
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
           <button onClick={()=>openAuth("login")} style={{ background:"rgba(255,255,255,0.04)", color:CR, border:CARD_BDR, borderRadius:9, padding:"14px 24px", fontSize:13, fontWeight:400, cursor:"pointer", transition:"background 0.15s" }}
@@ -826,20 +844,19 @@ function AuthScreen() {
           <div style={{ fontFamily:CV, fontSize:"clamp(38px,5.5vw,78px)", letterSpacing:"-0.025em", color:CR, lineHeight:0.98, marginBottom:24 }}>
             Commence à journaliser<br />dès aujourd'hui.
           </div>
-          <p style={{ fontSize:15, color:DIM, marginBottom:40, fontWeight:300 }}>Sans carte bancaire. Gratuit pour commencer.</p>
-          <button onClick={()=>openAuth("signup")} style={{ background:CR, color:BG, border:"none", borderRadius:9, padding:"15px 40px", fontSize:14, fontWeight:700, letterSpacing:"0.04em", cursor:"pointer", transition:"opacity 0.15s, transform 0.2s" }}
+          <p style={{ fontSize:15, color:DIM, marginBottom:40, fontWeight:300 }}>Choisis un plan et commence à journaliser aujourd'hui.</p>
+          <a href="#tarifs" style={{ display:"inline-block", background:CR, color:BG, border:"none", borderRadius:9, padding:"15px 40px", fontSize:14, fontWeight:700, letterSpacing:"0.04em", cursor:"pointer", textDecoration:"none", transition:"opacity 0.15s, transform 0.2s" }}
             onMouseEnter={e=>{e.currentTarget.style.opacity="0.88";e.currentTarget.style.transform="scale(1.03)";}}
             onMouseLeave={e=>{e.currentTarget.style.opacity="1";e.currentTarget.style.transform="scale(1)";}}>
-            Commencer gratuitement →
-          </button>
+            Voir les tarifs →
+          </a>
         </Reveal>
       </section>
 
       {/* ── FOOTER ── */}
       <footer style={{ padding:`22px ${PAD}`, borderTop:`1px solid ${BDR}`, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
         <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-          <img src="/fyltra-white.svg" style={{ width:18, height:18, opacity:0.5 }} alt="" />
-          <span style={{ fontFamily:MN, fontSize:14, color:CR, opacity:0.4 }}>FYLTRA</span>
+          <img src="/fyltra-logo-white.svg" style={{ height:14, width:"auto", opacity:0.4 }} alt="Fyltra" />
         </div>
         <span style={{ fontSize:10, color:DIM2, letterSpacing:"0.08em" }}>© 2025 Fyltra · Trading Journal</span>
       </footer>
@@ -849,15 +866,11 @@ function AuthScreen() {
         <div onClick={()=>setAuthModal(null)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.82)", backdropFilter:"blur(16px)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
           <div onClick={e=>e.stopPropagation()} style={{ background:"rgba(10,10,16,0.98)", border:CARD_BDR, borderRadius:20, padding:"40px 36px", maxWidth:380, width:"100%", boxShadow:"0 40px 80px rgba(0,0,0,0.85)", boxSizing:"border-box" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:32 }}>
-              <span style={{ fontFamily:MN, fontSize:18, color:CR }}>FYLTRA</span>
-              <button onClick={()=>setAuthModal(null)} style={{ background:"none", border:"none", color:DIM, cursor:"pointer", fontSize:22, lineHeight:1, padding:0 }}>×</button>
-            </div>
-            <div style={{ display:"flex", marginBottom:28, background:"rgba(255,255,255,0.04)", borderRadius:10, padding:4 }}>
-              {[["login","Se connecter"],["signup","Créer un compte"]].map(([m,l])=>(
-                <button key={m} onClick={()=>{setMode(m);setError("");setSuccess("");}}
-                  style={{ flex:1, padding:"9px", borderRadius:7, border:"none", background:mode===m?CR:"transparent", color:mode===m?BG:DIM, fontSize:10, fontFamily:JF, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer", transition:"all 0.2s" }}>{l}
-                </button>
-              ))}
+              <div>
+                <img src="/fyltra-logo-white.svg" style={{ height:20, width:"auto" }} alt="Fyltra" />
+                <div style={{ fontSize:10, color:DIM, letterSpacing:"0.15em", textTransform:"uppercase", marginTop:3, fontFamily:JF }}>Connexion</div>
+              </div>
+              <button onClick={()=>setAuthModal(false)} style={{ background:"none", border:"none", color:DIM, cursor:"pointer", fontSize:22, lineHeight:1, padding:0 }}>×</button>
             </div>
             <div style={{ marginBottom:12 }}>
               <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}
@@ -873,10 +886,20 @@ function AuthScreen() {
               </button>
             </div>
             {error   && <div style={{ marginBottom:12, fontSize:11, color:"#e05a5a", fontFamily:JF }}>{error}</div>}
+            {paywall && (
+              <div style={{ marginBottom:12, padding:"12px 14px", borderRadius:10, background:"rgba(232,205,169,0.07)", border:"1px solid rgba(232,205,169,0.22)", fontFamily:JF }}>
+                <div style={{ fontSize:11, color:"#e8cda9", marginBottom:8, fontWeight:600, letterSpacing:"0.05em" }}>Accès réservé aux membres</div>
+                <div style={{ fontSize:11, color:"rgba(232,205,169,0.65)", marginBottom:10, lineHeight:1.55 }}>Cet email n'a pas de licence active. Choisis un plan pour créer ton compte.</div>
+                <a href="https://fyltra.lemonsqueezy.com/checkout/buy/8fa26c4d-ab9e-4830-b524-6832f5b2ad55?enabled=1600495&checkout[success_url]=https://fyltra.app/" target="_blank" rel="noreferrer"
+                  style={{ display:"inline-block", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#1a1208", borderRadius:7, padding:"8px 16px", fontSize:10, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", textDecoration:"none" }}>
+                  Voir les tarifs →
+                </a>
+              </div>
+            )}
             {success && <div style={{ marginBottom:12, fontSize:11, color:"#4caf6e", fontFamily:JF }}>{success}</div>}
             <button onClick={submit} disabled={loading}
               style={{ width:"100%", padding:"14px", borderRadius:10, border:"none", background:loading?"rgba(255,255,255,0.05)":CR, color:loading?"rgba(255,255,255,0.3)":BG, fontSize:10, fontFamily:JF, fontWeight:700, letterSpacing:"0.18em", textTransform:"uppercase", cursor:loading?"not-allowed":"pointer", transition:"all 0.2s" }}>
-              {loading?"···":mode==="login"?"Se connecter":"Créer le compte"}
+              {loading?"···":"Se connecter"}
             </button>
           </div>
         </div>
@@ -1051,7 +1074,14 @@ export default function App() {
   const cancelSignOut = () => { setSignOutLeaving(true); setTimeout(() => { setShowSignOutConfirm(false); setSignOutLeaving(false); }, 250); };
   const [currency, setCurrency] = useState(() => localStorage.getItem("fyltra_currency")||"€");
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("fyltra_dark")==="true");
-  C = darkMode ? DARK_THEME : LIGHT_THEME; // Dynamic theme
+  const [customBg,        setCustomBg]        = useState(() => localStorage.getItem("fyltra_cbg")  || "");
+  const [customBg2,       setCustomBg2]       = useState(() => localStorage.getItem("fyltra_cbg2") || "");
+  const [customTextWhite, setCustomTextWhite] = useState(() => { const v = localStorage.getItem("fyltra_ctxt"); return v === null ? null : v === "1"; });
+  C = darkMode ? {...DARK_THEME} : {...LIGHT_THEME};
+  if (customBg)  { C.bg = customBg; }
+  if (customBg2) { C.bg2 = customBg2; C.bg3 = customBg2; }
+  if (customTextWhite === true)  { C.white="#f0ede8"; C.dim="#aaa"; C.gray1="#888"; C.gray2="#555"; C.gray3="#333"; C.accent="#f0ede8"; C.border="rgba(255,255,255,0.08)"; C.borderGold="rgba(255,255,255,0.12)"; }
+  if (customTextWhite === false) { C.white="#1a1a1a"; C.dim="#555"; C.gray1="#888"; C.gray2="#bbb"; C.gray3="#ddd"; C.accent="#111"; C.border="rgba(0,0,0,0.1)"; C.borderGold="rgba(0,0,0,0.15)"; }
   document.documentElement.style.setProperty("--gold-rgb", darkMode?"232,205,169":"160,110,50");
   const [acctView, setAcctView] = useState("today");
   const [tabKey, setTabKey] = useState(0); // "today" | "global"
@@ -1080,6 +1110,12 @@ export default function App() {
   const [acctLayout, setAcctLayout] = useState(() => load('fyltra_layout_v1', ['progress','today','stats','calendar','trades']));
   const [acctDragOver, setAcctDragOver] = useState(null);
   const [view,        setView]        = useState("propfirm");
+  const [profileForm, setProfileForm] = useState({ firstName:"", lastName:"", nickname:"", address:"", phone:"" });
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [subData,     setSubData]     = useState(null);
+  const [subLoading,  setSubLoading]  = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const [aiText,      setAiText]      = useState("");
   const [aiLoading,   setAiLoading]   = useState(false);
   const [aiError,     setAiError]     = useState("");
@@ -1091,12 +1127,13 @@ export default function App() {
   const [showCustom,  setShowCustom]  = useState(false);
   const [editingTrade,setEditingTrade]= useState(null);
   const [editPnlRaw,  setEditPnlRaw]  = useState("");
-  // Calendar navigation — replace period filter
+  const [confirmDeleteTradeId, setConfirmDeleteTradeId] = useState(null);
+  // Calendar navigation — single combined state avoids stale-closure bugs
   const now0 = new Date();
-  const [calMonth, setCalMonth] = useState(now0.getMonth());
-  const [pfCalMonth, setPfCalMonth] = useState(now0.getMonth());
-  const [calYear,  setCalYear]  = useState(now0.getFullYear());
-  const [pfCalYear,  setPfCalYear]  = useState(now0.getFullYear());
+  const [calNav,   setCalNav]   = useState({ month: now0.getMonth(), year: now0.getFullYear() });
+  const [pfCalNav, setPfCalNav] = useState({ month: now0.getMonth(), year: now0.getFullYear() });
+  const calMonth  = calNav.month;  const calYear   = calNav.year;
+  const pfCalMonth = pfCalNav.month; const pfCalYear = pfCalNav.year;
   const [form, setForm] = useState({ date:new Date().toISOString().split("T")[0], time:new Date().toTimeString().slice(0,5), instrument:"MNQ", direction:"LONG", result:"WIN", session:"New York", emotion:"Neutre", entry:"", exit:"", rr:"", size:"", sizeUnit:"contrats", notes:"", accountIds:[], strategyId:null });
 
   const instruments = [...BASE_INSTRUMENTS, ...extraInstr, "Autre"];
@@ -1131,47 +1168,74 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Flag to block save effects while initial DB load is in progress
+  const isLoadingDB = useRef(false);
+
   // ── Load trades + settings from DB when user logs in ──
   useEffect(() => {
     if (!user) return;
-    supabase.from("trades").select("*").eq("user_id", user.id).order("created_at", { ascending:false })
-      .then(({ data }) => { if (data) setTrades(data.map(dbToTrade)); });
-    supabase.from("user_settings").select("*").eq("user_id", user.id).single()
-      .then(({ data }) => {
-        if (!data) return;
-        if (data.propfirms) setPropfirms(data.propfirms);
-        if (data.strategies) setStrategies(data.strategies);
-        if (data.capital !== undefined && data.capital !== null) setCapital(data.capital);
-        if (data.extra_instruments) setExtraInstr(data.extra_instruments);
-        if (data.dark_mode !== undefined && data.dark_mode !== null) setDarkMode(data.dark_mode);
-        if (data.currency) setCurrency(data.currency);
-        if (data.lang) setLang(data.lang);
-        if (data.acct_layout) setAcctLayout(data.acct_layout);
-        if (data.extra_emotions) setExtraEmotions(data.extra_emotions);
-        if (data.trade_settings) { setSavedTS(data.trade_settings); setTradeSettings(data.trade_settings); }
-        if (data.coach_instructions) setCoachInstructions(data.coach_instructions);
-        if (data.trade_mode) setTradeMode(data.trade_mode);
-        if (data.trade_fixed_mode) setTradeFixedMode(data.trade_fixed_mode);
-      });
+    isLoadingDB.current = true;
+    Promise.all([
+      supabase.from("trades").select("*").eq("user_id", user.id).order("created_at", { ascending:false }),
+      supabase.from("user_settings").select("*").eq("user_id", user.id).single()
+    ]).then(([tradesRes, settingsRes]) => {
+      setTrades(tradesRes.data ? tradesRes.data.map(dbToTrade) : []);
+      const d = settingsRes.data;
+      setPropfirms(d?.propfirms ?? []);
+      setStrategies(d?.strategies ?? []);
+      setCapital(d?.capital ?? "");
+      setExtraInstr(d?.extra_instruments ?? []);
+      setExtraEmotions(d?.extra_emotions ?? []);
+      if (d?.dark_mode !== undefined && d?.dark_mode !== null) setDarkMode(d.dark_mode);
+      if (d?.currency) setCurrency(d.currency);
+      if (d?.lang) setLang(d.lang);
+      if (d?.acct_layout) setAcctLayout(d.acct_layout);
+      if (d?.trade_settings) { setSavedTS(d.trade_settings); setTradeSettings(d.trade_settings); }
+      if (d?.coach_instructions) setCoachInstructions(d.coach_instructions);
+      if (d?.trade_mode) setTradeMode(d.trade_mode);
+      if (d?.trade_fixed_mode) setTradeFixedMode(d.trade_fixed_mode);
+      if (d?.first_name || d?.last_name || d?.nickname || d?.address || d?.phone)
+        setProfileForm({ firstName:d.first_name||"", lastName:d.last_name||"", nickname:d.nickname||"", address:d.address||"", phone:d.phone||"" });
+      // Release flag after React has processed all the state updates and run their effects
+      setTimeout(() => { isLoadingDB.current = false; }, 0);
+    });
   }, [user]);
 
   const saveUserSettings = async (patch) => {
     if (!user) return;
-    await supabase.from("user_settings").upsert({ user_id: user.id, ...patch, updated_at: new Date().toISOString() });
+    await supabase.from("user_settings").upsert(
+      { user_id: user.id, ...patch, updated_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
   };
 
   useEffect(() => { if (!user) save(KEYS.trades, trades); }, [trades]);
-  useEffect(() => { save(KEYS.instruments, extraInstr); if (user) saveUserSettings({ extra_instruments: extraInstr }); }, [extraInstr]);
-  useEffect(() => { save('fyltra_emotions_v1', extraEmotions); if (user) saveUserSettings({ extra_emotions: extraEmotions }); }, [extraEmotions]);
-  useEffect(() => { save(KEYS.strategies, strategies); if (user) saveUserSettings({ strategies }); }, [strategies]);
-  useEffect(() => { save(KEYS.capital, capital); if (user) saveUserSettings({ capital }); }, [capital]);
-  useEffect(() => { save(KEYS.propfirms, propfirms); if (user) saveUserSettings({ propfirms }); }, [propfirms]);
-  useEffect(() => { localStorage.setItem("fyltra_currency", currency); if (user) saveUserSettings({ currency }); }, [currency]);
-  useEffect(() => { localStorage.setItem("fyltra_dark", darkMode); document.documentElement.style.setProperty("--bg", darkMode?"#0f0f0f":"#f8f7f5"); document.documentElement.style.setProperty("--gold-rgb", darkMode?"232,205,169":"160,110,50"); document.body.style.background = darkMode?"#0f0f0f":"#f8f7f5"; document.body.style.color = darkMode?"#f0ede8":"#1a1a1a"; C = darkMode ? DARK_THEME : LIGHT_THEME; if (user) saveUserSettings({ dark_mode: darkMode }); }, [darkMode]);
-  useEffect(() => { localStorage.setItem("fyltra_lang", lang); if (user) saveUserSettings({ lang }); }, [lang]);
-  useEffect(() => { save('fyltra_layout_v1', acctLayout); if (user) saveUserSettings({ acct_layout: acctLayout }); }, [acctLayout]);
-  useEffect(() => { localStorage.setItem("fyltra_trade_mode", tradeMode); if (user) saveUserSettings({ trade_mode: tradeMode }); }, [tradeMode]);
-  useEffect(() => { localStorage.setItem("fyltra_trade_fixed_mode", tradeFixedMode); if (user) saveUserSettings({ trade_fixed_mode: tradeFixedMode }); }, [tradeFixedMode]);
+  useEffect(() => { if (isLoadingDB.current) return; save(KEYS.instruments, extraInstr); if (user) saveUserSettings({ extra_instruments: extraInstr }); }, [extraInstr]);
+  useEffect(() => { if (isLoadingDB.current) return; save('fyltra_emotions_v1', extraEmotions); if (user) saveUserSettings({ extra_emotions: extraEmotions }); }, [extraEmotions]);
+  useEffect(() => { if (isLoadingDB.current) return; save(KEYS.strategies, strategies); if (user) saveUserSettings({ strategies }); }, [strategies]);
+  useEffect(() => { if (isLoadingDB.current) return; save(KEYS.capital, capital); if (user) saveUserSettings({ capital }); }, [capital]);
+  useEffect(() => { if (isLoadingDB.current) return; save(KEYS.propfirms, propfirms); if (user) saveUserSettings({ propfirms }); }, [propfirms]);
+  useEffect(() => { if (isLoadingDB.current) return; localStorage.setItem("fyltra_currency", currency); if (user) saveUserSettings({ currency }); }, [currency]);
+  useEffect(() => {
+    localStorage.setItem("fyltra_dark", darkMode);
+    const bg = customBg || (darkMode?"#0f0f0f":"#f8f7f5");
+    const txt = customTextWhite !== null ? (customTextWhite?"#f0ede8":"#1a1a1a") : (darkMode?"#f0ede8":"#1a1a1a");
+    document.documentElement.style.setProperty("--bg", bg);
+    document.documentElement.style.setProperty("--gold-rgb", darkMode?"232,205,169":"160,110,50");
+    document.body.style.background = bg;
+    document.body.style.color = txt;
+    if (user && !isLoadingDB.current) saveUserSettings({ dark_mode: darkMode });
+  }, [darkMode, customBg, customTextWhite]);
+  useEffect(() => {
+    localStorage.setItem("fyltra_cbg",  customBg);
+    localStorage.setItem("fyltra_cbg2", customBg2);
+    if (customTextWhite === null) localStorage.removeItem("fyltra_ctxt");
+    else localStorage.setItem("fyltra_ctxt", customTextWhite ? "1" : "0");
+  }, [customBg, customBg2, customTextWhite]);
+  useEffect(() => { if (isLoadingDB.current) return; localStorage.setItem("fyltra_lang", lang); if (user) saveUserSettings({ lang }); }, [lang]);
+  useEffect(() => { if (isLoadingDB.current) return; save('fyltra_layout_v1', acctLayout); if (user) saveUserSettings({ acct_layout: acctLayout }); }, [acctLayout]);
+  useEffect(() => { if (isLoadingDB.current) return; localStorage.setItem("fyltra_trade_mode", tradeMode); if (user) saveUserSettings({ trade_mode: tradeMode }); }, [tradeMode]);
+  useEffect(() => { if (isLoadingDB.current) return; localStorage.setItem("fyltra_trade_fixed_mode", tradeFixedMode); if (user) saveUserSettings({ trade_fixed_mode: tradeFixedMode }); }, [tradeFixedMode]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]:v }));
   // Scroll to top on view change
@@ -1263,18 +1327,11 @@ export default function App() {
   });
   const calFiltered = filterByPeriod(trades);
 
-  const prevMonth = () => { if(calMonth===0){setCalMonth(11);setCalYear(y=>y-1);}else{setCalMonth(m=>m-1);} };
-  const prevPfMonth = () => { if(pfCalMonth===0){setPfCalMonth(11);setPfCalYear(y=>y-1);}else{setPfCalMonth(m=>m-1);} };
-  const nextPfMonth = () => {
-    const now=new Date();
-    if(pfCalYear>now.getFullYear()||(pfCalYear===now.getFullYear()&&pfCalMonth>=now.getMonth())) return;
-    if(pfCalMonth===11){setPfCalMonth(0);setPfCalYear(y=>y+1);}else{setPfCalMonth(m=>m+1);}
-  };
-  const nextMonth = () => {
-    const now = new Date();
-    if (calYear > now.getFullYear() || (calYear === now.getFullYear() && calMonth >= now.getMonth())) return;
-    if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else { setCalMonth(m => m + 1); }
-  };
+  const _nowYM = () => { const d=new Date(); return { y:d.getFullYear(), m:d.getMonth() }; };
+  const prevMonth   = () => setCalNav(n   => n.month===0  ? {month:11,year:n.year-1} : {month:n.month-1,year:n.year});
+  const nextMonth   = () => setCalNav(n   => { const {y,m}=_nowYM(); return (n.year>y||(n.year===y&&n.month>=m)) ? n : n.month===11 ? {month:0,year:n.year+1} : {month:n.month+1,year:n.year}; });
+  const prevPfMonth = () => setPfCalNav(n => n.month===0  ? {month:11,year:n.year-1} : {month:n.month-1,year:n.year});
+  const nextPfMonth = () => setPfCalNav(n => { const {y,m}=_nowYM(); return (n.year>y||(n.year===y&&n.month>=m)) ? n : n.month===11 ? {month:0,year:n.year+1} : {month:n.month+1,year:n.year}; });
 
   const filtered  = filterByPeriod(trades);
   const total     = filtered.length;
@@ -2071,7 +2128,7 @@ ${recentTrades}`;
       ) : [...trades].sort((a, b) => b.date.localeCompare(a.date)).map(t => {
         const pnl = t.pnl || 0; const isWin = t.result === "WIN"; const isLoss = t.result === "LOSS"; const isEditing = editingTrade?.id === t.id;
         return (
-          <div key={t.id} style={{ background:C.bg2, border:`1px solid ${isEditing ? C.accent : isWin ? "rgba(0,0,0,0.15)" : isLoss ? "rgba(0,0,0,0.08)" : C.border}`, borderLeft:`3px solid ${isEditing ? C.accent : isWin ? C.accent : isLoss ? C.gray2 : C.gray3}`, borderRadius:12, boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)", padding:"13px 15px", marginBottom:8, transition:"border 0.2s" }}>
+          <div key={t.id} style={{ background:C.bg2, border:`1px solid ${isEditing ? C.accent : isWin ? "rgba(74,222,128,0.15)" : isLoss ? "rgba(248,113,113,0.12)" : C.border}`, borderLeft:`3px solid ${isEditing ? C.accent : isWin ? "#4ade80" : isLoss ? "#f87171" : C.gray3}`, borderRadius:12, boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)", padding:"13px 15px", marginBottom:8, transition:"border 0.2s" }}>
             {!isEditing && (
               <>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:7 }}>
@@ -2080,13 +2137,27 @@ ${recentTrades}`;
                     <span style={{ marginLeft:8, fontSize:10, color:C.gray1, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.1em" }}>{t.direction}</span>
                   </div>
                   <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                    <span style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:16, fontWeight:300, color:pnl >= 0 ? C.accent : C.gray1, letterSpacing:"0.03em" }}>{pnl >= 0 ? "+" : ""}{pnl.toFixed(0)} €</span>
-                    <button onClick={() => startEdit(t)} style={{ background:"none", border:`1px solid ${C.gray3}`, borderRadius:4, color:C.gray1, cursor:"pointer", fontSize:11, padding:"2px 7px", fontFamily:"'Josefin Sans',sans-serif" }}>✎</button>
-                    <button onClick={() => deleteTrade(t.id)} style={{ background:"none", border:"none", color:C.gray2, cursor:"pointer", fontSize:17, lineHeight:1, padding:0 }}>×</button>
+                    <span style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:16, fontWeight:300, color:isWin ? "#4ade80" : isLoss ? "#f87171" : C.dim, letterSpacing:"0.03em" }}>{pnl >= 0 ? "+" : ""}{pnl.toFixed(0)} €</span>
+                    {confirmDeleteTradeId === t.id ? (
+                      <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+                        <span style={{ fontSize:10, color:C.gray1, fontFamily:"'Josefin Sans',sans-serif" }}>Supprimer ?</span>
+                        <button onClick={() => { deleteTrade(t.id); setConfirmDeleteTradeId(null); }} style={{ background:"rgba(200,60,60,0.15)", border:"1px solid rgba(200,60,60,0.4)", borderRadius:4, color:"#e07070", cursor:"pointer", fontSize:10, padding:"2px 8px", fontFamily:"'Josefin Sans',sans-serif", fontWeight:600 }}>Oui</button>
+                        <button onClick={() => setConfirmDeleteTradeId(null)} style={{ background:"none", border:`1px solid ${C.gray3}`, borderRadius:4, color:C.gray1, cursor:"pointer", fontSize:10, padding:"2px 8px", fontFamily:"'Josefin Sans',sans-serif" }}>Non</button>
+                      </div>
+                    ) : (
+                      <>
+                        <button onClick={() => startEdit(t)} style={{ background:"none", border:`1px solid ${C.gray3}`, borderRadius:4, color:C.gray1, cursor:"pointer", fontSize:11, padding:"2px 7px", fontFamily:"'Josefin Sans',sans-serif" }}>✎</button>
+                        <button onClick={() => setConfirmDeleteTradeId(t.id)} style={{ background:"none", border:"none", color:C.gray2, cursor:"pointer", fontSize:17, lineHeight:1, padding:0 }}>×</button>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-                  {[t.date, t.time||null, t.session, t.emotion, t.rr ? `RR ${t.rr}` : null].filter(Boolean).map((tag, i) => (
+                  {[t.date, t.time||null, t.session, t.emotion, t.rr ? `RR ${t.rr}` : null,
+                    ...(t.accountIds && t.accountIds.length > 0
+                      ? t.accountIds.map(id => propfirms.find(p => p.id === id)?.name).filter(Boolean)
+                      : [])
+                  ].filter(Boolean).map((tag, i) => (
                     <span key={i} style={{ fontSize:10, color:C.gray1, background:C.bg3, padding:"2px 8px", borderRadius:8, letterSpacing:"0.07em", fontFamily:"'Josefin Sans',sans-serif", border:`1px solid ${C.gray3}`, boxShadow:"0 2px 6px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)" }}>{tag}</span>
                   ))}
                 </div>
@@ -2931,17 +3002,18 @@ ${recentTrades}`;
               const lDeg=lFrac*180;
               const lPt=angleToXY(lDeg);
               const lossArc=lFrac>0.01?`M${RIGHT.x},${RIGHT.y} A${r},${r} 0 ${lFrac>=1?1:0} 0 ${lPt.x.toFixed(1)},${lPt.y.toFixed(1)}`:"";
-              const labY=cy+r+16;
+              const labY=cy+r+18;
+              const svgH=cy+r+34;
               return (
-                <svg width={size} height={cy+r+20} style={{overflow:"visible"}}>
+                <svg width={size} height={svgH} viewBox={`0 0 ${size} ${svgH}`}>
                   <path d={bgArc} stroke={C.gray3} strokeWidth={sw} fill="none" strokeLinecap="round"/>
                   {wFrac>0.01&&<path d={winArc} stroke="#2a6e3a" strokeWidth={sw} fill="none" strokeLinecap="round"/>}
                   {lFrac>0.01&&<path d={lossArc} stroke="#c0392b" strokeWidth={sw} fill="none" strokeLinecap="round"/>}
                   <text x={cx} y={cy-2} textAnchor="middle" fontSize={20} fontWeight={300} fill={wr>=50?"#2a6e3a":"#c0392b"} fontFamily="'Josefin Sans',sans-serif">{wr}%</text>
                   <text x={cx} y={cy+13} textAnchor="middle" fontSize={7} fill={C.dim} fontFamily="'Josefin Sans',sans-serif" letterSpacing="1.5">WIN RATE</text>
-                  <text x={4} y={labY} textAnchor="start" fontSize={10} fontWeight="600" fill="#2a6e3a" fontFamily="'Josefin Sans',sans-serif">{wins}W</text>
+                  <text x={8} y={labY} textAnchor="start" fontSize={10} fontWeight="600" fill="#2a6e3a" fontFamily="'Josefin Sans',sans-serif">{wins}W</text>
                   <text x={cx} y={labY} textAnchor="middle" fontSize={10} fill={C.gray2} fontFamily="'Josefin Sans',sans-serif">{total-wins-losses}BE</text>
-                  <text x={size-4} y={labY} textAnchor="end" fontSize={10} fontWeight="600" fill="#c0392b" fontFamily="'Josefin Sans',sans-serif">{losses}L</text>
+                  <text x={size-8} y={labY} textAnchor="end" fontSize={10} fontWeight="600" fill="#c0392b" fontFamily="'Josefin Sans',sans-serif">{losses}L</text>
                 </svg>
               );
             })(tw,tl,tt,140)) : <div style={{padding:"20px 0",color:C.gray2,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>Aucun trade{acctView==="today"?" aujourd'hui":""}</div>; })()}
@@ -3420,6 +3492,141 @@ ${recentTrades}`;
     return `${Math.abs(v).toFixed(decimals)}${currency}`;
   };
 
+  // ── Profile Content ──
+  const saveProfile = async () => {
+    if (!user) return;
+    setProfileSaving("saving");
+    const patch = {
+      first_name: profileForm.firstName || null,
+      last_name:  profileForm.lastName  || null,
+      nickname:   profileForm.nickname  || null,
+      address:    profileForm.address   || null,
+      phone:      profileForm.phone     || null,
+      updated_at: new Date().toISOString(),
+    };
+    const { error } = await supabase
+      .from("user_settings")
+      .upsert({ user_id: user.id, ...patch }, { onConflict: "user_id" });
+    if (error) console.error("saveProfile error:", error?.message, error?.details, error?.hint);
+    setProfileSaving(error ? `error:${error.message}` : "ok");
+    setTimeout(() => setProfileSaving(false), 4000);
+  };
+
+  const loadSub = async () => {
+    if (!user?.email || subData || subLoading) return;
+    setSubLoading(true);
+    try {
+      const r = await fetch(`/api/subscription-status?email=${encodeURIComponent(user.email)}`);
+      const d = await r.json();
+      setSubData(r.ok ? d : { error: d.error });
+    } catch { setSubData({ error: "Erreur réseau" }); }
+    setSubLoading(false);
+  };
+
+  const cancelSub = async () => {
+    if (!subData?.id) return;
+    setCancelLoading(true);
+    try {
+      const r = await fetch("/api/cancel-subscription", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ subscriptionId: subData.id }) });
+      const d = await r.json();
+      if (r.ok) { setSubData(prev => ({ ...prev, cancelled: true, endsAt: d.endsAt || prev.endsAt })); }
+    } catch {}
+    setCancelLoading(false);
+    setCancelConfirm(false);
+  };
+
+  const fmtDate = iso => { if (!iso) return "—"; const d = new Date(iso); return d.toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" }); };
+  const pField = { width:"100%", background:C.bg3, border:`1px solid ${C.border}`, borderRadius:8, padding:"11px 14px", color:C.white, fontFamily:"'Josefin Sans',sans-serif", fontSize:13, outline:"none", boxSizing:"border-box" };
+
+  const profileContent = (() => {
+    if (view === "profil" && !subData && !subLoading) loadSub();
+    return (
+      <div style={{ maxWidth:640, margin:"0 auto" }}>
+        <PageTitle sub="Mon Compte" title="Profil" />
+
+        {/* ── Personal info ── */}
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.22),0 0 0 1px rgba(255,255,255,0.09),inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>Informations personnelles</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+            {[["Prénom","firstName"],["Nom","lastName"]].map(([label,key])=>(
+              <div key={key}>
+                <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>{label}</div>
+                <input value={profileForm[key]} onChange={e=>setProfileForm(f=>({...f,[key]:e.target.value}))} style={pField} placeholder={label} />
+              </div>
+            ))}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+            <div>
+              <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Surnom</div>
+              <input value={profileForm.nickname} onChange={e=>setProfileForm(f=>({...f,nickname:e.target.value}))} style={pField} placeholder="Pseudo de trading" />
+            </div>
+            <div>
+              <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Téléphone</div>
+              <input value={profileForm.phone} onChange={e=>setProfileForm(f=>({...f,phone:e.target.value}))} style={pField} placeholder="+33 6 00 00 00 00" />
+            </div>
+          </div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Email</div>
+            <input value={user?.email||""} readOnly style={{...pField,color:C.gray1,cursor:"default",background:"transparent"}} />
+          </div>
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Adresse <span style={{color:C.gray2,textTransform:"none",letterSpacing:0,fontSize:9}}>(optionnel)</span></div>
+            <textarea value={profileForm.address} onChange={e=>setProfileForm(f=>({...f,address:e.target.value}))} rows={2} style={{...pField,resize:"vertical",lineHeight:1.5}} placeholder="Adresse postale" />
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+            <button onClick={saveProfile} disabled={!!profileSaving} style={{padding:"11px 24px",borderRadius:8,border:profileSaving==="ok"?"1px solid rgba(74,222,128,0.4)":profileSaving==="saving"?"none":profileSaving?"1px solid rgba(229,100,100,0.4)":"none",background:profileSaving==="ok"?"rgba(74,222,128,0.1)":profileSaving==="saving"?`rgba(255,255,255,0.06)`:profileSaving?`rgba(229,100,100,0.1)`:`linear-gradient(135deg,${C.accent},#c9aa82)`,color:profileSaving==="ok"?"#4ade80":profileSaving==="saving"?C.gray1:profileSaving?"rgba(229,100,100,0.9)":"#000",fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,cursor:profileSaving?"not-allowed":"pointer",transition:"all 0.2s"}}>
+              {profileSaving==="ok"?"✓ Sauvegardé":profileSaving==="saving"?"Sauvegarde...":"Sauvegarder"}
+            </button>
+            {profileSaving&&profileSaving!=="ok"&&profileSaving!=="saving"&&<span style={{fontSize:11,color:"rgba(229,100,100,0.9)",fontFamily:"'Josefin Sans',sans-serif"}}>{String(profileSaving).replace("error:","")}</span>}
+          </div>
+        </div>
+
+        {/* ── Subscription ── */}
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.22),0 0 0 1px rgba(255,255,255,0.09),inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px"}}>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>Abonnement</div>
+          {subLoading ? (
+            <div style={{color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif"}}>Chargement...</div>
+          ) : subData?.error ? (
+            <div style={{color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif"}}>{subData.error === "no subscription" ? "Aucun abonnement actif trouvé." : subData.error}</div>
+          ) : subData ? (
+            <>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+                <div style={{background:C.bg3,borderRadius:8,padding:"12px 14px"}}>
+                  <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>Plan actuel</div>
+                  <div style={{fontSize:15,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{subData.productName || "—"}</div>
+                  <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{subData.variantName || ""}</div>
+                </div>
+                <div style={{background:C.bg3,borderRadius:8,padding:"12px 14px"}}>
+                  <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>{subData.cancelled?"Expire le":"Prochaine facture"}</div>
+                  <div style={{fontSize:15,color:subData.cancelled?"rgba(192,57,43,0.9)":C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{fmtDate(subData.cancelled ? subData.endsAt : subData.renewsAt)}</div>
+                  <div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif",marginTop:2,color:subData.cancelled?"rgba(192,57,43,0.7)":"#4ade80"}}>{subData.cancelled?"Accès annulé":"Actif"}</div>
+                </div>
+              </div>
+              {!subData.cancelled && (
+                cancelConfirm ? (
+                  <div style={{background:"rgba(192,57,43,0.08)",border:"1px solid rgba(192,57,43,0.25)",borderRadius:10,padding:"14px 16px"}}>
+                    <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",marginBottom:12,lineHeight:1.5}}>Confirmer la résiliation ? Ton accès restera actif jusqu'au {fmtDate(subData.renewsAt)}, puis sera coupé.</div>
+                    <div style={{display:"flex",gap:8}}>
+                      <button onClick={cancelSub} disabled={cancelLoading} style={{flex:1,padding:"10px",borderRadius:8,border:"none",background:"rgba(192,57,43,0.8)",color:"#fff",fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:12,cursor:cancelLoading?"not-allowed":"pointer"}}>
+                        {cancelLoading?"Résiliation...":"Oui, résilier"}
+                      </button>
+                      <button onClick={()=>setCancelConfirm(false)} style={{flex:1,padding:"10px",borderRadius:8,border:`1px solid ${C.border}`,background:"transparent",color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",fontSize:12,cursor:"pointer"}}>Annuler</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={()=>setCancelConfirm(true)} style={{padding:"10px 20px",borderRadius:8,border:"1px solid rgba(192,57,43,0.3)",background:"rgba(192,57,43,0.06)",color:"rgba(192,57,43,0.8)",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,fontSize:12,cursor:"pointer",transition:"all 0.2s"}}>
+                    Résilier mon abonnement
+                  </button>
+                )
+              )}
+              {subData.cancelled && <div style={{fontSize:12,color:"rgba(192,57,43,0.7)",fontFamily:"'Josefin Sans',sans-serif"}}>Ton abonnement a été résilié. L'accès sera coupé à la fin de la période en cours.</div>}
+            </>
+          ) : null}
+        </div>
+      </div>
+    );
+  })();
+
   // ── Settings Content ──
   const settingsContent = (
     <div style={{ maxWidth:680, margin:"0 auto" }}>
@@ -3455,6 +3662,41 @@ ${recentTrades}`;
             <div style={{position:"absolute",top:3,left:darkMode?26:3,width:22,height:22,borderRadius:11,background:darkMode?"#111":"#fff",transition:"left 0.25s",boxShadow:"0 1px 4px rgba(0,0,0,0.2)"}}/>
           </button>
         </div>
+      </div>
+
+      {/* ── COULEURS ── */}
+      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.22),inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
+        <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>Couleurs</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+          {[["Fond",customBg,setCustomBg,darkMode?"#0f0f0f":"#f8f7f5"],["Cartes",customBg2,setCustomBg2,darkMode?"#1a1a1a":"#f0ede8"]].map(([label,val,setter,def])=>(
+            <div key={label}>
+              <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>{label}</div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <input type="color" value={val||def} onChange={e=>setter(e.target.value)}
+                  style={{width:34,height:34,borderRadius:7,border:`1px solid ${C.border}`,cursor:"pointer",padding:2,background:"transparent",flexShrink:0}} />
+                <input type="text" value={val} placeholder={def}
+                  onChange={e=>{const v=e.target.value;if(/^#[0-9a-fA-F]{0,6}$/.test(v)){setter(v);}}}
+                  onBlur={e=>{if(!/^#[0-9a-fA-F]{6}$/.test(e.target.value)&&e.target.value!=="")setter("");}}
+                  style={{flex:1,background:C.bg3,border:`1px solid ${C.border}`,borderRadius:7,padding:"7px 10px",color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontSize:12,letterSpacing:"0.08em",outline:"none",minWidth:0}} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Texte</div>
+          <div style={{display:"flex",gap:6}}>
+            {[{v:null,l:"Auto"},{v:true,l:"Blanc"},{v:false,l:"Noir"}].map(opt=>(
+              <button key={String(opt.v)} onClick={()=>setCustomTextWhite(opt.v)} style={{flex:1,padding:"9px",borderRadius:8,border:`1px solid ${customTextWhite===opt.v?C.accent:C.border}`,background:customTextWhite===opt.v?"rgba(128,128,128,0.12)":"transparent",color:customTextWhite===opt.v?C.white:C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",cursor:"pointer",transition:"all 0.2s"}}>
+                {opt.l}
+              </button>
+            ))}
+          </div>
+        </div>
+        {(customBg||customBg2||customTextWhite!==null)&&(
+          <button onClick={()=>{setCustomBg("");setCustomBg2("");setCustomTextWhite(null);}} style={{fontSize:11,color:"rgba(229,100,100,0.7)",fontFamily:"'Josefin Sans',sans-serif",background:"none",border:"1px solid rgba(229,100,100,0.2)",borderRadius:8,padding:"7px 16px",cursor:"pointer",transition:"all 0.2s"}}>
+            Réinitialiser les couleurs
+          </button>
+        )}
       </div>
 
       {/* ── TRADE SETTINGS ── */}
@@ -3511,7 +3753,7 @@ ${recentTrades}`;
 
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px"}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Version</div>
-        <div style={{fontSize:13,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}><span style={{fontFamily:"'MariellaNove',sans-serif",fontSize:16}}>FYLTRA</span> v1.0 · Trading Journal</div>
+        <div style={{fontSize:13,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif"}}><img src={darkMode?"/fyltra-logo-white.svg":"/fyltra-logo-black.svg"} style={{height:13,width:"auto",verticalAlign:"middle"}} alt="Fyltra"/> v1.0 · Trading Journal</div>
         <div style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",marginTop:4,letterSpacing:"0.06em"}}>Créé par Smile</div>
       </div>
     </div>
@@ -3523,6 +3765,7 @@ ${recentTrades}`;
     if (view === "history")   return historyContent;
     if (view === "strategy")  return strategyContent;
     if (view === "ai")        return aiContent;
+    if (view === "profil")    return profileContent;
     if (view === "settings")  return settingsContent;
     return null;
   };
@@ -3545,9 +3788,8 @@ ${recentTrades}`;
         <div style={{ minHeight:"100vh", paddingBottom:100 }}>
           <div style={{ padding:"16px 20px", background:`linear-gradient(180deg,${C.bg2},${C.bg})`, borderBottom:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:50, backdropFilter:"blur(16px)", flexWrap:"wrap" }}>
             <div style={{ display:"flex", alignItems:"center", gap:9 }}>
-              <img src={darkMode?"/fyltra-white.svg":"/fyltra-black.svg"} style={{width:38,height:38,flexShrink:0,borderRadius:8}} alt="Fyltra"/>
+              <img src={darkMode?"/fyltra-logo-white.svg":"/fyltra-logo-black.svg"} style={{height:32,width:"auto",flexShrink:0}} alt="Fyltra"/>
               <div>
-                <span style={{ fontFamily:"'MariellaNove',sans-serif", fontSize:18, color:C.white, display:"block", lineHeight:1, marginBottom:2 }}>FYLTRA</span>
                 <div style={{ fontSize:7, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:300 }}>Carnet de santé trading</div>
               </div>
             </div>
@@ -3578,7 +3820,7 @@ ${recentTrades}`;
             <>
               <div onClick={closeMenu} style={{position:"fixed",inset:0,zIndex:298}}/>
               <div style={{position:"fixed",top:70,right:16,zIndex:299,animation:`${menuClosing?"slideToRight":"slideFromRight"} 0.24s cubic-bezier(.4,0,.2,1)`,display:"flex",flexDirection:"column",gap:6,background:"rgba(14,14,14,0.96)",backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",borderRadius:20,padding:"10px",boxShadow:"0 16px 48px rgba(0,0,0,0.35)",border:"1px solid rgba(255,255,255,0.07)",minWidth:160}}>
-                {[{k:"history",l:"Statistiques",i:"≡"},{k:"strategy",l:"Plan",i:"◈"},{k:"settings",l:"Paramètres",i:"◎"}].map(item=>(
+                {[{k:"history",l:"Statistiques",i:"≡"},{k:"strategy",l:"Plan",i:"◈"},{k:"profil",l:"Profil",i:"◐"},{k:"settings",l:"Paramètres",i:"◎"}].map(item=>(
                   <button key={item.k} onClick={()=>{setView(item.k);setShowMenu(false);}} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",borderRadius:12,border:"none",cursor:"pointer",background:"transparent",transition:"background 0.15s"}}>
                     <span style={{fontSize:17,color:"rgba(255,255,255,0.6)",lineHeight:1,width:20,textAlign:"center"}}>{item.i}</span>
                     <span style={{fontSize:13,fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.06em",color:"rgba(255,255,255,0.7)"}}>{item.l}</span>
@@ -3624,16 +3866,18 @@ ${recentTrades}`;
                   const lA2=lFrac>0.01?`M${RIGHT2.x},${RIGHT2.y} A${r},${r} 0 ${lFrac>=1?1:0} 0 ${lP2.x.toFixed(1)},${lP2.y.toFixed(1)}`:"";
                   return (
                     <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:14,background:"rgba(255,255,255,0.04)",borderRadius:10,padding:"12px 14px"}}>
-                      <svg width={110} height={68} style={{overflow:"visible",flexShrink:0}}>
-                        <path d={bgA} stroke="rgba(255,255,255,0.1)" strokeWidth={sw} fill="none" strokeLinecap="round"/>
-                        {wFrac>0.01&&<path d={wA2} stroke="#4caf6e" strokeWidth={sw} fill="none" strokeLinecap="round"/>}
-                        {lFrac>0.01&&<path d={lA2} stroke="#e05a5a" strokeWidth={sw} fill="none" strokeLinecap="round"/>}
-                        <text x={cx} y={cy} textAnchor="middle" fontSize={14} fontWeight={300} fill={wr>=50?"#4caf6e":"#e05a5a"} fontFamily="'Josefin Sans',sans-serif">{wr}%</text>
-                        <text x={cx} y={cy+12} textAnchor="middle" fontSize={6} fill="rgba(255,255,255,0.35)" fontFamily="'Josefin Sans',sans-serif" letterSpacing="1">WIN RATE</text>
-                        <text x={3} y={cy+r+14} textAnchor="start" fontSize={8} fontWeight="600" fill="#4caf6e" fontFamily="'Josefin Sans',sans-serif">{dW}W</text>
-                        <text x={cx} y={cy+r+14} textAnchor="middle" fontSize={8} fill="rgba(255,255,255,0.35)" fontFamily="'Josefin Sans',sans-serif">{dT-dW-dL}BE</text>
-                        <text x={107} y={cy+r+14} textAnchor="end" fontSize={8} fontWeight="600" fill="#e05a5a" fontFamily="'Josefin Sans',sans-serif">{dL}L</text>
-                      </svg>
+                      <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0,width:110}}>
+                        <svg width={110} height={cy+8} viewBox={`0 0 110 ${cy+8}`}>
+                          <path d={bgA} stroke="rgba(255,255,255,0.1)" strokeWidth={sw} fill="none" strokeLinecap="round"/>
+                          {wFrac>0.01&&<path d={wA2} stroke="#4caf6e" strokeWidth={sw} fill="none" strokeLinecap="round"/>}
+                          {lFrac>0.01&&<path d={lA2} stroke="#e05a5a" strokeWidth={sw} fill="none" strokeLinecap="round"/>}
+                          <text x={cx} y={cy} textAnchor="middle" fontSize={14} fontWeight={300} fill={wr>=50?"#4caf6e":"#e05a5a"} fontFamily="'Josefin Sans',sans-serif">{wr}%</text>
+                          <text x={cx} y={cy+12} textAnchor="middle" fontSize={6} fill="rgba(255,255,255,0.35)" fontFamily="'Josefin Sans',sans-serif" letterSpacing="1">WIN RATE</text>
+                          <text x={4} y={cy+2} textAnchor="start" fontSize={8} fontWeight="600" fill="#4caf6e" fontFamily="'Josefin Sans',sans-serif">{dW}W</text>
+                          <text x={cx} y={cy+2} textAnchor="middle" fontSize={8} fill="rgba(255,255,255,0.35)" fontFamily="'Josefin Sans',sans-serif">{dT-dW-dL}BE</text>
+                          <text x={106} y={cy+2} textAnchor="end" fontSize={8} fontWeight="600" fill="#e05a5a" fontFamily="'Josefin Sans',sans-serif">{dL}L</text>
+                        </svg>
+                      </div>
                       <div style={{flex:1}}>
                         {(() => {
                           const dayEmotions=EMOTIONS.map(e=>{const et=selectedDay.trades.filter(t=>t.emotion===e);const wr=et.length?Math.round(et.filter(t=>t.result==="WIN").length/et.length*100):0;return{name:e,count:et.length,wr,pnl:et.reduce((a,t)=>a+(t.pnl||0),0)};}).filter(e=>e.count>0);
@@ -3719,13 +3963,13 @@ ${recentTrades}`;
       ) : (
         /* ── DESKTOP ── */
         <div style={{ display:"flex", minHeight:"100vh" }}>
-          <Sidebar view={view} setView={setView} darkMode={darkMode} onSignOut={() => setShowSignOutConfirm(true)} />
+          <Sidebar view={view} setView={setView} darkMode={darkMode} onSignOut={() => setShowSignOutConfirm(true)} nickname={profileForm.nickname} firstName={profileForm.firstName} />
           <div style={{ marginLeft:220, flex:1, display:"flex", flexDirection:"column" }}>
             <div style={{ padding:"20px 36px 18px", borderBottom:`1px solid ${C.border}`, background:C.bg, position:"sticky", top:0, zIndex:40, backdropFilter:"blur(12px)", display:"flex", alignItems:"flex-end", justifyContent:"space-between" }}>
               <div>
                 <div style={{ fontSize:11, color:C.dim, letterSpacing:"0.25em", textTransform:"uppercase", marginBottom:2, fontFamily:"'Josefin Sans',sans-serif" }}>{FULL_NAV.find(n => n.key === view)?.label}</div>
                 <div style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:26, fontWeight:700, color:C.white, letterSpacing:"-0.025em" }}>
-                  {view === "propfirm" ? (selectedPf ? selectedPf.firm + (selectedPf.name ? " · " + selectedPf.name : "") : "Mes Comptes") : view === "add" ? "Nouveau Trade" : view === "history" ? "Statistiques" : view === "strategy" ? "Plan de Trading" : view === "tools" ? "Outils" : "Analyse IA"}
+                  {view === "propfirm" ? (selectedPf ? selectedPf.firm + (selectedPf.name ? " · " + selectedPf.name : "") : "Mes Comptes") : view === "add" ? "Nouveau Trade" : view === "history" ? "Statistiques" : view === "strategy" ? "Plan de Trading" : view === "profil" ? "Profil" : view === "tools" ? "Outils" : "Analyse IA"}
                 </div>
               </div>
               <button onClick={()=>setDarkMode(d=>!d)} title={darkMode?"Mode clair":"Mode sombre"} style={{background:darkMode?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.06)",border:`1px solid ${C.border}`,borderRadius:10,width:36,height:36,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:C.gray1,flexShrink:0,transition:"all 0.2s",marginBottom:4}}>

@@ -52,7 +52,7 @@ Réponds en français. Direct, chiffres d'abord, conclusions ensuite.`;
         max_tokens: 1800,
         messages: [
           { role: "system", content: systemMsg },
-          { role: "user", content: `${tradeCount} trades analysés :\n\n${patternData}` }
+          { role: "user", content: `TOTAL : ${tradeCount} trades (attention : les statistiques ci-dessous regroupent ces MÊMES ${tradeCount} trades selon différentes dimensions — ne les additionne pas entre sections).\n\n${patternData}` }
         ]
       })
     });

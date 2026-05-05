@@ -1,0 +1,327 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f0f14"/>
+      <stop offset="100%" stop-color="#0b0b0f"/>
+    </linearGradient>
+    <linearGradient id="sidebar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0d0d12"/>
+      <stop offset="100%" stop-color="#0f0f15"/>
+    </linearGradient>
+    <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8cda9" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#e8cda9" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.01"/>
+    </linearGradient>
+    <linearGradient id="winGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2a6e3a" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#2a6e3a" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="lossGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#c0392b" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#c0392b" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="mainClip">
+      <rect x="200" y="0" width="1000" height="720"/>
+    </clipPath>
+    <clipPath id="chartClip">
+      <rect x="220" y="90" width="660" height="130"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="720" fill="url(#bg)"/>
+
+  <!-- Subtle background glow -->
+  <ellipse cx="700" cy="200" rx="400" ry="200" fill="#e8cda9" fill-opacity="0.025" filter="url(#softglow)"/>
+
+  <!-- ── SIDEBAR ── -->
+  <rect x="0" y="0" width="200" height="720" fill="url(#sidebar)"/>
+  <rect x="199" y="0" width="1" height="720" fill="#ffffff" fill-opacity="0.06"/>
+
+  <!-- Logo -->
+  <rect x="20" y="22" width="26" height="26" rx="6" fill="#e8cda9" fill-opacity="0.12"/>
+  <text x="33" y="39" font-family="Georgia, serif" font-size="13" fill="#e8cda9" text-anchor="middle" font-style="italic">F</text>
+  <text x="58" y="40" font-family="Georgia, serif" font-size="14" fill="#f5f2ea" letter-spacing="2" font-style="italic">YLTRA</text>
+
+  <!-- Nav items -->
+  <!-- Journal (active) -->
+  <rect x="12" y="72" width="176" height="32" rx="7" fill="#e8cda9" fill-opacity="0.09"/>
+  <rect x="12" y="72" width="3" height="32" rx="1.5" fill="#e8cda9"/>
+  <circle cx="32" cy="88" r="3.5" fill="#e8cda9" fill-opacity="0.6"/>
+  <text x="48" y="92" font-family="system-ui, sans-serif" font-size="11" fill="#f5f2ea" letter-spacing="0.5" font-weight="500">Journal</text>
+
+  <!-- Comptes -->
+  <circle cx="32" cy="124" r="3" fill="#ffffff" fill-opacity="0.18"/>
+  <text x="48" y="128" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.32" letter-spacing="0.5">Comptes</text>
+
+  <!-- Analytics -->
+  <circle cx="32" cy="156" r="3" fill="#ffffff" fill-opacity="0.18"/>
+  <text x="48" y="160" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.32" letter-spacing="0.5">Analytics</text>
+
+  <!-- IA -->
+  <circle cx="32" cy="188" r="3" fill="#ffffff" fill-opacity="0.18"/>
+  <text x="48" y="192" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.32" letter-spacing="0.5">IA Coach</text>
+
+  <!-- Réglages -->
+  <circle cx="32" cy="220" r="3" fill="#ffffff" fill-opacity="0.18"/>
+  <text x="48" y="224" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.32" letter-spacing="0.5">Réglages</text>
+
+  <!-- Divider -->
+  <line x1="20" y1="260" x2="180" y2="260" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+
+  <!-- Account card -->
+  <rect x="14" y="274" width="172" height="60" rx="8" fill="#ffffff" fill-opacity="0.03" stroke="#ffffff" stroke-opacity="0.07" stroke-width="0.5"/>
+  <text x="24" y="292" font-family="system-ui, sans-serif" font-size="9" fill="#e8cda9" fill-opacity="0.7" letter-spacing="1" text-transform="uppercase">COMPTE ACTIF</text>
+  <text x="24" y="308" font-family="system-ui, sans-serif" font-size="12" fill="#f5f2ea" fill-opacity="0.85" font-weight="500">FTMO · MNQ</text>
+  <text x="24" y="324" font-family="system-ui, sans-serif" font-size="10" fill="#e8cda9">+€1 840</text>
+  <rect x="102" y="316" width="60" height="4" rx="2" fill="#ffffff" fill-opacity="0.07"/>
+  <rect x="102" y="316" width="38" height="4" rx="2" fill="#2a6e3a" fill-opacity="0.7"/>
+
+  <!-- User info bottom -->
+  <circle cx="30" cy="694" r="12" fill="#e8cda9" fill-opacity="0.12"/>
+  <text x="30" y="698" font-family="system-ui, sans-serif" font-size="10" fill="#e8cda9" text-anchor="middle" font-weight="600">O</text>
+  <text x="50" y="692" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.6">Olivier</text>
+  <text x="50" y="704" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.25">Pro · 47 trades</text>
+
+  <!-- ── MAIN CONTENT ── -->
+
+  <!-- Header -->
+  <text x="220" y="44" font-family="system-ui, sans-serif" font-size="20" fill="#f5f2ea" font-weight="600" letter-spacing="-0.5">Journal</text>
+  <text x="220" y="62" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.3" letter-spacing="0.3">Avril 2025 · 23 trades</text>
+
+  <!-- Date filter pills -->
+  <rect x="860" y="24" width="48" height="22" rx="5" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.08" stroke-width="0.5"/>
+  <text x="884" y="39" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.35" text-anchor="middle">7j</text>
+  <rect x="914" y="24" width="48" height="22" rx="5" fill="#e8cda9" fill-opacity="0.12" stroke="#e8cda9" stroke-opacity="0.25" stroke-width="0.5"/>
+  <text x="938" y="39" font-family="system-ui, sans-serif" font-size="9" fill="#e8cda9" text-anchor="middle" font-weight="600">30j</text>
+  <rect x="968" y="24" width="48" height="22" rx="5" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.08" stroke-width="0.5"/>
+  <text x="992" y="39" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.35" text-anchor="middle">Tout</text>
+
+  <!-- + Ajouter button -->
+  <rect x="1022" y="22" width="110" height="26" rx="6" fill="#e8cda9" fill-opacity="0.95"/>
+  <text x="1077" y="39" font-family="system-ui, sans-serif" font-size="10" fill="#0b0b0f" text-anchor="middle" font-weight="700" letter-spacing="0.5">+ Nouveau trade</text>
+
+  <!-- Separator -->
+  <line x1="220" y1="76" x2="1150" y2="76" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+
+  <!-- ── STAT CARDS ── -->
+  <!-- P&L Card -->
+  <rect x="220" y="90" width="148" height="76" rx="10" fill="url(#cardGrad)" stroke="#ffffff" stroke-opacity="0.07" stroke-width="0.5"/>
+  <text x="234" y="112" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.35" letter-spacing="1" text-transform="uppercase">P&amp;L NET</text>
+  <text x="234" y="138" font-family="system-ui, sans-serif" font-size="24" fill="#e8cda9" font-weight="300" letter-spacing="-1">+1 840€</text>
+  <text x="234" y="154" font-family="system-ui, sans-serif" font-size="9" fill="#2a6e3a" fill-opacity="0.9">▲ +12.3% ce mois</text>
+
+  <!-- Win Rate Card -->
+  <rect x="378" y="90" width="148" height="76" rx="10" fill="url(#cardGrad)" stroke="#ffffff" stroke-opacity="0.07" stroke-width="0.5"/>
+  <text x="392" y="112" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.35" letter-spacing="1">WIN RATE</text>
+  <text x="392" y="138" font-family="system-ui, sans-serif" font-size="24" fill="#f5f2ea" font-weight="300" letter-spacing="-1">68%</text>
+  <rect x="392" y="148" width="110" height="4" rx="2" fill="#ffffff" fill-opacity="0.08"/>
+  <rect x="392" y="148" width="75" height="4" rx="2" fill="#e8cda9" fill-opacity="0.8"/>
+
+  <!-- RR Moyen Card -->
+  <rect x="536" y="90" width="148" height="76" rx="10" fill="url(#cardGrad)" stroke="#ffffff" stroke-opacity="0.07" stroke-width="0.5"/>
+  <text x="550" y="112" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.35" letter-spacing="1">RR MOYEN</text>
+  <text x="550" y="138" font-family="system-ui, sans-serif" font-size="24" fill="#f5f2ea" font-weight="300" letter-spacing="-1">2.4:1</text>
+  <text x="550" y="154" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.28">23 trades analysés</text>
+
+  <!-- Trades Card -->
+  <rect x="694" y="90" width="148" height="76" rx="10" fill="url(#cardGrad)" stroke="#ffffff" stroke-opacity="0.07" stroke-width="0.5"/>
+  <text x="708" y="112" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.35" letter-spacing="1">MEILLEUR JOUR</text>
+  <text x="708" y="138" font-family="system-ui, sans-serif" font-size="24" fill="#f5f2ea" font-weight="300" letter-spacing="-1">Lundi</text>
+  <text x="708" y="154" font-family="system-ui, sans-serif" font-size="9" fill="#2a6e3a" fill-opacity="0.9">+€620 en moyenne</text>
+
+  <!-- ── EQUITY CURVE ── -->
+  <rect x="220" y="182" width="620" height="120" rx="10" fill="url(#cardGrad)" stroke="#ffffff" stroke-opacity="0.07" stroke-width="0.5"/>
+  <text x="236" y="202" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.3" letter-spacing="1">COURBE D'ÉQUITÉ · AVRIL 2025</text>
+
+  <!-- Chart grid lines -->
+  <line x1="236" y1="215" x2="824" y2="215" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+  <line x1="236" y1="233" x2="824" y2="233" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+  <line x1="236" y1="251" x2="824" y2="251" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+  <line x1="236" y1="269" x2="824" y2="269" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+  <line x1="236" y1="287" x2="824" y2="287" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+
+  <!-- Equity curve fill -->
+  <path d="M236,280 C266,275 290,265 330,248 C365,232 375,244 415,228 C455,212 468,222 510,200 C550,180 568,194 610,174 C650,156 665,170 710,152 C750,136 768,148 810,132 L824,128 L824,290 L236,290 Z" fill="url(#chartFill)"/>
+  <!-- Equity curve line -->
+  <path d="M236,280 C266,275 290,265 330,248 C365,232 375,244 415,228 C455,212 468,222 510,200 C550,180 568,194 610,174 C650,156 665,170 710,152 C750,136 768,148 810,132 L824,128" fill="none" stroke="#e8cda9" stroke-width="1.8" stroke-linecap="round" filter="url(#glow)"/>
+  <!-- Current dot -->
+  <circle cx="824" cy="128" r="4" fill="#e8cda9" filter="url(#glow)"/>
+  <circle cx="824" cy="128" r="7" fill="#e8cda9" fill-opacity="0.2"/>
+
+  <!-- Chart labels -->
+  <text x="236" y="302" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">1 avr</text>
+  <text x="380" y="302" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">8 avr</text>
+  <text x="524" y="302" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">15 avr</text>
+  <text x="668" y="302" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">22 avr</text>
+  <text x="812" y="302" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">28 avr</text>
+
+  <!-- ── RIGHT PANEL — Sessions / Emotion ── -->
+  <rect x="858" y="182" width="292" height="120" rx="10" fill="url(#cardGrad)" stroke="#ffffff" stroke-opacity="0.07" stroke-width="0.5"/>
+  <text x="874" y="202" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.3" letter-spacing="1">WIN RATE PAR SESSION</text>
+
+  <!-- Session bars -->
+  <!-- London -->
+  <text x="874" y="224" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.7">London</text>
+  <rect x="940" y="214" width="180" height="12" rx="2" fill="#ffffff" fill-opacity="0.05"/>
+  <rect x="940" y="214" width="126" height="12" rx="2" fill="#e8cda9" fill-opacity="0.6"/>
+  <text x="1128" y="224" font-family="system-ui, sans-serif" font-size="9" fill="#e8cda9" fill-opacity="0.8">70%</text>
+
+  <!-- New York -->
+  <text x="874" y="248" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.7">New York</text>
+  <rect x="940" y="238" width="180" height="12" rx="2" fill="#ffffff" fill-opacity="0.05"/>
+  <rect x="940" y="238" width="97" height="12" rx="2" fill="#e8cda9" fill-opacity="0.4"/>
+  <text x="1128" y="248" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.4">54%</text>
+
+  <!-- Asie -->
+  <text x="874" y="272" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.7">Asie</text>
+  <rect x="940" y="262" width="180" height="12" rx="2" fill="#ffffff" fill-opacity="0.05"/>
+  <rect x="940" y="262" width="54" height="12" rx="2" fill="#c0392b" fill-opacity="0.5"/>
+  <text x="1128" y="272" font-family="system-ui, sans-serif" font-size="9" fill="#c0392b" fill-opacity="0.7">30%</text>
+
+  <!-- ── TRADE LIST ── -->
+  <!-- Header -->
+  <rect x="220" y="318" width="930" height="24" rx="0" fill="#ffffff" fill-opacity="0.02"/>
+  <text x="236" y="334" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.25" letter-spacing="1">DATE</text>
+  <text x="330" y="334" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.25" letter-spacing="1">INSTRUMENT</text>
+  <text x="460" y="334" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.25" letter-spacing="1">SESSION</text>
+  <text x="570" y="334" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.25" letter-spacing="1">ÉMOTION</text>
+  <text x="700" y="334" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.25" letter-spacing="1">RR</text>
+  <text x="780" y="334" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.25" letter-spacing="1">RÉSULTAT</text>
+  <text x="940" y="334" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.25" letter-spacing="1" text-anchor="end">P&amp;L</text>
+
+  <!-- Separator -->
+  <line x1="220" y1="342" x2="1150" y2="342" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+
+  <!-- Trade rows -->
+  <!-- Row 1 - WIN -->
+  <rect x="220" y="342" width="930" height="44" fill="url(#winGrad)" fill-opacity="0.5"/>
+  <rect x="220" y="342" width="3" height="44" fill="#2a6e3a" fill-opacity="0.7"/>
+  <text x="236" y="360" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.5">Lun 28</text>
+  <text x="236" y="376" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">09:32</text>
+  <rect x="326" y="347" width="50" height="18" rx="4" fill="#ffffff" fill-opacity="0.05"/>
+  <text x="351" y="360" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.85" text-anchor="middle" font-weight="500">MNQ</text>
+  <text x="336" y="376" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.25">LONG</text>
+  <text x="460" y="362" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.45">London</text>
+  <rect x="566" y="349" width="62" height="18" rx="9" fill="#2a6e3a" fill-opacity="0.15" stroke="#2a6e3a" stroke-opacity="0.3" stroke-width="0.5"/>
+  <text x="597" y="362" font-family="system-ui, sans-serif" font-size="9" fill="#4caf6e" text-anchor="middle">Confiant</text>
+  <text x="700" y="362" font-family="system-ui, sans-serif" font-size="11" fill="#e8cda9" font-weight="500">+2.1R</text>
+  <rect x="770" y="350" width="36" height="18" rx="4" fill="#2a6e3a" fill-opacity="0.2"/>
+  <text x="788" y="363" font-family="system-ui, sans-serif" font-size="9" fill="#4caf6e" text-anchor="middle" font-weight="600">WIN</text>
+  <text x="940" y="362" font-family="system-ui, sans-serif" font-size="12" fill="#4caf6e" text-anchor="end" font-weight="500">+420 €</text>
+  <line x1="220" y1="386" x2="1150" y2="386" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+
+  <!-- Row 2 - WIN -->
+  <rect x="220" y="386" width="930" height="44" fill="transparent"/>
+  <rect x="220" y="386" width="3" height="44" fill="#2a6e3a" fill-opacity="0.6"/>
+  <text x="236" y="404" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.5">Lun 28</text>
+  <text x="236" y="420" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">14:15</text>
+  <rect x="326" y="391" width="42" height="18" rx="4" fill="#ffffff" fill-opacity="0.05"/>
+  <text x="347" y="404" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.85" text-anchor="middle" font-weight="500">NQ</text>
+  <text x="336" y="420" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.25">LONG</text>
+  <text x="460" y="406" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.45">New York</text>
+  <rect x="566" y="393" width="54" height="18" rx="9" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.1" stroke-width="0.5"/>
+  <text x="593" y="406" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.45" text-anchor="middle">Neutre</text>
+  <text x="700" y="406" font-family="system-ui, sans-serif" font-size="11" fill="#e8cda9" font-weight="500">+1.8R</text>
+  <rect x="770" y="394" width="36" height="18" rx="4" fill="#2a6e3a" fill-opacity="0.2"/>
+  <text x="788" y="407" font-family="system-ui, sans-serif" font-size="9" fill="#4caf6e" text-anchor="middle" font-weight="600">WIN</text>
+  <text x="940" y="406" font-family="system-ui, sans-serif" font-size="12" fill="#4caf6e" text-anchor="end" font-weight="500">+360 €</text>
+  <line x1="220" y1="430" x2="1150" y2="430" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+
+  <!-- Row 3 - LOSS -->
+  <rect x="220" y="430" width="930" height="44" fill="url(#lossGrad)" fill-opacity="0.4"/>
+  <rect x="220" y="430" width="3" height="44" fill="#c0392b" fill-opacity="0.6"/>
+  <text x="236" y="448" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.5">Mar 29</text>
+  <text x="236" y="464" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">10:05</text>
+  <rect x="326" y="435" width="50" height="18" rx="4" fill="#ffffff" fill-opacity="0.05"/>
+  <text x="351" y="448" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.85" text-anchor="middle" font-weight="500">MNQ</text>
+  <text x="336" y="464" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.25">SHORT</text>
+  <text x="460" y="450" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.45">London</text>
+  <rect x="566" y="437" width="56" height="18" rx="9" fill="#c0392b" fill-opacity="0.12" stroke="#c0392b" stroke-opacity="0.25" stroke-width="0.5"/>
+  <text x="594" y="450" font-family="system-ui, sans-serif" font-size="9" fill="#e05a5a" text-anchor="middle">Anxieux</text>
+  <text x="700" y="450" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.4" font-weight="500">-1.0R</text>
+  <rect x="770" y="438" width="42" height="18" rx="4" fill="#c0392b" fill-opacity="0.18"/>
+  <text x="791" y="451" font-family="system-ui, sans-serif" font-size="9" fill="#e05a5a" text-anchor="middle" font-weight="600">LOSS</text>
+  <text x="940" y="450" font-family="system-ui, sans-serif" font-size="12" fill="#e05a5a" text-anchor="end" font-weight="500">-200 €</text>
+  <line x1="220" y1="474" x2="1150" y2="474" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+
+  <!-- Row 4 - WIN -->
+  <rect x="220" y="474" width="930" height="44" fill="url(#winGrad)" fill-opacity="0.3"/>
+  <rect x="220" y="474" width="3" height="44" fill="#2a6e3a" fill-opacity="0.7"/>
+  <text x="236" y="492" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.5">Mar 29</text>
+  <text x="236" y="508" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">15:42</text>
+  <rect x="326" y="479" width="36" height="18" rx="4" fill="#ffffff" fill-opacity="0.05"/>
+  <text x="344" y="492" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.85" text-anchor="middle" font-weight="500">GC</text>
+  <text x="336" y="508" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.25">LONG</text>
+  <text x="460" y="494" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.45">New York</text>
+  <rect x="566" y="481" width="62" height="18" rx="9" fill="#2a6e3a" fill-opacity="0.15" stroke="#2a6e3a" stroke-opacity="0.3" stroke-width="0.5"/>
+  <text x="597" y="494" font-family="system-ui, sans-serif" font-size="9" fill="#4caf6e" text-anchor="middle">Confiant</text>
+  <text x="700" y="494" font-family="system-ui, sans-serif" font-size="11" fill="#e8cda9" font-weight="500">+3.2R</text>
+  <rect x="770" y="482" width="36" height="18" rx="4" fill="#2a6e3a" fill-opacity="0.2"/>
+  <text x="788" y="495" font-family="system-ui, sans-serif" font-size="9" fill="#4caf6e" text-anchor="middle" font-weight="600">WIN</text>
+  <text x="940" y="494" font-family="system-ui, sans-serif" font-size="12" fill="#4caf6e" text-anchor="end" font-weight="500">+640 €</text>
+  <line x1="220" y1="518" x2="1150" y2="518" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+
+  <!-- Row 5 - WIN -->
+  <rect x="220" y="518" width="930" height="44" fill="transparent"/>
+  <rect x="220" y="518" width="3" height="44" fill="#2a6e3a" fill-opacity="0.6"/>
+  <text x="236" y="536" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.5">Mer 30</text>
+  <text x="236" y="552" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.22">08:50</text>
+  <rect x="326" y="523" width="50" height="18" rx="4" fill="#ffffff" fill-opacity="0.05"/>
+  <text x="351" y="536" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.85" text-anchor="middle" font-weight="500">MNQ</text>
+  <text x="336" y="552" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.25">LONG</text>
+  <text x="460" y="538" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.45">London</text>
+  <rect x="566" y="525" width="54" height="18" rx="9" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.1" stroke-width="0.5"/>
+  <text x="593" y="538" font-family="system-ui, sans-serif" font-size="9" fill="#ffffff" fill-opacity="0.45" text-anchor="middle">Neutre</text>
+  <text x="700" y="538" font-family="system-ui, sans-serif" font-size="11" fill="#e8cda9" font-weight="500">+1.4R</text>
+  <rect x="770" y="526" width="36" height="18" rx="4" fill="#2a6e3a" fill-opacity="0.2"/>
+  <text x="788" y="539" font-family="system-ui, sans-serif" font-size="9" fill="#4caf6e" text-anchor="middle" font-weight="600">WIN</text>
+  <text x="940" y="538" font-family="system-ui, sans-serif" font-size="12" fill="#4caf6e" text-anchor="end" font-weight="500">+280 €</text>
+  <line x1="220" y1="562" x2="1150" y2="562" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+
+  <!-- Row 6 - LOSS (dimmed) -->
+  <rect x="220" y="562" width="930" height="44" fill="url(#lossGrad)" fill-opacity="0.25"/>
+  <rect x="220" y="562" width="3" height="44" fill="#c0392b" fill-opacity="0.5"/>
+  <text x="236" y="580" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.35">Jeu 01</text>
+  <text x="236" y="596" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.18">11:20</text>
+  <rect x="326" y="567" width="50" height="18" rx="4" fill="#ffffff" fill-opacity="0.04"/>
+  <text x="351" y="580" font-family="system-ui, sans-serif" font-size="10" fill="#f5f2ea" fill-opacity="0.55" text-anchor="middle" font-weight="500">MNQ</text>
+  <text x="336" y="596" font-family="system-ui, sans-serif" font-size="8" fill="#ffffff" fill-opacity="0.18">SHORT</text>
+  <text x="460" y="582" font-family="system-ui, sans-serif" font-size="10" fill="#ffffff" fill-opacity="0.3">New York</text>
+  <rect x="566" y="569" width="72" height="18" rx="9" fill="#c0392b" fill-opacity="0.1"/>
+  <text x="602" y="582" font-family="system-ui, sans-serif" font-size="9" fill="#e05a5a" fill-opacity="0.7" text-anchor="middle">Surconfiant</text>
+  <text x="700" y="582" font-family="system-ui, sans-serif" font-size="11" fill="#ffffff" fill-opacity="0.28" font-weight="500">-1.0R</text>
+  <rect x="770" y="570" width="42" height="18" rx="4" fill="#c0392b" fill-opacity="0.14"/>
+  <text x="791" y="583" font-family="system-ui, sans-serif" font-size="9" fill="#e05a5a" fill-opacity="0.6" text-anchor="middle" font-weight="600">LOSS</text>
+  <text x="940" y="582" font-family="system-ui, sans-serif" font-size="12" fill="#e05a5a" fill-opacity="0.55" text-anchor="end" font-weight="500">-200 €</text>
+
+  <!-- Fade out bottom -->
+  <defs>
+    <linearGradient id="fadeBottom" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b0b0f" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0b0b0f" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <rect x="220" y="580" width="930" height="140" fill="url(#fadeBottom)"/>
+
+  <!-- Subtle vignette overall -->
+  <defs>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.4"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="720" fill="url(#vignette)"/>
+</svg>
