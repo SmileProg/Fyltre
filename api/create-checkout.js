@@ -25,6 +25,7 @@ module.exports = async function handler(req, res) {
       success_url: `https://fyltra.app/setup?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `https://fyltra.app/`,
       allow_promotion_codes: true,
+      metadata: { plan },
     });
 
     return res.status(200).json({ url: session.url });
