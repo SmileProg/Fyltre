@@ -1271,6 +1271,9 @@ export default function App() {
   const [pwdForm, setPwdForm] = useState({ newPwd:"", confirmPwd:"", show:false });
   const [pwdSaving, setPwdSaving] = useState(false);
   const [pwdMsg, setPwdMsg] = useState("");
+  const [emailNew, setEmailNew] = useState("");
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailMsg, setEmailMsg] = useState("");
   const [aiText,      setAiText]      = useState("");
   const [aiLoading,   setAiLoading]   = useState(false);
   const [aiError,     setAiError]     = useState("");
@@ -3724,10 +3727,6 @@ ${recentTrades}`;
               <input value={profileForm.phone} onChange={e=>setProfileForm(f=>({...f,phone:e.target.value}))} style={pField} placeholder="+33 6 00 00 00 00" />
             </div>
           </div>
-          <div style={{marginBottom:10}}>
-            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Email</div>
-            <input value={user?.email||""} readOnly style={{...pField,color:C.gray1,cursor:"default",background:"transparent"}} />
-          </div>
           <div style={{marginBottom:16}}>
             <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Adresse <span style={{color:C.gray2,textTransform:"none",letterSpacing:0,fontSize:9}}>(optionnel)</span></div>
             <textarea value={profileForm.address} onChange={e=>setProfileForm(f=>({...f,address:e.target.value}))} rows={2} style={{...pField,resize:"vertical",lineHeight:1.5}} placeholder="Adresse postale" />
@@ -3768,6 +3767,30 @@ ${recentTrades}`;
             setPwdSaving(false);
           }} style={{padding:"11px 24px",borderRadius:8,border:"none",background:pwdSaving?`rgba(255,255,255,0.06)`:`linear-gradient(135deg,${C.accent},#c9aa82)`,color:pwdSaving?C.gray1:"#000",fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,cursor:pwdSaving?"not-allowed":"pointer",transition:"all 0.2s"}}>
             {pwdSaving?"···":"Changer le mot de passe"}
+          </button>
+        </div>
+
+        {/* ── Change email ── */}
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.22),0 0 0 1px rgba(255,255,255,0.09),inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>Adresse email</div>
+          <div style={{marginBottom:10}}>
+            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Email actuel</div>
+            <input value={user?.email||""} readOnly style={{...pField,color:C.gray1,cursor:"default",background:"transparent"}} />
+          </div>
+          <div style={{marginBottom:14}}>
+            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Nouvel email</div>
+            <input type="email" value={emailNew} onChange={e=>{setEmailNew(e.target.value);setEmailMsg("");}} placeholder="nouveau@email.com" style={pField} />
+          </div>
+          {emailMsg && <div style={{marginBottom:10,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",color:emailMsg==="ok"?"#4ade80":"rgba(229,100,100,0.9)"}}>{emailMsg==="ok"?"✓ Email envoyé ! Confirme le lien reçu sur ta nouvelle adresse.":emailMsg}</div>}
+          <button disabled={emailSaving} onClick={async()=>{
+            if (!emailNew) { setEmailMsg("Entre un nouvel email."); return; }
+            if (emailNew === user?.email) { setEmailMsg("C'est déjà ton email actuel."); return; }
+            setEmailSaving(true); setEmailMsg("");
+            const { error } = await supabase.auth.updateUser({ email: emailNew });
+            if (error) { setEmailMsg(error.message); } else { setEmailMsg("ok"); setEmailNew(""); }
+            setEmailSaving(false);
+          }} style={{padding:"11px 24px",borderRadius:8,border:"none",background:emailSaving?`rgba(255,255,255,0.06)`:`linear-gradient(135deg,${C.accent},#c9aa82)`,color:emailSaving?C.gray1:"#000",fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,cursor:emailSaving?"not-allowed":"pointer",transition:"all 0.2s"}}>
+            {emailSaving?"···":"Changer l'email"}
           </button>
         </div>
 
@@ -3967,9 +3990,9 @@ ${recentTrades}`;
       <div style={{ fontSize:11, color:"rgba(255,255,255,0.3)", fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.2em", textTransform:"uppercase" }}>Chargement...</div>
     </div>
   );
-  if (!user) return <Navigate to="/" replace />;
-
   if (passwordRecovery) return <ResetPasswordScreen onDone={() => setPasswordRecovery(false)} />;
+
+  if (!user) return <Navigate to="/" replace />;
 
   return (
     <div style={{ minHeight:"100vh", background:C.bg, color:C.white, fontFamily:"'Josefin Sans',sans-serif" }}>
