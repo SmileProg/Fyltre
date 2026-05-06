@@ -634,7 +634,21 @@ function AuthScreen() {
     // Tentative de connexion
     const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (!loginErr) { setLoading(false); return; } // connecté
+    if (!loginErr) {
+      // Vérifier que l'abonnement est toujours actif
+      try {
+        const check = await fetch(`/api/check-purchase?email=${encodeURIComponent(email)}`);
+        const { authorized } = await check.json();
+        if (!authorized) {
+          await supabase.auth.signOut();
+          setError("Ton abonnement a expiré. Choisis un nouveau plan pour accéder à Fyltra.");
+          setLoading(false);
+          return;
+        }
+      } catch {}
+      setLoading(false);
+      return;
+    }
 
     // Compte inexistant → vérifier si l'email a un achat
     if (loginErr.message === "Invalid login credentials") {

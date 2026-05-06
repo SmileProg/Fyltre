@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
     || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4dmtlZHloeWtoYWpjaXZzZ2FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4OTE3NzksImV4cCI6MjA5MjQ2Nzc3OX0.5KghDy_LrBJzGpxJIca6OzQL_h1NLh7L284BR4Sgeus';
 
   const resp = await fetch(
-    `${SUPA_URL}/rest/v1/purchases?select=id&email=eq.${encodeURIComponent(email)}&limit=1`,
+    `${SUPA_URL}/rest/v1/purchases?select=id&email=eq.${encodeURIComponent(email)}&active=eq.true&limit=1`,
     { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` } }
   );
 
