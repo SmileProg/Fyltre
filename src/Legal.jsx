@@ -63,7 +63,7 @@ Le paiement est mensuel, sans engagement. Les prix peuvent être modifiés à to
 
 ## 4. Paiement
 
-Le paiement est effectué via **Lemon Squeezy**, marchand de référence (Merchant of Record) qui gère la facturation, la TVA et la sécurité des transactions. Les moyens de paiement acceptés sont ceux proposés par Lemon Squeezy (carte bancaire, etc.).
+Le paiement est effectué via **Stripe**, marchand de référence (Merchant of Record) qui gère la facturation, la TVA et la sécurité des transactions. Les moyens de paiement acceptés sont ceux proposés par Stripe (carte bancaire, etc.).
 
 ## 5. Accès au service
 
@@ -79,7 +79,7 @@ Pour exercer ce droit, envoyez un email à contact@fyltra.app en indiquant votre
 
 ## 7. Résiliation
 
-Vous pouvez résilier votre abonnement à tout moment depuis votre espace client Lemon Squeezy ou en contactant contact@fyltra.app. La résiliation prend effet à la fin de la période de facturation en cours.
+Vous pouvez résilier votre abonnement à tout moment depuis votre espace client Stripe ou en contactant contact@fyltra.app. La résiliation prend effet à la fin de la période de facturation en cours.
 
 ## 8. Disponibilité du service
 
@@ -112,9 +112,9 @@ Email : contact@fyltra.app
 
 Dans le cadre de l'utilisation de Fyltra, nous collectons les données suivantes :
 
-**Lors du paiement (via Lemon Squeezy) :**
+**Lors du paiement (via Stripe) :**
 - Adresse email
-- Informations de paiement (gérées exclusivement par Lemon Squeezy)
+- Informations de paiement (gérées exclusivement par Stripe)
 
 **Lors de l'utilisation de l'application :**
 - Données de trading saisies manuellement (trades, notes, stratégies)
@@ -144,7 +144,7 @@ Dans le cadre de l'utilisation de Fyltra, nous collectons les données suivantes
 |-------------|------|------|
 | Supabase Inc. | Base de données et authentification | États-Unis |
 | Vercel Inc. | Hébergement | États-Unis |
-| Lemon Squeezy | Paiement et facturation | États-Unis |
+| Stripe | Paiement et facturation | États-Unis |
 | Groq Inc. | Analyse IA des trades | États-Unis |
 
 Ces prestataires sont soumis à des contrats garantissant un niveau de protection adéquat des données conformément au RGPD.

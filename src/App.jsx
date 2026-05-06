@@ -905,10 +905,15 @@ function AuthScreen() {
               <div style={{ marginBottom:12, padding:"12px 14px", borderRadius:10, background:"rgba(232,205,169,0.07)", border:"1px solid rgba(232,205,169,0.22)", fontFamily:JF }}>
                 <div style={{ fontSize:11, color:"#e8cda9", marginBottom:8, fontWeight:600, letterSpacing:"0.05em" }}>Accès réservé aux membres</div>
                 <div style={{ fontSize:11, color:"rgba(232,205,169,0.65)", marginBottom:10, lineHeight:1.55 }}>Cet email n'a pas de licence active. Choisis un plan pour créer ton compte.</div>
-                <a href="https://fyltra.lemonsqueezy.com/checkout/buy/8fa26c4d-ab9e-4830-b524-6832f5b2ad55?enabled=1600495&checkout[success_url]=https://fyltra.app/" target="_blank" rel="noreferrer"
-                  style={{ display:"inline-block", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#1a1208", borderRadius:7, padding:"8px 16px", fontSize:10, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", textDecoration:"none" }}>
+                <button onClick={async () => {
+                  try {
+                    const r = await fetch("/api/create-checkout", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ plan:"early_bird" }) });
+                    const { url } = await r.json();
+                    if (url) window.location.href = url;
+                  } catch {}
+                }} style={{ display:"inline-block", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#1a1208", borderRadius:7, padding:"8px 16px", fontSize:10, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", border:"none", cursor:"pointer", fontFamily:"'Josefin Sans',sans-serif" }}>
                   Voir les tarifs →
-                </a>
+                </button>
               </div>
             )}
             {success && <div style={{ marginBottom:12, fontSize:11, color:"#4caf6e", fontFamily:JF }}>{success}</div>}

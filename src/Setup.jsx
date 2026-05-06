@@ -12,8 +12,10 @@ const FONTS = `
 
 export default function Setup() {
   const navigate  = useNavigate();
-  const params    = new URLSearchParams(window.location.search);
-  const urlEmail  = decodeURIComponent(params.get("email") || "");
+  const params     = new URLSearchParams(window.location.search);
+  const rawEmail   = decodeURIComponent(params.get("email") || "");
+  const sessionId  = params.get("session_id") || "";
+  const [urlEmail, setUrlEmail] = useState(rawEmail);
 
   const [email,    setEmail]    = useState(urlEmail);
   const [password, setPassword] = useState("");
@@ -21,6 +23,15 @@ export default function Setup() {
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState("");
   const [success,  setSuccess]  = useState(false);
+
+  // Si session_id Stripe dans l'URL → récupérer l'email
+  useEffect(() => {
+    if (!sessionId || rawEmail) return;
+    fetch(`/api/get-session-email?session_id=${sessionId}`)
+      .then(r => r.json())
+      .then(({ email: e }) => { if (e) { setUrlEmail(e); setEmail(e); } })
+      .catch(() => {});
+  }, [sessionId, rawEmail]);
 
   // Si déjà connecté → redirect app
   useEffect(() => {

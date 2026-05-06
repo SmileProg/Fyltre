@@ -1284,8 +1284,25 @@ const PRICE_FEATURES = [
   "Résiliable à tout moment",
 ];
 
+async function goCheckout(plan, setLoading) {
+  setLoading(true);
+  try {
+    const res = await fetch("/api/create-checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan }),
+    });
+    const { url } = await res.json();
+    if (url) window.location.href = url;
+  } catch (e) {
+    console.error(e);
+    setLoading(false);
+  }
+}
+
 function PriceLeft({ C }) {
   const [h, setH] = useState(false);
+  const [loading, setLoading] = useState(false);
   const isDark = C.bg === "#060608";
   return (
     <div className="l-price-left" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{
@@ -1333,13 +1350,12 @@ function PriceLeft({ C }) {
         ))}
       </div>
 
-      <a href="https://fyltra.lemonsqueezy.com/checkout/buy/8fa26c4d-ab9e-4830-b524-6832f5b2ad55?enabled=1600495&checkout[success_url]=https://fyltra.app/setup?email={email}" target="_blank" rel="noreferrer" style={{ display:"block", width:"100%", textDecoration:"none" }}>
-        <button style={{ width:"100%", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#1a1208", border:"none", borderRadius:12, padding:"15px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14, cursor:"pointer", boxShadow:"0 0 36px rgba(232,205,169,0.25)", transition:"all .22s cubic-bezier(.16,1,.3,1)", letterSpacing:"-0.01em" }}
-          onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 0 56px rgba(232,205,169,0.45)"; }}
-          onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 0 36px rgba(232,205,169,0.25)"; }}>
-          Rejoindre — Early Bird →
-        </button>
-      </a>
+      <button onClick={() => goCheckout("early_bird", setLoading)} disabled={loading}
+        style={{ width:"100%", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#1a1208", border:"none", borderRadius:12, padding:"15px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14, cursor:loading?"not-allowed":"pointer", boxShadow:"0 0 36px rgba(232,205,169,0.25)", transition:"all .22s cubic-bezier(.16,1,.3,1)", letterSpacing:"-0.01em", opacity:loading?0.7:1 }}
+        onMouseEnter={e=>{ if(!loading){ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 0 56px rgba(232,205,169,0.45)"; }}}
+        onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 0 36px rgba(232,205,169,0.25)"; }}>
+        {loading ? "Chargement..." : "Rejoindre — Early Bird →"}
+      </button>
     </div>
   );
 }
@@ -1347,6 +1363,7 @@ function PriceLeft({ C }) {
 /* ─── Price Right Card — Pro Trader ─────────────────────────────── */
 function PriceRight({ C }) {
   const [h, setH] = useState(false);
+  const [loading, setLoading] = useState(false);
   const isDark = C.bg === "#060608";
   return (
     <div className="l-price-right" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{
@@ -1385,13 +1402,12 @@ function PriceRight({ C }) {
         ))}
       </div>
 
-      <a href="https://fyltra.lemonsqueezy.com/checkout/buy/8fa26c4d-ab9e-4830-b524-6832f5b2ad55?enabled=1600608&checkout[success_url]=https://fyltra.app/setup?email={email}" target="_blank" rel="noreferrer" style={{ display:"block", width:"100%", textDecoration:"none" }}>
-        <button style={{ width:"100%", background:"transparent", color:C.text, border:`1px solid ${C.border}`, borderRadius:12, padding:"15px", fontFamily:"'Outfit',sans-serif", fontWeight:600, fontSize:14, cursor:"pointer", transition:"all .22s cubic-bezier(.16,1,.3,1)", letterSpacing:"-0.01em" }}
-          onMouseEnter={e=>{ e.currentTarget.style.background=isDark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.06)"; e.currentTarget.style.borderColor=C.textDim; }}
-          onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=C.border; }}>
-          Commencer maintenant →
-        </button>
-      </a>
+      <button onClick={() => goCheckout("pro", setLoading)} disabled={loading}
+        style={{ width:"100%", background:"transparent", color:C.text, border:`1px solid ${C.border}`, borderRadius:12, padding:"15px", fontFamily:"'Outfit',sans-serif", fontWeight:600, fontSize:14, cursor:loading?"not-allowed":"pointer", transition:"all .22s cubic-bezier(.16,1,.3,1)", letterSpacing:"-0.01em", opacity:loading?0.7:1 }}
+        onMouseEnter={e=>{ if(!loading){ e.currentTarget.style.background=isDark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.06)"; e.currentTarget.style.borderColor=C.textDim; }}}
+        onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=C.border; }}>
+        {loading ? "Chargement..." : "Commencer maintenant →"}
+      </button>
     </div>
   );
 }
