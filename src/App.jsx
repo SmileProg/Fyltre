@@ -954,7 +954,7 @@ function AuthScreen() {
                   </button>
                 </div>
                 <div style={{ marginBottom:14, textAlign:"right" }}>
-                  <button onClick={()=>{ setForgotMode(true); setError(""); setSuccess(""); }} style={{ background:"none", border:"none", color:DIM, fontSize:11, fontFamily:JF, cursor:"pointer", padding:0 }}>
+                  <button onClick={()=>{ setForgotMode(true); setError(""); setSuccess(""); }} style={{ background:"none", border:"none", color:"rgba(245,242,234,0.7)", fontSize:11, fontFamily:JF, cursor:"pointer", padding:0, textDecoration:"underline", textUnderlineOffset:3 }}>
                     Mot de passe oublié ?
                   </button>
                 </div>
