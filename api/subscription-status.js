@@ -53,14 +53,18 @@ module.exports = async function handler(req, res) {
 
     const toIso = ts => (ts && !isNaN(ts)) ? new Date(ts * 1000).toISOString() : null;
 
+    const cpe = sub.current_period_end ?? sub["current_period_end"];
+    console.log("current_period_end raw:", cpe, typeof cpe);
+
     return res.status(200).json({
       id: sub.id,
       status: sub.status,
       productName: planLabel,
       variantName: priceLabel,
-      renewsAt: toIso(sub.current_period_end),
+      renewsAt: toIso(cpe),
       endsAt: toIso(sub.cancel_at),
       cancelled: sub.cancel_at_period_end,
+      _debug_cpe: cpe,
     });
   } catch (e) {
     console.error("subscription-status error:", e.message);
