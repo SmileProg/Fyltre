@@ -997,6 +997,8 @@ function AuthModal({ onClose, navigate, initialMode = "login" }) {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
   const [success, setSuccess]   = useState("");
+  const [forgotMode, setForgotMode] = useState(false);
+  const [resetSent, setResetSent]   = useState(false);
   const overlayRef              = useRef();
 
   useEffect(() => {
@@ -1006,6 +1008,14 @@ function AuthModal({ onClose, navigate, initialMode = "login" }) {
   }, []);
 
   const [paywall, setPaywall] = useState(false);
+
+  const sendReset = async () => {
+    if (!email) { setError("Entre ton email."); return; }
+    setLoading(true); setError("");
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: "https://fyltra.app" });
+    if (resetErr) { setError(resetErr.message); } else { setResetSent(true); }
+    setLoading(false);
+  };
 
   const submit = async () => {
     if (!email || !password) { setError("Remplis tous les champs."); return; }
@@ -1065,43 +1075,73 @@ function AuthModal({ onClose, navigate, initialMode = "login" }) {
           Connecte-toi à ton journal de trading.
         </p>
 
-        {/* fields */}
-        <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:20 }}>
-          <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}
-            style={fieldStyle} onFocus={e=>e.target.style.borderColor="rgba(232,205,169,0.4)"}
-            onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
-          <div style={{ position:"relative" }}>
-            <input type={showPwd?"text":"password"} placeholder="Mot de passe" value={password}
-              onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}
-              style={{...fieldStyle, paddingRight:46}}
-              onFocus={e=>e.target.style.borderColor="rgba(232,205,169,0.4)"}
-              onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
-            <button onClick={()=>setShowPwd(p=>!p)} style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)",
-              background:"none", border:"none", cursor:"pointer", color:"rgba(255,255,255,0.3)", fontSize:12, padding:4 }}>
-              {showPwd?"Cacher":"Voir"}
+        {forgotMode ? (
+          resetSent ? (
+            <div style={{ textAlign:"center", padding:"16px 0" }}>
+              <div style={{ fontSize:32, marginBottom:12 }}>✉️</div>
+              <div style={{ fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:16, color:"#fff", marginBottom:8 }}>Lien envoyé !</div>
+              <div style={{ fontSize:13, color:"rgba(255,255,255,0.4)", lineHeight:1.6 }}>Vérifie ta boîte mail et clique sur le lien pour réinitialiser ton mot de passe.</div>
+              <button onClick={()=>{ setForgotMode(false); setResetSent(false); setError(""); }} style={{ marginTop:20, background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:10, padding:"12px 24px", color:"rgba(255,255,255,0.5)", fontFamily:"'Outfit',sans-serif", fontWeight:600, fontSize:13, cursor:"pointer" }}>
+                ← Retour
+              </button>
+            </div>
+          ) : (
+            <>
+              <p style={{ fontSize:13, color:"rgba(255,255,255,0.35)", marginBottom:20 }}>Entre ton email pour recevoir un lien de réinitialisation.</p>
+              <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendReset()}
+                style={{...fieldStyle, marginBottom:14}}
+                onFocus={e=>e.target.style.borderColor="rgba(232,205,169,0.4)"}
+                onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
+              {error && <div style={{ background:"rgba(255,80,80,0.1)", border:"1px solid rgba(255,80,80,0.2)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#ff8080", marginBottom:14 }}>{error}</div>}
+              <button onClick={sendReset} disabled={loading}
+                style={{ width:"100%", background:`linear-gradient(135deg,${gold},#c9aa82)`, color:"#000", border:"none", borderRadius:12, padding:"14px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14, cursor:loading?"wait":"pointer", opacity:loading?0.7:1, transition:"all .22s", marginBottom:12 }}>
+                {loading ? "..." : "Envoyer le lien"}
+              </button>
+              <button onClick={()=>{ setForgotMode(false); setError(""); }} style={{ width:"100%", background:"none", border:"none", color:"rgba(255,255,255,0.35)", fontFamily:"'Outfit',sans-serif", fontSize:13, cursor:"pointer", textAlign:"center" }}>
+                ← Retour à la connexion
+              </button>
+            </>
+          )
+        ) : (
+          <>
+            {/* fields */}
+            <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:14 }}>
+              <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)}
+                style={fieldStyle} onFocus={e=>e.target.style.borderColor="rgba(232,205,169,0.4)"}
+                onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
+              <div style={{ position:"relative" }}>
+                <input type={showPwd?"text":"password"} placeholder="Mot de passe" value={password}
+                  onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}
+                  style={{...fieldStyle, paddingRight:46}}
+                  onFocus={e=>e.target.style.borderColor="rgba(232,205,169,0.4)"}
+                  onBlur={e=>e.target.style.borderColor="rgba(255,255,255,0.1)"}/>
+                <button onClick={()=>setShowPwd(p=>!p)} style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:"rgba(255,255,255,0.3)", fontSize:12, padding:4 }}>
+                  {showPwd?"Cacher":"Voir"}
+                </button>
+              </div>
+            </div>
+            <div style={{ textAlign:"right", marginBottom:16 }}>
+              <button onClick={()=>{ setForgotMode(true); setError(""); setSuccess(""); }} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.45)", fontFamily:"'Outfit',sans-serif", fontSize:12, cursor:"pointer", padding:0, textDecoration:"underline", textUnderlineOffset:3 }}>
+                Mot de passe oublié ?
+              </button>
+            </div>
+            {error   && <div style={{ background:"rgba(255,80,80,0.1)", border:"1px solid rgba(255,80,80,0.2)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#ff8080", marginBottom:14 }}>{error}</div>}
+            {paywall && (
+              <div style={{ background:"rgba(232,205,169,0.07)", border:"1px solid rgba(232,205,169,0.22)", borderRadius:8, padding:"12px 14px", marginBottom:14 }}>
+                <div style={{ fontSize:13, color:"#e8cda9", fontWeight:700, marginBottom:6 }}>Accès réservé aux membres</div>
+                <div style={{ fontSize:12, color:"rgba(232,205,169,0.6)", marginBottom:12, lineHeight:1.5 }}>Cet email n'a pas de licence active. Choisis un plan pour accéder.</div>
+                <a href="#tarifs" onClick={onClose} style={{ display:"inline-block", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#000", borderRadius:8, padding:"8px 18px", fontSize:12, fontWeight:700, textDecoration:"none" }}>
+                  Voir les tarifs →
+                </a>
+              </div>
+            )}
+            {success && <div style={{ background:"rgba(80,200,100,0.1)", border:"1px solid rgba(80,200,100,0.2)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#80e090", marginBottom:14 }}>{success}</div>}
+            <button onClick={submit} disabled={loading}
+              style={{ width:"100%", background:`linear-gradient(135deg,${gold},#c9aa82)`, color:"#000", border:"none", borderRadius:12, padding:"14px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14, cursor:loading?"wait":"pointer", opacity:loading?0.7:1, transition:"all .22s", boxShadow:"0 0 28px rgba(232,205,169,0.2)" }}>
+              {loading ? "..." : "Se connecter →"}
             </button>
-          </div>
-        </div>
-
-        {error   && <div style={{ background:"rgba(255,80,80,0.1)", border:"1px solid rgba(255,80,80,0.2)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#ff8080", marginBottom:14 }}>{error}</div>}
-        {paywall && (
-          <div style={{ background:"rgba(232,205,169,0.07)", border:"1px solid rgba(232,205,169,0.22)", borderRadius:8, padding:"12px 14px", marginBottom:14 }}>
-            <div style={{ fontSize:13, color:"#e8cda9", fontWeight:700, marginBottom:6 }}>Accès réservé aux membres</div>
-            <div style={{ fontSize:12, color:"rgba(232,205,169,0.6)", marginBottom:12, lineHeight:1.5 }}>Cet email n'a pas de licence active. Choisis un plan pour accéder.</div>
-            <a href="#tarifs" onClick={onClose} style={{ display:"inline-block", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#000", borderRadius:8, padding:"8px 18px", fontSize:12, fontWeight:700, textDecoration:"none" }}>
-              Voir les tarifs →
-            </a>
-          </div>
+          </>
         )}
-        {success && <div style={{ background:"rgba(80,200,100,0.1)", border:"1px solid rgba(80,200,100,0.2)", borderRadius:8, padding:"10px 14px", fontSize:13, color:"#80e090", marginBottom:14 }}>{success}</div>}
-
-        <button onClick={submit} disabled={loading}
-          style={{ width:"100%", background:`linear-gradient(135deg,${gold},#c9aa82)`, color:"#000", border:"none",
-            borderRadius:12, padding:"14px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14,
-            cursor:loading?"wait":"pointer", opacity:loading?0.7:1, transition:"all .22s",
-            boxShadow:"0 0 28px rgba(232,205,169,0.2)" }}>
-          {loading ? "..." : "Se connecter →"}
-        </button>
       </div>
     </div>
   );
