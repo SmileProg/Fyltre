@@ -3558,7 +3558,7 @@ ${recentTrades}`;
     setCancelConfirm(false);
   };
 
-  const fmtDate = iso => { if (!iso) return "—"; const d = new Date(iso); return d.toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" }); };
+  const fmtDate = iso => { if (!iso) return "—"; try { const d = new Date(iso); if (isNaN(d.getTime())) return "—"; return d.toLocaleDateString("fr-FR", { day:"numeric", month:"long", year:"numeric" }); } catch { return "—"; } };
   const pField = { width:"100%", background:C.bg3, border:`1px solid ${C.border}`, borderRadius:8, padding:"11px 14px", color:C.white, fontFamily:"'Josefin Sans',sans-serif", fontSize:13, outline:"none", boxSizing:"border-box" };
 
   const profileContent = (() => {
