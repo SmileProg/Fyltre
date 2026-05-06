@@ -1,8 +1,8 @@
 const Stripe = require("stripe");
 
 const PRICES = {
-  early_bird: "price_1TTrgkAiOhWjahUBZwCVEOfI",
-  pro: "price_1TTrWCAiOhWjahUBCFGqgf2A",
+  early_bird: process.env.STRIPE_PRICE_EARLY_BIRD,
+  pro: process.env.STRIPE_PRICE_PRO,
 };
 
 module.exports = async function handler(req, res) {
