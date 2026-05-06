@@ -1268,6 +1268,9 @@ export default function App() {
   const [subLoading,  setSubLoading]  = useState(false);
   const [cancelConfirm, setCancelConfirm] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [pwdForm, setPwdForm] = useState({ newPwd:"", confirmPwd:"", show:false });
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdMsg, setPwdMsg] = useState("");
   const [aiText,      setAiText]      = useState("");
   const [aiLoading,   setAiLoading]   = useState(false);
   const [aiError,     setAiError]     = useState("");
@@ -3735,6 +3738,37 @@ ${recentTrades}`;
             </button>
             {profileSaving&&profileSaving!=="ok"&&profileSaving!=="saving"&&<span style={{fontSize:11,color:"rgba(229,100,100,0.9)",fontFamily:"'Josefin Sans',sans-serif"}}>{String(profileSaving).replace("error:","")}</span>}
           </div>
+        </div>
+
+        {/* ── Change password ── */}
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.22),0 0 0 1px rgba(255,255,255,0.09),inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>Mot de passe</div>
+          <div style={{position:"relative",marginBottom:10}}>
+            <input type={pwdForm.show?"text":"password"} placeholder="Nouveau mot de passe" value={pwdForm.newPwd} onChange={e=>setPwdForm(f=>({...f,newPwd:e.target.value}))}
+              style={{...pField,paddingRight:46}} />
+            <button onClick={()=>setPwdForm(f=>({...f,show:!f.show}))} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:C.gray1,padding:0}}>
+              {pwdForm.show
+                ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>}
+            </button>
+          </div>
+          <div style={{position:"relative",marginBottom:14}}>
+            <input type={pwdForm.show?"text":"password"} placeholder="Confirmer le mot de passe" value={pwdForm.confirmPwd} onChange={e=>setPwdForm(f=>({...f,confirmPwd:e.target.value}))}
+              style={{...pField,paddingRight:46,borderColor:pwdForm.confirmPwd?(pwdForm.newPwd===pwdForm.confirmPwd?"rgba(74,222,128,0.5)":"rgba(229,100,100,0.5)"):undefined}} />
+            {pwdForm.confirmPwd && <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:13,color:pwdForm.newPwd===pwdForm.confirmPwd?"#4ade80":"rgba(229,100,100,0.9)"}}>{pwdForm.newPwd===pwdForm.confirmPwd?"✓":"✗"}</span>}
+          </div>
+          {pwdMsg && <div style={{marginBottom:10,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",color:pwdMsg==="ok"?"#4ade80":"rgba(229,100,100,0.9)"}}>{pwdMsg==="ok"?"✓ Mot de passe mis à jour !":pwdMsg}</div>}
+          <button disabled={pwdSaving} onClick={async()=>{
+            if (!pwdForm.newPwd||!pwdForm.confirmPwd){setPwdMsg("Remplis les deux champs.");return;}
+            if (pwdForm.newPwd!==pwdForm.confirmPwd){setPwdMsg("Les mots de passe ne correspondent pas.");return;}
+            if (pwdForm.newPwd.length<6){setPwdMsg("Au moins 6 caractères.");return;}
+            setPwdSaving(true);setPwdMsg("");
+            const{error}=await supabase.auth.updateUser({password:pwdForm.newPwd});
+            if(error){setPwdMsg(error.message);}else{setPwdMsg("ok");setPwdForm({newPwd:"",confirmPwd:"",show:false});}
+            setPwdSaving(false);
+          }} style={{padding:"11px 24px",borderRadius:8,border:"none",background:pwdSaving?`rgba(255,255,255,0.06)`:`linear-gradient(135deg,${C.accent},#c9aa82)`,color:pwdSaving?C.gray1:"#000",fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,cursor:pwdSaving?"not-allowed":"pointer",transition:"all 0.2s"}}>
+            {pwdSaving?"···":"Changer le mot de passe"}
+          </button>
         </div>
 
         {/* ── Subscription ── */}
