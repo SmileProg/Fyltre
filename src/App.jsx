@@ -632,7 +632,7 @@ function AuthScreen() {
   const sendReset = async () => {
     if (!email) { setError("Entre ton email."); return; }
     setLoading(true); setError("");
-    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: "https://fyltra.app" });
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: "https://fyltra.app/app" });
     if (resetErr) { setError(resetErr.message); } else { setResetSent(true); }
     setLoading(false);
   };
