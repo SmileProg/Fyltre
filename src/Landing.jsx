@@ -1165,6 +1165,16 @@ export default function Landing() {
     document.body.style.background = C.bg;
   }, [darkMode, C.bg]);
 
+  // Handle Supabase PKCE code exchange when landing page receives a redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (!code) return;
+    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+      if (!error) navigate('/app', { replace: true });
+    });
+  }, [navigate]);
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", fn, { passive: true });
