@@ -250,7 +250,7 @@ function Sidebar({ view, setView, darkMode, onSignOut, nickname, firstName }) {
   };
 
   return (
-    <div style={{ width:220, minHeight:"100vh", background:C.bg2, borderRight:`1px solid ${C.border}`, flexDirection:"column", position:"fixed", left:0, top:0, padding:"28px 0", zIndex:50, display:"flex", boxShadow:"4px 0 24px rgba(0,0,0,0.12)" }}>
+    <div style={{ width:220, minHeight:"100vh", background:C.bg2, borderRight:`1px solid ${C.border}`, flexDirection:"column", position:"fixed", left:0, top:0, padding:"12px 0", zIndex:50, display:"flex", boxShadow:"4px 0 24px rgba(0,0,0,0.12)" }}>
       {/* Logo */}
       <div style={{ padding:"0 20px 12px", borderBottom:`1px solid ${C.border}` }}>
         <div>
