@@ -19,6 +19,7 @@ export default function Setup() {
 
   const [email,    setEmail]    = useState(urlEmail);
   const [password, setPassword] = useState("");
+  const [confirm,  setConfirm]  = useState("");
   const [showPwd,  setShowPwd]  = useState(false);
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState("");
@@ -41,8 +42,9 @@ export default function Setup() {
   }, [navigate]);
 
   const submit = async () => {
-    if (!email || !password) { setError("Remplis tous les champs."); return; }
+    if (!email || !password || !confirm) { setError("Remplis tous les champs."); return; }
     if (password.length < 8)  { setError("Le mot de passe doit faire au moins 8 caractères."); return; }
+    if (password !== confirm)  { setError("Les mots de passe ne correspondent pas."); return; }
 
     setLoading(true); setError("");
 
@@ -151,7 +153,6 @@ export default function Setup() {
                     type={showPwd ? "text" : "password"}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && submit()}
                     placeholder="Min. 8 caractères"
                     style={{ ...fieldStyle, paddingRight: 52 }}
                     onFocus={e => e.target.style.borderColor = "rgba(232,205,169,0.4)"}
@@ -160,6 +161,28 @@ export default function Setup() {
                   <button onClick={() => setShowPwd(p => !p)} style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.3)", fontSize: 12, padding: 4, fontFamily: "'Outfit',sans-serif" }}>
                     {showPwd ? "Cacher" : "Voir"}
                   </button>
+                </div>
+              </div>
+
+              {/* Confirmer le mot de passe */}
+              <div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 6, fontWeight: 600 }}>Confirme ton mot de passe</div>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showPwd ? "text" : "password"}
+                    value={confirm}
+                    onChange={e => setConfirm(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && submit()}
+                    placeholder="Répète ton mot de passe"
+                    style={{ ...fieldStyle, paddingRight: 52, borderColor: confirm && confirm !== password ? "rgba(255,80,80,0.4)" : confirm && confirm === password ? "rgba(76,175,110,0.4)" : "rgba(255,255,255,0.1)" }}
+                    onFocus={e => e.target.style.borderColor = confirm !== password ? "rgba(255,80,80,0.4)" : "rgba(232,205,169,0.4)"}
+                    onBlur={e => e.target.style.borderColor = confirm && confirm !== password ? "rgba(255,80,80,0.4)" : confirm && confirm === password ? "rgba(76,175,110,0.4)" : "rgba(255,255,255,0.1)"}
+                  />
+                  {confirm && (
+                    <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", fontSize: 14 }}>
+                      {confirm === password ? "✓" : "✗"}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
