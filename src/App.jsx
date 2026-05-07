@@ -3088,7 +3088,17 @@ ${recentTrades}`;
     };
 
     const sectionProgress = pf.type==="propfirm" ? (() => {
-      const mll = cap - maxLoss;
+      // Trailing DD: peak cumulative P&L at end of each day (only moves up)
+      const peakPnl = (() => {
+        const sortedDates = [...new Set(acctTrades.map(t => t.date))].sort();
+        let cum = 0, peak = 0;
+        sortedDates.forEach(date => {
+          cum += acctTrades.filter(t => t.date === date).reduce((s, t) => s + (t.pnl || 0), 0);
+          if (cum > peak) peak = cum;
+        });
+        return peak;
+      })();
+      const mll = pf.trailingDD ? cap + Math.max(0, peakPnl) - maxLoss : cap - maxLoss;
       const tgt = cap + target;
       const totalRange = tgt - mll;
       const currentCap = cap + allPnl;
