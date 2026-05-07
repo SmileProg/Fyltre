@@ -1250,7 +1250,7 @@ export default function App() {
   const [capital,     setCapital]     = useState(() => load(KEYS.capital, ""));
   const [propfirms,   setPropfirms]   = useState(() => load(KEYS.propfirms, []));
   const [pfView,      setPfView]      = useState("list"); // list | add-type | add-propfirm | add-personal
-  const [pfForm,      setPfForm]      = useState({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false, hasInactivity:false, inactivityDays:"", inactivityFrom:"" });
+  const [pfForm,      setPfForm]      = useState({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false, hasInactivity:false, inactivityDays:"", inactivityFrom:"", trailingDD:false });
   const [activePf,    setActivePf]    = useState(null);
   const [chartAccountId, setChartAccountId] = useState("all");
   const [editingPf, setEditingPf] = useState(null);
@@ -2560,7 +2560,7 @@ ${recentTrades}`;
     if (pfForm.type==="personal" && !pfForm.capital) return;
     const newPf = { ...pfForm, id:Date.now(), pnl:0 };
     setPropfirms(p => [...p, newPf]);
-    setPfForm({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false, hasInactivity:false, inactivityDays:"", inactivityFrom:"" });
+    setPfForm({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false, hasInactivity:false, inactivityDays:"", inactivityFrom:"", trailingDD:false });
     setPfView("list");
   };
 
@@ -2655,9 +2655,17 @@ ${recentTrades}`;
               <input type="text" inputMode="numeric" placeholder="" value={pfPctMode?pfPctValues.target:pfForm.target} onChange={e=>{const v=e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"");if(pfPctMode){setPfPctValues(p=>({...p,target:v}));pfSet("target",pfForm.capital?String((parseFloat(pfForm.capital)*(parseFloat(v)||0)/100).toFixed(0)):"");}else pfSet("target",v);}} style={iStyle}/>
               {pfPctMode&&pfPctValues.target&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {fmtMoney(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.target)||0)/100)}{currency}</div>}
             </Field>
-            <Field label={pfPctMode?"Max Drawdown * (%)":`Max Drawdown * (${currency})`}>
+            <Field label={
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span>{pfPctMode?"Max Drawdown * (%)":"Max Drawdown *"}</span>
+                <button onClick={()=>pfSet("trailingDD",!pfForm.trailingDD)} style={{padding:"2px 10px",borderRadius:20,border:`1px solid ${pfForm.trailingDD?"rgba(232,205,169,0.6)":C.border}`,background:pfForm.trailingDD?"rgba(232,205,169,0.12)":"transparent",color:pfForm.trailingDD?C.accent:C.gray1,fontSize:9,fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,cursor:"pointer",letterSpacing:"0.12em",textTransform:"uppercase",transition:"all 0.2s"}}>
+                  {pfForm.trailingDD?"▲ Suiveur":"Fixe"}
+                </button>
+              </div>
+            }>
               <input type="text" inputMode="numeric" placeholder="" value={pfPctMode?pfPctValues.maxLoss:pfForm.maxLoss} onChange={e=>{const v=e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"");if(pfPctMode){setPfPctValues(p=>({...p,maxLoss:v}));pfSet("maxLoss",pfForm.capital?String((parseFloat(pfForm.capital)*(parseFloat(v)||0)/100).toFixed(0)):"");}else pfSet("maxLoss",v);}} style={iStyle}/>
               {pfPctMode&&pfPctValues.maxLoss&&pfForm.capital&&<div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:4}}>= {fmtMoney(parseFloat(pfForm.capital)*(parseFloat(pfPctValues.maxLoss)||0)/100)}{currency}</div>}
+              {pfForm.trailingDD&&<div style={{fontSize:10,color:C.accent,fontFamily:"'Josefin Sans',sans-serif",marginTop:4,letterSpacing:"0.05em"}}>▲ Le seuil s'ajuste à la hausse en fin de journée</div>}
             </Field>
           </div>
           <Divider/>
@@ -2769,7 +2777,15 @@ ${recentTrades}`;
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
                   <div><Label>Capital</Label><input type="text" inputMode="numeric" value={editingPf.capital||""} onChange={e=>setEditingPf(p=>({...p,capital:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")}))} style={{...iStyle,padding:"9px 10px",fontSize:13}}/></div>
                   {pf.type==="propfirm" && <div><Label>Profit Target</Label><input type="text" inputMode="numeric" value={editingPf.target||""} onChange={e=>setEditingPf(p=>({...p,target:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")}))} style={{...iStyle,padding:"9px 10px",fontSize:13}}/></div>}
-                  {pf.type==="propfirm" && <div><Label>Max Drawdown</Label><input type="text" inputMode="numeric" value={editingPf.maxLoss||""} onChange={e=>setEditingPf(p=>({...p,maxLoss:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")}))} style={{...iStyle,padding:"9px 10px",fontSize:13}}/></div>}
+                  {pf.type==="propfirm" && <div>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                      <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.18em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>Max Drawdown</div>
+                      <button onClick={()=>setEditingPf(p=>({...p,trailingDD:!p.trailingDD}))} style={{padding:"2px 10px",borderRadius:20,border:`1px solid ${editingPf.trailingDD?"rgba(232,205,169,0.6)":C.border}`,background:editingPf.trailingDD?"rgba(232,205,169,0.12)":"transparent",color:editingPf.trailingDD?C.accent:C.gray1,fontSize:9,fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,cursor:"pointer",letterSpacing:"0.12em",textTransform:"uppercase",transition:"all 0.2s"}}>
+                        {editingPf.trailingDD?"▲ Suiveur":"Fixe"}
+                      </button>
+                    </div>
+                    <input type="text" inputMode="numeric" value={editingPf.maxLoss||""} onChange={e=>setEditingPf(p=>({...p,maxLoss:e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,"")}))} style={{...iStyle,padding:"9px 10px",fontSize:13}}/>
+                  </div>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
                   <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.12em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>Daily Loss</div>
