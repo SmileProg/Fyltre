@@ -5,7 +5,7 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { patternData, stratCtx, tradeCount, coachInstructions, customSystem } = req.body;
+  const { patternData, stratCtx, tradeCount, coachInstructions, customSystem, lang } = req.body;
   if (!patternData) return res.status(400).json({ error: "patternData requis" });
 
   const KEY = process.env.GROQ_API_KEY;
@@ -41,7 +41,7 @@ La combinaison où le trader performe vraiment bien (ex: "MNQ + London + Confian
 📌 3 RÈGLES POUR DEMAIN
 Règles mesurables et directement issues des données. Pas de généralités. Ex: "Ne trade pas le Vendredi (P&L cumulé: -X€)" ou "Si émotion = Anxieux, passe ton tour (WR: 22%)".
 
-Réponds en français. Direct, chiffres d'abord, conclusions ensuite.`;
+Réponds en ${lang === "en" ? "anglais" : "français"}. Direct, chiffres d'abord, conclusions ensuite.`;
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {

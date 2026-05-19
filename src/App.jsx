@@ -50,6 +50,7 @@ const APP_T = {
     emotions: { Confiant:"Confiant", Neutre:"Neutre", Anxieux:"Anxieux", Euphorique:"Euphorique", Frustré:"Frustré", Patient:"Patient" },
     months:      ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"],
     monthsShort: ["Jan","Fév","Mar","Avr","Mai","Juin","Juil","Août","Sep","Oct","Nov","Déc"],
+    days: ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"],
     pages: {
       dash:   { sub:"Tableau de bord", t0:"Aucun trade",     t1:"Performance" },
       add:    { sub:"Enregistrer",     title:"Nouveau Trade" },
@@ -74,6 +75,9 @@ const APP_T = {
       stratName:"Nom de la stratégie", stratDesc:"Description générale", stratRules:"Règles strictes", stratUsed:"Stratégie utilisée",
       firstName:"Prénom", lastName:"Nom",
       inactivityDays:"Jours max d'inactivité", from:"À partir du",
+      editTrade:"Modifier le trade", assetPH:"Nom de l'actif", emotionPH:"ex: Déterminé",
+      notesPH:"ex: Parfaite exécution, j'ai suivi mon plan à la lettre.",
+      pnl:"P&L (montant)", memorized:"Mémorisés : ", quickEntry:"Saisie rapide",
     },
     btn: {
       save:"Sauvegarder", saved:"✓ Sauvegardé", saving:"···", error:"✗ Erreur",
@@ -81,10 +85,12 @@ const APP_T = {
       seeHistory:"☰ Voir l'historique des trades →",
       all:"Tous", active:"Actifs", archived:"Archivés",
       cancel:"Annuler", delete:"Supprimer", confirm:"Confirmer",
-      noTradesYet:"Aucun trade", noTradesMonth:"{L.btn.noTradesMonth}",
+      yes:"Oui", no:"Non",
+      noTradesYet:"Aucun trade", noTradesMonth:"Aucun trade ce mois",
       enabled:"Activée", disabled:"Désactivée",
       customize:"⊞ Personnaliser", done:"✓ Terminé",
       analyzing:"◌  Analyse en cours...", eod:"◆  Debriefing fin de journée",
+      back:"← Retour", add:"+ Ajouter", newBtn:"+ Nouvelle",
     },
     sett: {
       currency:"Devise", language:"Langue", theme:"Thème", colors:"Couleurs",
@@ -111,11 +117,18 @@ const APP_T = {
       secInst:"Instrument", secInstSub:"Par instrument tradé",
       secEmo:"Émotion", secEmoSub:"Par état émotionnel",
       calTitle:"Calendrier P&L",
+      avgRR:"RR Moyen", pnlEvolution:"Évolution P&L", cumulated:"Cumulé",
     },
     acct: {
       noTradesToday:"Aucun trade aujourd'hui", noTradesAccount:"Aucun trade pour ce compte.",
       emotions:"Émotions", global:"Global", today:"Aujourd'hui",
       tradeSettings:"Réglages de trade", fixedValues:"Valeurs fixes appliquées", noFixedFields:"Aucun champ activé dans les paramètres",
+      propfirmDesc:"Compte financé avec règles d'évaluation",
+      personalDesc:"Compte personnel avec ton propre capital",
+      mt5Desc:"Connecte ton compte depuis Paramètres → le compte apparaît ici automatiquement",
+      firmNamePH:"ex: Lucid Trading, FTMO...", accountNamePH:"ex: Eval 1, Compte principal...",
+      enterIn:"Saisir en", deleteConfirm:"Supprimer ?",
+      ownFunds:"Fond Propre",
     },
     rank: {
       emotions:"Émotions", consistency:"Régularité",
@@ -139,6 +152,101 @@ const APP_T = {
       sameEmail:"C'est déjà ton email actuel.",
       notConnected:"Non connecté",
       network:"Erreur réseau",
+      forgotDesc:"Entre ton email pour recevoir un lien de réinitialisation.",
+      sendLink:"Envoyer le lien",
+      linkSent:"Lien envoyé !",
+      linkSentDesc:"Vérifie ta boîte mail et clique sur le lien pour réinitialiser ton mot de passe.",
+      back:"Retour",
+      backToLogin:"← Retour à la connexion",
+      passwordPH:"Mot de passe",
+      forgotBtn:"Mot de passe oublié ?",
+      loginBtn:"Se connecter",
+      paywallTitle:"Accès réservé aux membres",
+      paywallDesc:"Cet email n'a pas de licence active. Choisis un plan pour créer ton compte.",
+      paywallCTA:"Voir les tarifs →",
+    },
+    resetPwd: {
+      title:"Nouveau mot de passe",
+      updated:"Mot de passe mis à jour !",
+      newPwdPH:"Nouveau mot de passe",
+      confirmPH:"Confirmer le mot de passe",
+      save:"Enregistrer",
+      fillBoth:"Remplis les deux champs.",
+      noMatch:"Les mots de passe ne correspondent pas.",
+    },
+    mt5: {
+      title:"Compte MT4 / MT5",
+      notFound:"Compte introuvable",
+      notFoundDesc:"Ce compte n'existe plus chez MetaAPI (expiré ou supprimé). Reconnecte-le pour continuer la synchronisation.",
+      reconnect:"Reconnecter le compte →",
+      sync:"Synchroniser les trades →",
+      syncing:"Synchronisation...",
+      changeAccount:"Changer de compte",
+      fieldLogin:"Numéro de compte (login)",
+      fieldPwd:"Mot de passe investisseur",
+      fieldServer:"Serveur broker (ex: ICMarkets-Live)",
+      fieldName:"Nom du compte (optionnel)",
+      connect:"Connecter →",
+      connecting:"Connexion...",
+      pwdHint:"Utilise ton mot de passe investisseur (lecture seule) — jamais le mot de passe principal.",
+      fillFields:"Remplis tous les champs.",
+      connectedStatus:"Compte connecté ! La synchronisation initiale peut prendre 2-3 minutes.",
+      tradesImported:(n)=>`${n} trades importés avec succès.`,
+      accountLabel:(login)=>`Compte ${login}`,
+    },
+    alerts: {
+      profitTarget:"Profit target atteint — Félicitations.",
+      remaining:(v,c)=>`Encore ${v}${c} pour valider le profit target.`,
+      missing:(v,c)=>`Il vous manque ${v}${c} pour valider.`,
+      maxDD:"Max drawdown atteint — Arrêtez de trader.",
+      nearDD:(pct)=>`Attention — vous êtes à ${pct}% du max drawdown.`,
+      dailyLossHit:"Daily loss limit atteinte — Arrêtez de trader aujourd'hui.",
+      dailyLossWarn:(used,max,c)=>`Daily loss : ${used}${c} / ${max}${c} utilisés.`,
+    },
+    strat: {
+      newName:"Nouvelle stratégie", initialName:"Ma stratégie", unnamed:"Sans nom",
+      steps:"Étapes d'entrée", addStep:"Ajouter une étape",
+      stepPH:"ex: Attendre le retest de l'OB",
+      notesLabel:"Notes personnelles",
+      notesPH:"Tout ce que vous souhaitez que l'IA sache...",
+      descPH:"ex: ICT sur MNQ, entrée OB retest M5, NY session...",
+      rulesPH:"- Max 1 trade/jour\n- Stop après 1 win\n- Pas de trade sans bias",
+      delete:"Supprimer cette stratégie",
+    },
+    aiSection: {
+      noTrades:"Ajoute au moins 3 trades pour obtenir une analyse.",
+      emptyResponse:"Réponse vide. Réessaie.",
+      networkError:(msg)=>`Erreur réseau: ${msg}`,
+      noTradesToday:"Aucun trade aujourd'hui sur ce compte.",
+      eodEmpty:"Réponse vide.",
+      coachTitle:"Instructions du coach",
+      coachDesc:"Personnalise le comportement du coach. Il en tiendra compte dans chaque analyse.",
+      coachPH:"Ex: Je trade principalement le MNQ en scalping. Je dois travailler ma discipline sur les stops. Sois très direct et sans pitié sur mes erreurs.",
+      eodSystemPrompt:"Tu es un coach de trading direct et exigeant. Fais un debriefing de fin de journée. Analyse : 1) ✅ Ce qui s'est bien passé 2) ❌ Ce qui doit être amélioré 3) 📌 1 règle à appliquer demain. Sois court, direct, sans blabla. Réponds en français.",
+      langInstruction:"Réponds en français.",
+    },
+    tools: {
+      csvDesc:"Exporte ton historique depuis ta plateforme et colle le contenu CSV ici.",
+      calcDesc:"Entre ton prix d'entrée, stop loss et risque max — FYLTRA calcule le nombre de contrats adapté.",
+      platform:"Plateforme", csvContent:"Contenu CSV",
+      csvPH:"Colle ici le contenu de ton fichier CSV...",
+      analyzeBtn:"Analyser le CSV →", importBtn:"✓ Importer",
+      detected:(n,s)=>`${n} trade${s?"s":""} détecté${s?"s":""}.`,
+      skipped:(n)=>`(${n} ligne${n>1?"s":""} ignorée${n>1?"s":""})`,
+    },
+    prof: {
+      pwdSection:"Mot de passe", pwdNewPH:"Nouveau mot de passe", pwdConfirmPH:"Confirmer le mot de passe",
+      pwdChange:"Changer le mot de passe", pwdUpdated:"✓ Mot de passe mis à jour !",
+      pwdFillBoth:"Remplis les deux champs.", pwdNoMatch:"Les mots de passe ne correspondent pas.", pwdMin:"Au moins 6 caractères.",
+      emailSection:"Adresse email", emailCurrentLabel:"Email actuel", emailNewLabel:"Nouvel email",
+      emailNewPH:"nouveau@email.com", emailChange:"Changer l'email",
+      emailChanged:"✓ Email envoyé ! Confirme le lien reçu sur ta nouvelle adresse.",
+      emailEnter:"Entre un nouvel email.",
+      rankSection:"Classement global", subSection:"Abonnement",
+      subLoading:"Chargement...", subNone:"Aucun abonnement actif trouvé.",
+      planCurrent:"Plan actuel", subExpires:"Expire le", subNextBilling:"Prochaine facture",
+      subCancelled:"Accès annulé", subActive:"Actif",
+      subCancelConfirm:(date)=>`Confirmer la résiliation ? Ton accès restera actif jusqu'au ${date}, puis sera coupé.`,
     },
     csv: {
       noTrades:"Aucun trade détecté. Vérifie le format.",
@@ -157,6 +265,7 @@ const APP_T = {
     emotions: { Confiant:"Confident", Neutre:"Neutral", Anxieux:"Anxious", Euphorique:"Euphoric", Frustré:"Frustrated", Patient:"Patient" },
     months:      ["January","February","March","April","May","June","July","August","September","October","November","December"],
     monthsShort: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+    days: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
     pages: {
       dash:   { sub:"Dashboard",       t0:"No trades",      t1:"Performance" },
       add:    { sub:"Record",          title:"New Trade" },
@@ -181,6 +290,9 @@ const APP_T = {
       stratName:"Strategy name", stratDesc:"General description", stratRules:"Strict rules", stratUsed:"Strategy used",
       firstName:"First name", lastName:"Last name",
       inactivityDays:"Max inactivity days", from:"From",
+      editTrade:"Edit trade", assetPH:"Asset name", emotionPH:"e.g. Determined",
+      notesPH:"e.g. Perfect execution, I followed my plan to the letter.",
+      pnl:"P&L (amount)", memorized:"Saved: ", quickEntry:"Quick entry",
     },
     btn: {
       save:"Save", saved:"✓ Saved", saving:"···", error:"✗ Error",
@@ -188,10 +300,12 @@ const APP_T = {
       seeHistory:"☰ View trade history →",
       all:"All", active:"Active", archived:"Archived",
       cancel:"Cancel", delete:"Delete", confirm:"Confirm",
+      yes:"Yes", no:"No",
       noTradesYet:"No trades", noTradesMonth:"No trades this month",
       enabled:"Enabled", disabled:"Disabled",
       customize:"⊞ Customize", done:"✓ Done",
       analyzing:"◌  Analyzing...", eod:"◆  End of day debrief",
+      back:"← Back", add:"+ Add", newBtn:"+ New",
     },
     sett: {
       currency:"Currency", language:"Language", theme:"Theme", colors:"Colors",
@@ -218,11 +332,18 @@ const APP_T = {
       secInst:"Instrument", secInstSub:"By instrument traded",
       secEmo:"Emotion", secEmoSub:"By emotional state",
       calTitle:"P&L Calendar",
+      avgRR:"Avg RR", pnlEvolution:"P&L Evolution", cumulated:"Cumulative",
     },
     acct: {
       noTradesToday:"No trades today", noTradesAccount:"No trades for this account.",
       emotions:"Emotions", global:"Global", today:"Today",
       tradeSettings:"Trade settings", fixedValues:"Fixed values applied", noFixedFields:"No field enabled in settings",
+      propfirmDesc:"Funded account with evaluation rules",
+      personalDesc:"Personal account with your own capital",
+      mt5Desc:"Connect your account from Settings → it will appear here automatically",
+      firmNamePH:"e.g. Lucid Trading, FTMO...", accountNamePH:"e.g. Eval 1, Main account...",
+      enterIn:"Enter in", deleteConfirm:"Delete?",
+      ownFunds:"Own Funds",
     },
     rank: {
       emotions:"Emotions", consistency:"Consistency",
@@ -246,6 +367,101 @@ const APP_T = {
       sameEmail:"That is already your current email.",
       notConnected:"Not connected",
       network:"Network error",
+      forgotDesc:"Enter your email to receive a reset link.",
+      sendLink:"Send link",
+      linkSent:"Link sent!",
+      linkSentDesc:"Check your inbox and click the link to reset your password.",
+      back:"Back",
+      backToLogin:"← Back to login",
+      passwordPH:"Password",
+      forgotBtn:"Forgot password?",
+      loginBtn:"Sign in",
+      paywallTitle:"Members only",
+      paywallDesc:"This email has no active licence. Choose a plan to create your account.",
+      paywallCTA:"See pricing →",
+    },
+    resetPwd: {
+      title:"New password",
+      updated:"Password updated!",
+      newPwdPH:"New password",
+      confirmPH:"Confirm password",
+      save:"Save",
+      fillBoth:"Fill in both fields.",
+      noMatch:"Passwords do not match.",
+    },
+    mt5: {
+      title:"MT4 / MT5 Account",
+      notFound:"Account not found",
+      notFoundDesc:"This account no longer exists on MetaAPI (expired or deleted). Reconnect it to resume syncing.",
+      reconnect:"Reconnect account →",
+      sync:"Sync trades →",
+      syncing:"Syncing...",
+      changeAccount:"Change account",
+      fieldLogin:"Account number (login)",
+      fieldPwd:"Investor password",
+      fieldServer:"Broker server (e.g. ICMarkets-Live)",
+      fieldName:"Account name (optional)",
+      connect:"Connect →",
+      connecting:"Connecting...",
+      pwdHint:"Use your investor password (read-only) — never your main password.",
+      fillFields:"Please fill in all fields.",
+      connectedStatus:"Account connected! Initial sync may take 2–3 minutes.",
+      tradesImported:(n)=>`${n} trades imported successfully.`,
+      accountLabel:(login)=>`Account ${login}`,
+    },
+    alerts: {
+      profitTarget:"Profit target reached — Congratulations.",
+      remaining:(v,c)=>`${v}${c} left to hit the profit target.`,
+      missing:(v,c)=>`You need ${v}${c} more to validate.`,
+      maxDD:"Max drawdown reached — Stop trading.",
+      nearDD:(pct)=>`Warning — you are at ${pct}% of the max drawdown.`,
+      dailyLossHit:"Daily loss limit hit — Stop trading today.",
+      dailyLossWarn:(used,max,c)=>`Daily loss: ${used}${c} / ${max}${c} used.`,
+    },
+    strat: {
+      newName:"New strategy", initialName:"My strategy", unnamed:"Unnamed",
+      steps:"Entry steps", addStep:"Add a step",
+      stepPH:"e.g. Wait for OB retest",
+      notesLabel:"Personal notes",
+      notesPH:"Anything you want the AI to know...",
+      descPH:"e.g. ICT on MNQ, entry OB retest M5, NY session...",
+      rulesPH:"- Max 1 trade/day\n- Stop after 1 win\n- No trade without bias",
+      delete:"Delete this strategy",
+    },
+    aiSection: {
+      noTrades:"Add at least 3 trades to get an analysis.",
+      emptyResponse:"Empty response. Please try again.",
+      networkError:(msg)=>`Network error: ${msg}`,
+      noTradesToday:"No trades today on this account.",
+      eodEmpty:"Empty response.",
+      coachTitle:"Coach instructions",
+      coachDesc:"Customise the coach's behaviour. It will apply to every analysis.",
+      coachPH:"e.g. I mainly trade MNQ scalping. I need to work on stop discipline. Be very direct and merciless about my mistakes.",
+      eodSystemPrompt:"You are a direct and demanding trading coach. Do an end-of-day debrief. Analyse: 1) ✅ What went well 2) ❌ What needs to improve 3) 📌 1 rule to apply tomorrow. Be short, direct, no fluff. Respond in English.",
+      langInstruction:"Respond in English.",
+    },
+    tools: {
+      csvDesc:"Export your history from your platform and paste the CSV content here.",
+      calcDesc:"Enter your entry price, stop loss and max risk — FYLTRA calculates the right number of contracts.",
+      platform:"Platform", csvContent:"CSV content",
+      csvPH:"Paste your CSV file content here...",
+      analyzeBtn:"Analyse CSV →", importBtn:"✓ Import",
+      detected:(n,s)=>`${n} trade${s?"s":""} detected.`,
+      skipped:(n)=>`(${n} line${n>1?"s":""} skipped)`,
+    },
+    prof: {
+      pwdSection:"Password", pwdNewPH:"New password", pwdConfirmPH:"Confirm password",
+      pwdChange:"Change password", pwdUpdated:"✓ Password updated!",
+      pwdFillBoth:"Fill in both fields.", pwdNoMatch:"Passwords do not match.", pwdMin:"At least 6 characters.",
+      emailSection:"Email address", emailCurrentLabel:"Current email", emailNewLabel:"New email",
+      emailNewPH:"new@email.com", emailChange:"Change email",
+      emailChanged:"✓ Email sent! Confirm the link received at your new address.",
+      emailEnter:"Enter a new email.",
+      rankSection:"Global rankings", subSection:"Subscription",
+      subLoading:"Loading...", subNone:"No active subscription found.",
+      planCurrent:"Current plan", subExpires:"Expires on", subNextBilling:"Next billing",
+      subCancelled:"Cancelled", subActive:"Active",
+      subCancelConfirm:(date)=>`Confirm cancellation? Your access will remain active until ${date}, then be cut.`,
     },
     csv: {
       noTrades:"No trades detected. Check the file format.",
@@ -1143,15 +1359,15 @@ function AuthScreen() {
               resetSent ? (
                 <div style={{ textAlign:"center", padding:"16px 0" }}>
                   <div style={{ fontSize:28, marginBottom:12 }}>✉️</div>
-                  <div style={{ fontSize:13, color:CR, fontFamily:JF, fontWeight:600, marginBottom:8 }}>Lien envoyé !</div>
-                  <div style={{ fontSize:11, color:DIM, fontFamily:JF, lineHeight:1.6 }}>Vérifie ta boîte mail et clique sur le lien pour réinitialiser ton mot de passe.</div>
+                  <div style={{ fontSize:13, color:CR, fontFamily:JF, fontWeight:600, marginBottom:8 }}>{L.auth.linkSent}</div>
+                  <div style={{ fontSize:11, color:DIM, fontFamily:JF, lineHeight:1.6 }}>{L.auth.linkSentDesc}</div>
                   <button onClick={()=>{ setForgotMode(false); setResetSent(false); setError(""); }} style={{ marginTop:20, background:"none", border:`1px solid ${BDR}`, borderRadius:8, padding:"10px 20px", color:DIM, fontSize:10, fontFamily:JF, fontWeight:700, letterSpacing:"0.15em", textTransform:"uppercase", cursor:"pointer" }}>
-                    Retour
+                    {L.auth.back}
                   </button>
                 </div>
               ) : (
                 <>
-                  <div style={{ marginBottom:8, fontSize:12, color:DIM, fontFamily:JF, lineHeight:1.5 }}>Entre ton email pour recevoir un lien de réinitialisation.</div>
+                  <div style={{ marginBottom:8, fontSize:12, color:DIM, fontFamily:JF, lineHeight:1.5 }}>{L.auth.forgotDesc}</div>
                   <div style={{ marginBottom:14 }}>
                     <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendReset()}
                       style={{ width:"100%", background:"rgba(255,255,255,0.04)", border:CARD_BDR, borderRadius:10, padding:"14px 16px", color:CR, fontSize:14, fontFamily:JF, fontWeight:300, outline:"none", boxSizing:"border-box" }}/>
@@ -1159,10 +1375,10 @@ function AuthScreen() {
                   {error && <div style={{ marginBottom:12, fontSize:11, color:"#e05a5a", fontFamily:JF }}>{error}</div>}
                   <button onClick={sendReset} disabled={loading}
                     style={{ width:"100%", padding:"14px", borderRadius:10, border:"none", background:loading?"rgba(255,255,255,0.05)":CR, color:loading?"rgba(255,255,255,0.3)":BG, fontSize:10, fontFamily:JF, fontWeight:700, letterSpacing:"0.18em", textTransform:"uppercase", cursor:loading?"not-allowed":"pointer", transition:"all 0.2s", marginBottom:12 }}>
-                    {loading?"···":"Envoyer le lien"}
+                    {loading?"···":L.auth.sendLink}
                   </button>
                   <button onClick={()=>{ setForgotMode(false); setError(""); }} style={{ width:"100%", background:"none", border:"none", color:DIM, fontSize:11, fontFamily:JF, cursor:"pointer", textAlign:"center" }}>
-                    ← Retour à la connexion
+                    {L.auth.backToLogin}
                   </button>
                 </>
               )
@@ -1173,7 +1389,7 @@ function AuthScreen() {
                     style={{ width:"100%", background:"rgba(255,255,255,0.04)", border:CARD_BDR, borderRadius:10, padding:"14px 16px", color:CR, fontSize:14, fontFamily:JF, fontWeight:300, outline:"none", boxSizing:"border-box" }}/>
                 </div>
                 <div style={{ marginBottom:6, position:"relative" }}>
-                  <input type={showPwd?"text":"password"} placeholder="Mot de passe" value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}
+                  <input type={showPwd?"text":"password"} placeholder={L.auth.passwordPH} value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}
                     style={{ width:"100%", background:"rgba(255,255,255,0.04)", border:CARD_BDR, borderRadius:10, padding:"14px 46px 14px 16px", color:CR, fontSize:14, fontFamily:JF, fontWeight:300, outline:"none", boxSizing:"border-box" }}/>
                   <button onClick={()=>setShowPwd(v=>!v)} style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:"rgba(255,255,255,0.3)", lineHeight:1, padding:0 }}>
                     {showPwd
@@ -1183,14 +1399,14 @@ function AuthScreen() {
                 </div>
                 <div style={{ marginBottom:14, textAlign:"right" }}>
                   <button onClick={()=>{ setForgotMode(true); setError(""); setSuccess(""); }} style={{ background:"none", border:"none", color:"rgba(245,242,234,0.7)", fontSize:11, fontFamily:JF, cursor:"pointer", padding:0, textDecoration:"underline", textUnderlineOffset:3 }}>
-                    Mot de passe oublié ?
+                    {L.auth.forgotBtn}
                   </button>
                 </div>
                 {error   && <div style={{ marginBottom:12, fontSize:11, color:"#e05a5a", fontFamily:JF }}>{error}</div>}
                 {paywall && (
                   <div style={{ marginBottom:12, padding:"12px 14px", borderRadius:10, background:"rgba(232,205,169,0.07)", border:"1px solid rgba(232,205,169,0.22)", fontFamily:JF }}>
-                    <div style={{ fontSize:11, color:"#e8cda9", marginBottom:8, fontWeight:600, letterSpacing:"0.05em" }}>Accès réservé aux membres</div>
-                    <div style={{ fontSize:11, color:"rgba(232,205,169,0.65)", marginBottom:10, lineHeight:1.55 }}>Cet email n'a pas de licence active. Choisis un plan pour créer ton compte.</div>
+                    <div style={{ fontSize:11, color:"#e8cda9", marginBottom:8, fontWeight:600, letterSpacing:"0.05em" }}>{L.auth.paywallTitle}</div>
+                    <div style={{ fontSize:11, color:"rgba(232,205,169,0.65)", marginBottom:10, lineHeight:1.55 }}>{L.auth.paywallDesc}</div>
                     <button onClick={async () => {
                       try {
                         const r = await fetch("/api/create-checkout", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ plan:"early_bird" }) });
@@ -1198,14 +1414,14 @@ function AuthScreen() {
                         if (url) window.location.href = url;
                       } catch {}
                     }} style={{ display:"inline-block", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#1a1208", borderRadius:7, padding:"8px 16px", fontSize:10, fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", border:"none", cursor:"pointer", fontFamily:"'Josefin Sans',sans-serif" }}>
-                      Voir les tarifs →
+                      {L.auth.paywallCTA}
                     </button>
                   </div>
                 )}
                 {success && <div style={{ marginBottom:12, fontSize:11, color:"#4caf6e", fontFamily:JF }}>{success}</div>}
                 <button onClick={submit} disabled={loading}
                   style={{ width:"100%", padding:"14px", borderRadius:10, border:"none", background:loading?"rgba(255,255,255,0.05)":CR, color:loading?"rgba(255,255,255,0.3)":BG, fontSize:10, fontFamily:JF, fontWeight:700, letterSpacing:"0.18em", textTransform:"uppercase", cursor:loading?"not-allowed":"pointer", transition:"all 0.2s" }}>
-                  {loading?"···":"Se connecter"}
+                  {loading?"···":L.auth.loginBtn}
                 </button>
               </>
             )}
@@ -1235,7 +1451,7 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
   }, [user]);
 
   const connectMT5 = async () => {
-    if (!mt5Form.login || !mt5Form.password || !mt5Form.server) { setMt5Error("Remplis tous les champs."); return; }
+    if (!mt5Form.login || !mt5Form.password || !mt5Form.server) { setMt5Error(L.mt5.fillFields); return; }
     setMt5Loading(true); setMt5Error(""); setMt5Status("");
     try {
       const res = await fetch("/api/connect-mt5", {
@@ -1243,18 +1459,19 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
         body: JSON.stringify(mt5Form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erreur connexion");
+      if (!res.ok) throw new Error(data.error || L.mt5.connecting);
+      const accountName = mt5Form.name || L.mt5.accountLabel(mt5Form.login);
       const { data: saved } = await supabase.from("mt5_accounts").upsert({
         user_id: user.id, metaapi_id: data.accountId,
         broker_server: mt5Form.server, login: mt5Form.login,
-        name: mt5Form.name || `Compte ${mt5Form.login}`, connected: true,
+        name: accountName, connected: true,
       }).select().single();
       if (saved) setMt5Account(saved);
       if (onAccountConnected) {
-        const newPf = { id: Date.now(), type:"mt5", firm: mt5Form.server, name: mt5Form.name || `Compte ${mt5Form.login}`, capital:"0", metaapi_id: data.accountId, platform: mt5Form.platform, login: mt5Form.login, status:"active" };
+        const newPf = { id: Date.now(), type:"mt5", firm: mt5Form.server, name: accountName, capital:"0", metaapi_id: data.accountId, platform: mt5Form.platform, login: mt5Form.login, status:"active" };
         onAccountConnected(newPf);
       }
-      setMt5Status("Compte connecté ! La synchronisation initiale peut prendre 2-3 minutes.");
+      setMt5Status(L.mt5.connectedStatus);
     } catch(e) { setMt5Error(e.message); }
     setMt5Loading(false);
   };
@@ -1272,9 +1489,9 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
       if (res.status === 404 || (data.error || "").toLowerCase().includes("not found")) {
         setMt5NotFound(true); setMt5Syncing(false); return;
       }
-      if (!res.ok) throw new Error(data.error || "Erreur sync");
+      if (!res.ok) throw new Error(data.error || "Sync error");
       if (data.trades?.length > 0 && onTradesImported) onTradesImported(data.trades);
-      setMt5Status(`${data.total} trades importés avec succès.`);
+      setMt5Status(L.mt5.tradesImported(data.total));
     } catch(e) { setMt5Error(e.message); }
     setMt5Syncing(false);
   };
@@ -1289,7 +1506,7 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
 
   return (
     <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
-      <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:14}}>Compte MT4 / MT5</div>
+      <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:14}}>{L.mt5.title}</div>
 
       {mt5Account ? (
         <div>
@@ -1302,19 +1519,19 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
           </div>
           {mt5NotFound ? (
             <div style={{background:"rgba(224,90,90,0.08)",border:"1px solid rgba(224,90,90,0.25)",borderRadius:10,padding:"14px 16px",marginBottom:8}}>
-              <div style={{fontSize:13,color:"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:6}}>Compte introuvable</div>
-              <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.6,marginBottom:12}}>Ce compte n'existe plus chez MetaAPI (expiré ou supprimé). Reconnecte-le pour continuer la synchronisation.</div>
+              <div style={{fontSize:13,color:"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:6}}>{L.mt5.notFound}</div>
+              <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.6,marginBottom:12}}>{L.mt5.notFoundDesc}</div>
               <button onClick={reconnectMT5} style={{width:"100%",padding:"10px",borderRadius:8,border:"none",background:"rgba(224,90,90,0.7)",color:"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>
-                Reconnecter le compte →
+                {L.mt5.reconnect}
               </button>
             </div>
           ) : (
             <button onClick={syncTrades} disabled={mt5Syncing} style={{width:"100%",padding:"11px",borderRadius:8,border:"none",background:mt5Syncing?"#333":C.accent,color:mt5Syncing?"#888":darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5Syncing?"not-allowed":"pointer",transition:"all 0.2s"}}>
-              {mt5Syncing ? "Synchronisation..." : "Synchroniser les trades →"}
+              {mt5Syncing ? L.mt5.syncing : L.mt5.sync}
             </button>
           )}
           <button onClick={()=>{setMt5Account(null);setMt5NotFound(false);}} style={{width:"100%",marginTop:8,padding:"8px",borderRadius:8,border:`1px solid ${C.border}`,background:"transparent",color:C.gray2,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>
-            Changer de compte
+            {L.mt5.changeAccount}
           </button>
         </div>
       ) : (
@@ -1326,9 +1543,9 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
               </button>
             ))}
           </div>
-          <input placeholder="Numéro de compte (login)" value={mt5Form.login} onChange={e=>f("login",e.target.value)} style={fieldStyle}/>
+          <input placeholder={L.mt5.fieldLogin} value={mt5Form.login} onChange={e=>f("login",e.target.value)} style={fieldStyle}/>
           <div style={{position:"relative"}}>
-            <input type={showMt5Pwd?"text":"password"} placeholder="Mot de passe investisseur" value={mt5Form.password} onChange={e=>f("password",e.target.value)} style={{...fieldStyle, paddingRight:46}}/>
+            <input type={showMt5Pwd?"text":"password"} placeholder={L.mt5.fieldPwd} value={mt5Form.password} onChange={e=>f("password",e.target.value)} style={{...fieldStyle, paddingRight:46}}/>
             <button onClick={()=>setShowMt5Pwd(v=>!v)} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,0.35)",lineHeight:1,padding:0}}>
               {showMt5Pwd?(
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -1337,13 +1554,13 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
               )}
             </button>
           </div>
-          <input placeholder="Serveur broker (ex: ICMarkets-Live)" value={mt5Form.server} onChange={e=>f("server",e.target.value)} style={fieldStyle}/>
-          <input placeholder="Nom du compte (optionnel)" value={mt5Form.name} onChange={e=>f("name",e.target.value)} style={fieldStyle}/>
+          <input placeholder={L.mt5.fieldServer} value={mt5Form.server} onChange={e=>f("server",e.target.value)} style={fieldStyle}/>
+          <input placeholder={L.mt5.fieldName} value={mt5Form.name} onChange={e=>f("name",e.target.value)} style={fieldStyle}/>
           <button onClick={connectMT5} disabled={mt5Loading} style={{width:"100%",padding:"12px",borderRadius:8,border:"none",background:mt5Loading?"#333":C.accent,color:mt5Loading?"#888":darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5Loading?"not-allowed":"pointer",transition:"all 0.2s",marginTop:4}}>
-            {mt5Loading ? "Connexion..." : "Connecter →"}
+            {mt5Loading ? L.mt5.connecting : L.mt5.connect}
           </button>
           <div style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5}}>
-            Utilise ton <strong style={{color:C.gray1}}>mot de passe investisseur</strong> (lecture seule) — jamais le mot de passe principal.
+            {L.mt5.pwdHint}
           </div>
         </div>
       )}
@@ -1368,9 +1585,9 @@ function ResetPasswordScreen({ onDone }) {
   const [done,     setDone]         = useState(false);
 
   const submit = async () => {
-    if (!password || !confirm) { setError("Remplis les deux champs."); return; }
-    if (password !== confirm)  { setError("Les mots de passe ne correspondent pas."); return; }
-    if (password.length < 6)   { setError("Le mot de passe doit faire au moins 6 caractères."); return; }
+    if (!password || !confirm) { setError(L.resetPwd.fillBoth); return; }
+    if (password !== confirm)  { setError(L.resetPwd.noMatch); return; }
+    if (password.length < 6)   { setError(L.auth.pwdMin); return; }
     setLoading(true); setError("");
     const { error: updateErr } = await supabase.auth.updateUser({ password });
     if (updateErr) { setError(updateErr.message); setLoading(false); return; }
@@ -1386,17 +1603,17 @@ function ResetPasswordScreen({ onDone }) {
       <div style={{ background:"rgba(10,10,16,0.98)", border:CARD_BDR, borderRadius:20, padding:"40px 36px", maxWidth:380, width:"100%", boxShadow:"0 40px 80px rgba(0,0,0,0.85)" }}>
         <div style={{ marginBottom:28, textAlign:"center" }}>
           <img src="/fyltra-logo-black.svg" style={{ height:56, width:"auto", marginBottom:8 }} alt="Fyltra" />
-          <div style={{ fontSize:10, color:"rgba(245,242,234,0.45)", letterSpacing:"0.15em", textTransform:"uppercase", fontFamily:JF }}>Nouveau mot de passe</div>
+          <div style={{ fontSize:10, color:"rgba(245,242,234,0.45)", letterSpacing:"0.15em", textTransform:"uppercase", fontFamily:JF }}>{L.resetPwd.title}</div>
         </div>
         {done ? (
           <div style={{ textAlign:"center" }}>
             <div style={{ fontSize:28, marginBottom:12 }}>✓</div>
-            <div style={{ fontSize:13, color:CR, fontFamily:JF }}>Mot de passe mis à jour !</div>
+            <div style={{ fontSize:13, color:CR, fontFamily:JF }}>{L.resetPwd.updated}</div>
           </div>
         ) : (
           <>
             <div style={{ marginBottom:12, position:"relative" }}>
-              <input type={showPwd?"text":"password"} placeholder="Nouveau mot de passe" value={password} onChange={e=>setPassword(e.target.value)}
+              <input type={showPwd?"text":"password"} placeholder={L.resetPwd.newPwdPH} value={password} onChange={e=>setPassword(e.target.value)}
                 style={{ width:"100%", background:"rgba(255,255,255,0.04)", border:CARD_BDR, borderRadius:10, padding:"14px 46px 14px 16px", color:CR, fontSize:14, fontFamily:JF, fontWeight:300, outline:"none", boxSizing:"border-box" }}/>
               <button onClick={()=>setShowPwd(v=>!v)} style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", background:"none", border:"none", cursor:"pointer", color:"rgba(255,255,255,0.3)", lineHeight:1, padding:0 }}>
                 {showPwd
@@ -1405,7 +1622,7 @@ function ResetPasswordScreen({ onDone }) {
               </button>
             </div>
             <div style={{ marginBottom:14, position:"relative" }}>
-              <input type={showPwd?"text":"password"} placeholder="Confirmer le mot de passe" value={confirm} onChange={e=>setConfirm(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}
+              <input type={showPwd?"text":"password"} placeholder={L.resetPwd.confirmPH} value={confirm} onChange={e=>setConfirm(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()}
                 style={{ width:"100%", background:"rgba(255,255,255,0.04)", border:`1px solid ${confirm ? (match ? "rgba(76,175,110,0.5)" : "rgba(224,90,90,0.5)") : BDR}`, borderRadius:10, padding:"14px 46px 14px 16px", color:CR, fontSize:14, fontFamily:JF, fontWeight:300, outline:"none", boxSizing:"border-box" }}/>
               {confirm && (
                 <span style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", fontSize:14, color: match ? "#4caf6e" : "#e05a5a" }}>
@@ -1416,7 +1633,7 @@ function ResetPasswordScreen({ onDone }) {
             {error && <div style={{ marginBottom:12, fontSize:11, color:"#e05a5a", fontFamily:JF }}>{error}</div>}
             <button onClick={submit} disabled={loading}
               style={{ width:"100%", padding:"14px", borderRadius:10, border:"none", background:loading?"rgba(255,255,255,0.05)":CR, color:loading?"rgba(255,255,255,0.3)":BG, fontSize:10, fontFamily:JF, fontWeight:700, letterSpacing:"0.18em", textTransform:"uppercase", cursor:loading?"not-allowed":"pointer", transition:"all 0.2s" }}>
-              {loading?"···":"Enregistrer"}
+              {loading?"···":L.resetPwd.save}
             </button>
           </>
         )}
@@ -1858,7 +2075,7 @@ export default function App() {
   const disciplineScore = calcDisciplineScore();
 
   const buildPatternData = () => {
-    const DAYS = ["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+    const DAYS = L.days;
     const group = (keyFn) => {
       const m = {};
       trades.forEach(t => {
@@ -1949,7 +2166,7 @@ ${recentTrades}`;
   };
 
   const analyzeAI = async () => {
-    if (trades.length < 3) { setAiText("Ajoute au moins 3 trades pour obtenir une analyse."); return; }
+    if (trades.length < 3) { setAiText(L.aiSection.noTrades); return; }
     setAiLoading(true); setAiText(""); setAiError("");
     const patternData = buildPatternData();
     const strat = strategies[0] || {};
@@ -1958,12 +2175,12 @@ ${recentTrades}`;
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ patternData, stratCtx, tradeCount: trades.length, coachInstructions }),
+        body: JSON.stringify({ patternData, stratCtx, tradeCount: trades.length, coachInstructions, lang }),
       });
       const data = await res.json();
       if (!res.ok) { setAiError(data.error || "Erreur inconnue"); setAiLoading(false); return; }
-      if (data.text) setAiText(data.text); else setAiError("Réponse vide. Réessaie.");
-    } catch (e) { setAiError(`Erreur réseau: ${e.message}`); }
+      if (data.text) setAiText(data.text); else setAiError(L.aiSection.emptyResponse);
+    } catch (e) { setAiError(L.aiSection.networkError(e.message)); }
     setAiLoading(false);
   };
 
@@ -1975,7 +2192,7 @@ ${recentTrades}`;
       <div style={{ display:"grid", gridTemplateColumns:desktop ? "repeat(4,1fr)" : "1fr 1fr", gap:10, marginBottom:20 }}>
         <StatCard label="Win Rate"  value={`${winRate}%`}                              color={winRate >= 50 ? C.accent : C.gray1} small={desktop} />
         <StatCard label="P&L Total" value={`${pnlSum >= 0 ? "+" : ""}${fmtMoney(pnlSum)}${currency}`} color={pnlSum >= 0 ? C.accent : C.gray1} small={desktop} />
-        <StatCard label={lang==="en"?"Avg RR":"RR Moyen"}  value={`${avgRR}:1`}                               color={C.dim}   small={desktop} />
+        <StatCard label={L.stats.avgRR}  value={`${avgRR}:1`}                               color={C.dim}   small={desktop} />
         <StatCard label="Bilan" value={`${wins}W / ${total - wins}L`} color={C.accent} small={desktop} />
       </div>
 
@@ -1983,7 +2200,7 @@ ${recentTrades}`;
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
           <div style={{ background:C.bg2, border:`1px solid ${C.border}`, borderRadius:10, boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)", padding:"16px 14px 10px" }}>
             <div style={{ marginBottom:8 }}>
-              <div style={{ fontSize:10, color:C.dim, letterSpacing:"0.2em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:600 }}>Évolution P&L</div>
+              <div style={{ fontSize:10, color:C.dim, letterSpacing:"0.2em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:600 }}>{L.stats.pnlEvolution}</div>
             </div>
             {propfirms.length > 0 && (
               <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:10 }}>
@@ -2006,7 +2223,7 @@ ${recentTrades}`;
         <div>
           <div style={{ background:C.bg2, border:`1px solid ${C.border}`, borderRadius:10, boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)", padding:"16px 14px 10px", marginBottom:14 }}>
               <div style={{ marginBottom:8 }}>
-                <div style={{ fontSize:10, color:C.dim, letterSpacing:"0.2em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:600 }}>Évolution P&L</div>
+                <div style={{ fontSize:10, color:C.dim, letterSpacing:"0.2em", textTransform:"uppercase", fontFamily:"'Josefin Sans',sans-serif", fontWeight:600 }}>{L.stats.pnlEvolution}</div>
               </div>
               {propfirms.length > 0 && (
                 <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:10 }}>
@@ -2067,10 +2284,10 @@ ${recentTrades}`;
           <button key={m.k} onClick={()=>setTradeMode(m.k)} style={{flex:1,padding:"10px 12px",borderRadius:11,border:"none",background:tradeMode===m.k?"radial-gradient(ellipse 90% 90% at 50% 50%, rgba(252,252,252,0.96) 0%, rgba(218,218,218,0.88) 55%, rgba(235,235,235,0.92) 100%)":"transparent",color:tradeMode===m.k?"#111":"rgba(255,255,255,0.55)",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:tradeMode===m.k?600:300,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.22s cubic-bezier(.4,0,.2,1)",position:"relative",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:tradeMode===m.k?"0 6px 20px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(0,0,0,0.12)":"none",transform:"translateY(0)"}}>
             {m.label}
             {m.k==="scalping" && tradeMode==="scalping" && (
-              <span style={{background:"rgba(255,255,255,0.88)",border:"1px solid rgba(255,255,255,0.6)",color:"#111",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",padding:"2px 7px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>Saisie rapide</span>
+              <span style={{background:"rgba(255,255,255,0.88)",border:"1px solid rgba(255,255,255,0.6)",color:"#111",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",padding:"2px 7px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>{L.form.quickEntry}</span>
             )}
             {m.k==="scalping" && tradeMode!=="scalping" && (
-              <span style={{background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,0.35)",color:"rgba(255,255,255,0.75)",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:400,letterSpacing:"0.18em",padding:"2px 8px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>Saisie rapide</span>
+              <span style={{background:"rgba(255,255,255,0.18)",border:"1px solid rgba(255,255,255,0.35)",color:"rgba(255,255,255,0.75)",fontSize:7,fontFamily:"'Josefin Sans',sans-serif",fontWeight:400,letterSpacing:"0.18em",padding:"2px 8px",borderRadius:4,textTransform:"uppercase",whiteSpace:"nowrap"}}>{L.form.quickEntry}</span>
             )}
           </button>
         ))}
@@ -2085,11 +2302,11 @@ ${recentTrades}`;
         </div>
         {showCustom && (
           <div style={{ marginTop:8, display:"flex", gap:8 }}>
-            <input type="text" placeholder="Nom de l'actif" value={customInstr} onChange={e => setCustomInstr(e.target.value)} onKeyDown={e => e.key === "Enter" && saveCustomInstr()} style={{ ...iStyle, flex:1, fontSize:14 }} autoFocus />
+            <input type="text" placeholder={L.form.assetPH} value={customInstr} onChange={e => setCustomInstr(e.target.value)} onKeyDown={e => e.key === "Enter" && saveCustomInstr()} style={{ ...iStyle, flex:1, fontSize:14 }} autoFocus />
             <button onClick={saveCustomInstr} style={{ background:C.accent, border:"none", borderRadius:6, padding:"0 14px", color:darkMode?"#111":"#fff", fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, cursor:"pointer", textTransform:"uppercase", flexShrink:0 }}>OK</button>
           </div>
         )}
-        {extraInstr.length > 0 && !showCustom && <div style={{ marginTop:6, fontSize:10, color:C.gray2, fontFamily:"'Josefin Sans',sans-serif" }}>Mémorisés: {extraInstr.join(", ")}</div>}
+        {extraInstr.length > 0 && !showCustom && <div style={{ marginTop:6, fontSize:10, color:C.gray2, fontFamily:"'Josefin Sans',sans-serif" }}>{L.form.memorized}{extraInstr.join(", ")}</div>}
       </Field>
       <Divider />
       <Field label={L.form.direction}><ChipGroup options={["LONG","SHORT"]} value={form.direction} onChange={v => set("direction", v)} /></Field>
@@ -2110,7 +2327,7 @@ ${recentTrades}`;
           {showCustomEmotion && (
             <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:8}}>
               <div style={{display:"flex",gap:8}}>
-                <input type="text" placeholder="ex: Déterminé" value={customEmotion} onChange={e=>setCustomEmotion(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&customEmotion.trim()){setExtraEmotions(p=>[...p,{label:customEmotion.trim(),polarity:customEmotionPolarity}]);set("emotion",customEmotion.trim());setCustomEmotion('');setShowCustomEmotion(false);}}} style={{...iStyle,flex:1,fontSize:13}} autoFocus/>
+                <input type="text" placeholder={L.form.emotionPH} value={customEmotion} onChange={e=>setCustomEmotion(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&customEmotion.trim()){setExtraEmotions(p=>[...p,{label:customEmotion.trim(),polarity:customEmotionPolarity}]);set("emotion",customEmotion.trim());setCustomEmotion('');setShowCustomEmotion(false);}}} style={{...iStyle,flex:1,fontSize:13}} autoFocus/>
                 <button onClick={()=>{if(customEmotion.trim()){setExtraEmotions(p=>[...p,{label:customEmotion.trim(),polarity:customEmotionPolarity}]);set("emotion",customEmotion.trim());setCustomEmotion('');setShowCustomEmotion(false);}}} style={{background:C.accent,border:"none",borderRadius:6,padding:"0 14px",color:darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,cursor:"pointer"}}>OK</button>
               </div>
               <div style={{display:"flex",gap:6}}>
@@ -2224,7 +2441,7 @@ ${recentTrades}`;
       )}
       {(tradeMode==="swing" || scalpFields.notes) && (
         <Field label={L.form.notes}>
-          <textarea rows={3} placeholder="ex: Parfaite exécution, j'ai suivi mon plan à la lettre." value={form.notes} onChange={e => set("notes", e.target.value)} style={{ ...iStyle, resize:"vertical", lineHeight:1.6 }} />
+          <textarea rows={3} placeholder={L.form.notesPH} value={form.notes} onChange={e => set("notes", e.target.value)} style={{ ...iStyle, resize:"vertical", lineHeight:1.6 }} />
         </Field>
       )}
 
@@ -2236,7 +2453,7 @@ ${recentTrades}`;
               return (
                 <button key={pf.id} onClick={() => set("accountIds", selected ? form.accountIds.filter(id=>id!==pf.id) : [...form.accountIds, pf.id])} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"11px 14px", borderRadius:6, border:`1px solid ${selected?C.accent:C.border}`, background:selected?"rgba(0,0,0,0.06)":"transparent", cursor:"pointer", transition:"all 0.15s" }}>
                   <div style={{ textAlign:"left" }}>
-                    <div style={{ fontSize:13, fontFamily:"'Josefin Sans',sans-serif", fontWeight:selected?600:300, color:selected?C.accent:C.white, letterSpacing:"0.05em" }}>{pf.firm||"Fond Propre"}</div>
+                    <div style={{ fontSize:13, fontFamily:"'Josefin Sans',sans-serif", fontWeight:selected?600:300, color:selected?C.accent:C.white, letterSpacing:"0.05em" }}>{pf.firm||L.acct.ownFunds}</div>
                     {pf.name && <div style={{ fontSize:10, color:C.gray1, fontFamily:"'Josefin Sans',sans-serif", marginTop:2 }}>{pf.name}</div>}
                   </div>
                   <div style={{ width:18, height:18, borderRadius:4, border:`1px solid ${selected?C.accent:C.gray2}`, background:selected?C.accent:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
@@ -2830,9 +3047,9 @@ ${recentTrades}`;
                     <span style={{ fontFamily:"'Josefin Sans',sans-serif", fontSize:16, fontWeight:300, color:isWin ? "#4ade80" : isLoss ? "#f87171" : C.dim, letterSpacing:"0.03em" }}>{pnl >= 0 ? "+" : ""}{fmtMoney(pnl)} €</span>
                     {confirmDeleteTradeId === t.id ? (
                       <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-                        <span style={{ fontSize:10, color:C.gray1, fontFamily:"'Josefin Sans',sans-serif" }}>Supprimer ?</span>
-                        <button onClick={() => { deleteTrade(t.id); setConfirmDeleteTradeId(null); }} style={{ background:"rgba(200,60,60,0.15)", border:"1px solid rgba(200,60,60,0.4)", borderRadius:4, color:"#e07070", cursor:"pointer", fontSize:10, padding:"2px 8px", fontFamily:"'Josefin Sans',sans-serif", fontWeight:600 }}>Oui</button>
-                        <button onClick={() => setConfirmDeleteTradeId(null)} style={{ background:"none", border:`1px solid ${C.gray3}`, borderRadius:4, color:C.gray1, cursor:"pointer", fontSize:10, padding:"2px 8px", fontFamily:"'Josefin Sans',sans-serif" }}>Non</button>
+                        <span style={{ fontSize:10, color:C.gray1, fontFamily:"'Josefin Sans',sans-serif" }}>{L.acct.deleteConfirm}</span>
+                        <button onClick={() => { deleteTrade(t.id); setConfirmDeleteTradeId(null); }} style={{ background:"rgba(200,60,60,0.15)", border:"1px solid rgba(200,60,60,0.4)", borderRadius:4, color:"#e07070", cursor:"pointer", fontSize:10, padding:"2px 8px", fontFamily:"'Josefin Sans',sans-serif", fontWeight:600 }}>{L.btn.yes}</button>
+                        <button onClick={() => setConfirmDeleteTradeId(null)} style={{ background:"none", border:`1px solid ${C.gray3}`, borderRadius:4, color:C.gray1, cursor:"pointer", fontSize:10, padding:"2px 8px", fontFamily:"'Josefin Sans',sans-serif" }}>{L.btn.no}</button>
                       </div>
                     ) : (
                       <>
@@ -2856,13 +3073,13 @@ ${recentTrades}`;
             )}
             {isEditing && (
               <>
-                <div style={{ fontSize:10, color:C.dim, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:12 }}>Modifier le trade</div>
+                <div style={{ fontSize:10, color:C.dim, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.15em", textTransform:"uppercase", marginBottom:12 }}>{L.form.editTrade}</div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:8 }}>
-                  <div><Label>Date</Label><input type="date" value={editingTrade.date} onChange={e => setEditingTrade(p => ({ ...p, date:e.target.value }))} style={{ ...iStyle, padding:"9px 10px", fontSize:13 }} /></div>
-                  <div><Label>P&L (montant)</Label><input type="text" inputMode="decimal" value={editPnlRaw} onChange={e => setEditPnlRaw(e.target.value.replace(/,/g,".").replace(/[^0-9.]/g, ""))} style={{ ...iStyle, padding:"9px 10px", fontSize:13 }} /></div>
+                  <div><Label>{L.form.date}</Label><input type="date" value={editingTrade.date} onChange={e => setEditingTrade(p => ({ ...p, date:e.target.value }))} style={{ ...iStyle, padding:"9px 10px", fontSize:13 }} /></div>
+                  <div><Label>{L.form.pnl}</Label><input type="text" inputMode="decimal" value={editPnlRaw} onChange={e => setEditPnlRaw(e.target.value.replace(/,/g,".").replace(/[^0-9.]/g, ""))} style={{ ...iStyle, padding:"9px 10px", fontSize:13 }} /></div>
                 </div>
                 <div style={{ marginBottom:8 }}>
-                  <Label>Résultat</Label>
+                  <Label>{L.form.result}</Label>
                   <div style={{ display:"flex", gap:5 }}>
                     {["WIN","LOSS","BREAKEVEN"].map(r => (
                       <button key={r} onClick={() => setEditingTrade(p => ({ ...p, result:r }))} style={{ flex:1, padding:"7px", borderRadius:4, border:"none", background:editingTrade.result === r ? "radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.9) 0%, rgba(215,215,215,0.83) 100%)" : "transparent", color:editingTrade.result === r ? "#111" : C.gray1, fontSize:10, fontFamily:"'Josefin Sans',sans-serif", fontWeight:editingTrade.result === r ? 600 : 300, cursor:"pointer", textTransform:"uppercase", boxShadow:editingTrade.result === r ? "0 0 12px 2px rgba(220,220,220,0.08), 0 3px 10px rgba(0,0,0,0.4)" : "none", transform:editingTrade.result === r ? "translateY(-1px)" : "translateY(0)", transition:"all 0.2s cubic-bezier(.4,0,.2,1)" }}>{r}</button>
@@ -2870,7 +3087,7 @@ ${recentTrades}`;
                   </div>
                 </div>
                 <div style={{ marginBottom:8 }}>
-                  <Label>Direction</Label>
+                  <Label>{L.form.direction}</Label>
                   <div style={{ display:"flex", gap:5 }}>
                     {["LONG","SHORT"].map(d => (
                       <button key={d} onClick={() => setEditingTrade(p => ({ ...p, direction:d }))} style={{ flex:1, padding:"7px", borderRadius:4, border:"none", background:editingTrade.direction === d ? "radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.9) 0%, rgba(215,215,215,0.83) 100%)" : "transparent", color:editingTrade.direction === d ? "#111" : C.gray1, fontSize:10, fontFamily:"'Josefin Sans',sans-serif", fontWeight:editingTrade.direction === d ? 600 : 300, cursor:"pointer", textTransform:"uppercase", boxShadow:editingTrade.direction === d ? "0 0 12px 2px rgba(220,220,220,0.08), 0 3px 10px rgba(0,0,0,0.4)" : "none", transform:editingTrade.direction === d ? "translateY(-1px)" : "translateY(0)", transition:"all 0.2s cubic-bezier(.4,0,.2,1)" }}>{d}</button>
@@ -2936,14 +3153,14 @@ ${recentTrades}`;
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:16 }}>
         <PageTitle sub={L.pages.plan.sub} title={L.pages.plan.title} />
-        <button onClick={()=>{ const ns={id:Date.now(),name:"Nouvelle stratégie",description:"",steps:[],rules:"",notes:""}; setStrategies(p=>[...p,ns]); setActiveStratId(ns.id); }} style={{ padding:"8px 14px", borderRadius:4, border:"none", background:"radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.95) 0%, rgba(215,215,215,0.88) 55%, rgba(230,230,230,0.92) 100%)", color:"#111", fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer", marginBottom:22 }}>+ Nouvelle</button>
+        <button onClick={()=>{ const ns={id:Date.now(),name:L.strat.newName,description:"",steps:[],rules:"",notes:""}; setStrategies(p=>[...p,ns]); setActiveStratId(ns.id); }} style={{ padding:"8px 14px", borderRadius:4, border:"none", background:"radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.95) 0%, rgba(215,215,215,0.88) 55%, rgba(230,230,230,0.92) 100%)", color:"#111", fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", cursor:"pointer", marginBottom:22 }}>{L.btn.newBtn}</button>
       </div>
 
       {/* Strategy tabs */}
       {strategies.length > 1 && (
         <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:16 }}>
           {strategies.map(s => (
-            <button key={s.id} onClick={()=>setActiveStratId(s.id)} style={{ padding:"6px 12px", borderRadius:4, border:`1px solid ${s.id===activeSid?C.accent:C.border}`, background:s.id===activeSid?"rgba(0,0,0,0.08)":"transparent", color:s.id===activeSid?C.accent:C.gray1, fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight:s.id===activeSid?600:300, cursor:"pointer", letterSpacing:"0.06em" }}>{s.name||"Sans nom"}</button>
+            <button key={s.id} onClick={()=>setActiveStratId(s.id)} style={{ padding:"6px 12px", borderRadius:4, border:`1px solid ${s.id===activeSid?C.accent:C.border}`, background:s.id===activeSid?"rgba(0,0,0,0.08)":"transparent", color:s.id===activeSid?C.accent:C.gray1, fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight:s.id===activeSid?600:300, cursor:"pointer", letterSpacing:"0.06em" }}>{s.name||L.strat.unnamed}</button>
           ))}
         </div>
       )}
@@ -2953,32 +3170,32 @@ ${recentTrades}`;
         <input type="text" value={strat.name||""} onChange={e=>updateStrat(strat.id,{name:e.target.value})} placeholder="" style={iStyle}/>
       </Field>
       <Field label={L.form.stratDesc}>
-        <textarea rows={3} placeholder="ex: ICT sur MNQ, entrée OB retest M5, NY session..." value={strat.description||""} onChange={e=>updateStrat(strat.id,{description:e.target.value})} style={{...iStyle,resize:"vertical",lineHeight:1.6}}/>
+        <textarea rows={3} placeholder={L.strat.descPH} value={strat.description||""} onChange={e=>updateStrat(strat.id,{description:e.target.value})} style={{...iStyle,resize:"vertical",lineHeight:1.6}}/>
       </Field>
       <div style={{ marginBottom:16 }}>
-        <Label>Étapes d'entrée</Label>
+        <Label>{L.strat.steps}</Label>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
           {(strat.steps||[]).map((step, i) => (
             <div key={i} style={{ display:"flex", alignItems:"center", gap:8 }}>
               <div style={{ width:22, height:22, borderRadius:"50%", background:C.bg3, border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, color:C.dim, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, flexShrink:0 }}>{i+1}</div>
-              <input type="text" value={step} placeholder={`ex: Attendre le retest de l'OB`} onChange={e=>{const steps=[...(strat.steps||[])];steps[i]=e.target.value;updateStrat(strat.id,{steps});}} className="step-input" style={{...iStyle,flex:1,padding:"10px 12px",fontSize:14}}/>
+              <input type="text" value={step} placeholder={L.strat.stepPH} onChange={e=>{const steps=[...(strat.steps||[])];steps[i]=e.target.value;updateStrat(strat.id,{steps});}} className="step-input" style={{...iStyle,flex:1,padding:"10px 12px",fontSize:14}}/>
               {(strat.steps||[]).length > 1 && <button onClick={()=>updateStrat(strat.id,{steps:(strat.steps||[]).filter((_,j)=>j!==i)})} style={{background:"none",border:"none",color:C.gray2,cursor:"pointer",fontSize:18,lineHeight:1,padding:"0 4px",flexShrink:0}}>×</button>}
             </div>
           ))}
           <button onClick={()=>updateStrat(strat.id,{steps:[...(strat.steps||[]),""]})} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",borderRadius:6,border:`1px dashed ${C.gray2}`,background:"transparent",color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",cursor:"pointer",letterSpacing:"0.08em",marginTop:2}}>
-            <span style={{fontSize:18,lineHeight:1}}>+</span> Ajouter une étape
+            <span style={{fontSize:18,lineHeight:1}}>+</span> {L.strat.addStep}
           </button>
         </div>
       </div>
       <Field label={L.form.stratRules}>
-        <textarea rows={3} placeholder={"- Max 1 trade/jour\n- Stop après 1 win\n- Pas de trade sans bias"} value={strat.rules||""} onChange={e=>updateStrat(strat.id,{rules:e.target.value})} style={{...iStyle,resize:"vertical",lineHeight:1.9}}/>
+        <textarea rows={3} placeholder={L.strat.rulesPH} value={strat.rules||""} onChange={e=>updateStrat(strat.id,{rules:e.target.value})} style={{...iStyle,resize:"vertical",lineHeight:1.9}}/>
       </Field>
-      <Field label="Notes personnelles">
-        <textarea rows={3} placeholder="Tout ce que vous souhaitez que l'IA sache..." value={strat.notes||""} onChange={e=>updateStrat(strat.id,{notes:e.target.value})} style={{...iStyle,resize:"vertical",lineHeight:1.6}}/>
+      <Field label={L.strat.notesLabel}>
+        <textarea rows={3} placeholder={L.strat.notesPH} value={strat.notes||""} onChange={e=>updateStrat(strat.id,{notes:e.target.value})} style={{...iStyle,resize:"vertical",lineHeight:1.6}}/>
       </Field>
       {strategies.length > 1 && (
         <button onClick={()=>{ setStrategies(p=>p.filter(s=>s.id!==strat.id)); setActiveStratId(null); }} style={{width:"100%",padding:"11px",borderRadius:4,border:"1px solid rgba(192,57,43,0.3)",background:"rgba(192,57,43,0.05)",color:"rgba(192,57,43,0.8)",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:"pointer",marginBottom:8}}>
-          Supprimer cette stratégie
+          {L.strat.delete}
         </button>
       )}
       <button onClick={saveStrategy} style={{width:"100%",padding:"14px",borderRadius:4,border:`1px solid ${C.borderGold}`,background:"rgba(0,0,0,0.04)",color:C.dim,fontSize:12,fontWeight:600,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.2em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.3s"}}>
@@ -3003,15 +3220,15 @@ ${recentTrades}`;
 
       {/* Coach instructions */}
       <div style={{marginBottom:16}}>
-        <div style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:6}}>Instructions du coach</div>
+        <div style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.18em",textTransform:"uppercase",marginBottom:6}}>{L.aiSection.coachTitle}</div>
         <textarea
           rows={3}
-          placeholder={"Ex: Je trade principalement le MNQ en scalping. Je dois travailler ma discipline sur les stops. Sois très direct et sans pitié sur mes erreurs."}
+          placeholder={L.aiSection.coachPH}
           value={coachInstructions}
           onChange={e => { setCoachInstructions(e.target.value); localStorage.setItem("fyltra_coach_instr", e.target.value); if (user) saveUserSettings({ coach_instructions: e.target.value }); }}
           style={{...iStyle, resize:"vertical", lineHeight:1.6, fontSize:13}}
         />
-        <div style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",marginTop:5,letterSpacing:"0.05em"}}>Personnalise le comportement du coach. Il en tiendra compte dans chaque analyse.</div>
+        <div style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",marginTop:5,letterSpacing:"0.05em"}}>{L.aiSection.coachDesc}</div>
       </div>
 
       {/* Trigger button */}
@@ -3097,18 +3314,18 @@ ${recentTrades}`;
 
     if (pf.type === "propfirm") {
       const remaining = target - pnl;
-      if (pnl >= target) alerts.push({ type:"success", msg:"Profit target atteint — Félicitations." });
-      else if (remaining <= target * 0.2) alerts.push({ type:"warn", msg:`Encore ${fmtMoney(remaining)}${currency} pour valider le profit target.` });
-      else alerts.push({ type:"info", msg:`Il vous manque ${fmtMoney(remaining)}${currency} pour valider.` });
-      if (drawdown >= maxLoss) alerts.push({ type:"danger", msg:"Max drawdown atteint — Arrêtez de trader." });
-      else if (drawdown >= maxLoss * 0.8) alerts.push({ type:"danger", msg:`Attention — vous êtes à ${Math.round(drawdown/maxLoss*100)}% du max drawdown.` });
+      if (pnl >= target) alerts.push({ type:"success", msg:L.alerts.profitTarget });
+      else if (remaining <= target * 0.2) alerts.push({ type:"warn", msg:L.alerts.remaining(fmtMoney(remaining),currency) });
+      else alerts.push({ type:"info", msg:L.alerts.missing(fmtMoney(remaining),currency) });
+      if (drawdown >= maxLoss) alerts.push({ type:"danger", msg:L.alerts.maxDD });
+      else if (drawdown >= maxLoss * 0.8) alerts.push({ type:"danger", msg:L.alerts.nearDD(Math.round(drawdown/maxLoss*100)) });
     }
 
     if (pf.hasDailyLoss && dailyLoss > 0) {
       const todayPnl = trades.filter(t => t.date === tradingToday).reduce((s,t)=>s+(t.pnl||0),0);
       const todayLoss = Math.abs(Math.min(0, todayPnl));
-      if (todayLoss >= dailyLoss) alerts.push({ type:"danger", msg:"Daily loss limit atteinte — Arrêtez de trader aujourd'hui." });
-      else if (todayLoss >= dailyLoss * 0.7) alerts.push({ type:"warn", msg:`Daily loss : ${fmtMoney(todayLoss)}${currency} / ${dailyLoss}${currency} utilisés.` });
+      if (todayLoss >= dailyLoss) alerts.push({ type:"danger", msg:L.alerts.dailyLossHit });
+      else if (todayLoss >= dailyLoss * 0.7) alerts.push({ type:"warn", msg:L.alerts.dailyLossWarn(fmtMoney(todayLoss),dailyLoss,currency) });
     }
     return alerts;
   };
@@ -3118,10 +3335,10 @@ ${recentTrades}`;
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:22 }}>
         <PageTitle sub={L.pages.accts.sub} title={pfView==="list"?L.pages.accts.list:pfView==="add-type"?L.pages.accts.addType:pfView==="add-propfirm"?L.pages.accts.addPf:L.pages.accts.addPers} />
         {pfView!=="list" && (
-          <button onClick={()=>setPfView("list")} style={{ padding:"9px 16px", borderRadius:4, border:`1px solid ${C.border}`, background:"transparent", color:C.gray1, fontSize:11, fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.12em", textTransform:"uppercase", cursor:"pointer", marginBottom:24 }}>← Retour</button>
+          <button onClick={()=>setPfView("list")} style={{ padding:"9px 16px", borderRadius:4, border:`1px solid ${C.border}`, background:"transparent", color:C.gray1, fontSize:11, fontFamily:"'Josefin Sans',sans-serif", letterSpacing:"0.12em", textTransform:"uppercase", cursor:"pointer", marginBottom:24 }}>{L.btn.back}</button>
         )}
         {pfView==="list" && (
-          <button onClick={()=>setPfView("add-type")} style={{ padding:"9px 16px", borderRadius:4, border:"none", background:"radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.95) 0%, rgba(215,215,215,0.88) 55%, rgba(230,230,230,0.92) 100%)", color:"#111", fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", cursor:"pointer", marginBottom:24 }}>+ Ajouter</button>
+          <button onClick={()=>setPfView("add-type")} style={{ padding:"9px 16px", borderRadius:4, border:"none", background:"radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.95) 0%, rgba(215,215,215,0.88) 55%, rgba(230,230,230,0.92) 100%)", color:"#111", fontSize:11, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.12em", textTransform:"uppercase", cursor:"pointer", marginBottom:24 }}>{L.btn.add}</button>
         )}
       </div>
 
@@ -3131,17 +3348,17 @@ ${recentTrades}`;
           <button onClick={()=>{pfSet("type","propfirm");setPfView("add-propfirm");}} style={{padding:"32px 16px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bg2,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:12,transition:"all 0.2s"}}>
             <div style={{fontSize:28,color:C.dim,fontFamily:"serif"}}>▤</div>
             <div style={{fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,color:C.white,letterSpacing:"0.1em",textTransform:"uppercase"}}>Prop Firm</div>
-            <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5,textAlign:"center"}}>Compte financé avec règles d'évaluation</div>
+            <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5,textAlign:"center"}}>{L.acct.propfirmDesc}</div>
           </button>
           <button onClick={()=>{pfSet("type","personal");setPfView("add-personal");}} style={{padding:"32px 16px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bg2,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:12,transition:"all 0.2s"}}>
             <div style={{fontSize:28,color:C.dim,fontFamily:"serif"}}>◈</div>
-            <div style={{fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,color:C.white,letterSpacing:"0.1em",textTransform:"uppercase"}}>Fond Propre</div>
-            <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5,textAlign:"center"}}>Compte personnel avec ton propre capital</div>
+            <div style={{fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,color:C.white,letterSpacing:"0.1em",textTransform:"uppercase"}}>{L.acct.ownFunds}</div>
+            <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5,textAlign:"center"}}>{L.acct.personalDesc}</div>
           </button>
           <button onClick={()=>{setPfView("list");setView("settings");}} style={{padding:"32px 16px",borderRadius:10,border:`1px solid ${C.border}`,background:C.bg2,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:12,gridColumn:"1 / -1",transition:"all 0.2s"}}>
             <div style={{fontSize:28,color:C.dim}}>⟳</div>
             <div style={{fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,color:C.white,letterSpacing:"0.1em",textTransform:"uppercase"}}>MT4 / MT5</div>
-            <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5,textAlign:"center"}}>Connecte ton compte depuis Paramètres → le compte apparaît ici automatiquement</div>
+            <div style={{fontSize:11,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5,textAlign:"center"}}>{L.acct.mt5Desc}</div>
           </button>
         </div>
       )}
@@ -3150,14 +3367,14 @@ ${recentTrades}`;
       {pfView==="add-propfirm" && (
         <div>
           <Field label="Nom de la Prop Firm *">
-            <input type="text" placeholder="ex: Lucid Trading, FTMO..." value={pfForm.firm} onChange={e=>pfSet("firm",e.target.value)} style={iStyle}/>
+            <input type="text" placeholder={L.acct.firmNamePH} value={pfForm.firm} onChange={e=>pfSet("firm",e.target.value)} style={iStyle}/>
           </Field>
           <Field label="Nom du compte (optionnel)">
-            <input type="text" placeholder="ex: Eval 1, Compte principal..." value={pfForm.name} onChange={e=>pfSet("name",e.target.value)} style={iStyle}/>
+            <input type="text" placeholder={L.acct.accountNamePH} value={pfForm.name} onChange={e=>pfSet("name",e.target.value)} style={iStyle}/>
           </Field>
           <Divider/>
           <div style={{display:"flex",alignItems:"center",justifyContent:"flex-end",gap:6,marginBottom:8}}>
-            <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em"}}>Saisir en</span>
+            <span style={{fontSize:10,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em"}}>{L.acct.enterIn}</span>
             <button onClick={()=>{setPfPctMode(false);setPfPctValues({target:"",maxLoss:"",dailyLoss:""});}} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${!pfPctMode?C.accent:C.border}`,background:!pfPctMode?C.bg3:"transparent",color:!pfPctMode?C.white:C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:!pfPctMode?600:300,cursor:"pointer"}}>{currency}</button>
             <button onClick={()=>{setPfPctMode(true);setPfPctValues({target:"",maxLoss:"",dailyLoss:""});}} style={{padding:"4px 10px",borderRadius:20,border:`1px solid ${pfPctMode?C.accent:C.border}`,background:pfPctMode?C.bg3:"transparent",color:pfPctMode?C.white:C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:pfPctMode?600:300,cursor:"pointer"}}>%</button>
           </div>
@@ -3236,7 +3453,7 @@ ${recentTrades}`;
       {pfView==="add-personal" && (
         <div>
           <Field label="Nom du compte (optionnel)">
-            <input type="text" placeholder="ex: Eval 1, Compte principal..." value={pfForm.name} onChange={e=>pfSet("name",e.target.value)} style={iStyle}/>
+            <input type="text" placeholder={L.acct.accountNamePH} value={pfForm.name} onChange={e=>pfSet("name",e.target.value)} style={iStyle}/>
           </Field>
           <Field label="Capital *">
             <input type="text" inputMode="numeric" placeholder="" value={pfForm.capital} onChange={e=>pfSet("capital",e.target.value.replace(/,/g,".").replace(/[^0-9.]/g,""))} style={iStyle}/>
@@ -3875,7 +4092,7 @@ ${recentTrades}`;
               <div style={{fontSize:9,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:8}}>{L.nav.stats} · {acctView==="global"?L.acct.global:L.acct.today}</div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:8}}>
                 <MiniCard label="Profit Factor" value={todayPF} color={parseFloat(todayPF)>=1||todayPF==="∞"?"#2a6e3a":"#c0392b"} li={0}/>
-                <MiniCard label={lang==="en"?"Avg RR":"RR Moyen"} value={todayRR==="—"?"—":todayRR+":1"} color={C.dim} li={1}/>
+                <MiniCard label={L.stats.avgRR} value={todayRR==="—"?"—":todayRR+":1"} color={C.dim} li={1}/>
                 <MiniCard label={lang==="en"?"Nb Trades":"Nb Trades"} value={todayTotal||"—"} color={C.white} li={2}/>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
@@ -4291,18 +4508,18 @@ ${recentTrades}`;
   // ── End of Day ──
   const runEOD = async (pf) => {
     const todayTrades = trades.filter(t => t.date===tradingToday && (!t.accountIds||t.accountIds.length===0||t.accountIds.includes(pf.id)));
-    if(todayTrades.length===0){ setEodText("Aucun trade aujourd'hui sur ce compte."); return; }
+    if(todayTrades.length===0){ setEodText(L.aiSection.noTradesToday); return; }
     setEodLoading(true); setEodText("");
     const summary = [...todayTrades].sort(cmpTrades).map(t=>`${t.instrument}|${t.direction}|${t.session}|${t.emotion}|RR:${t.rr||"—"}|P&L:${t.pnl}€|${t.result}${t.notes?`|"${t.notes}"`:""}`).join("\n");
     const todayPnl = todayTrades.reduce((s,t)=>s+(t.pnl||0),0);
-    const systemMsg = "Tu es un coach de trading direct et exigeant. Fais un debriefing de fin de journée. Analyse : 1) ✅ Ce qui s'est bien passé 2) ❌ Ce qui doit être amélioré 3) 📌 1 règle à appliquer demain. Sois court, direct, sans blabla. Réponds en français.";
+    const systemMsg = L.aiSection.eodSystemPrompt;
     const userMsg = `Compte: ${pf.firm}${pf.name?" "+pf.name:""}\nP&L du jour: ${todayPnl>=0?"+":""}${fmtMoney(todayPnl)}${currency}\n${todayTrades.length} trades:\n${summary}`;
     try {
       const res = await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({patternData:userMsg,customSystem:systemMsg,tradeCount:todayTrades.length})});
       if(!res.ok){const e=await res.json().catch(()=>({}));setEodText("Erreur: "+(e?.error||"inconnue"));setEodLoading(false);return;}
       const data=await res.json();
-      if(data.text) setEodText(data.text); else setEodText("Réponse vide.");
-    } catch(e){setEodText("Erreur réseau: "+e.message);}
+      if(data.text) setEodText(data.text); else setEodText(L.aiSection.eodEmpty);
+    } catch(e){setEodText(L.aiSection.networkError(e.message));}
     setEodLoading(false);
   };
 
@@ -4320,8 +4537,8 @@ ${recentTrades}`;
       {/* CSV IMPORT */}
       {toolTab==="csv" && (
         <div>
-          <div style={{fontSize:13,color:C.gray1,lineHeight:1.7,marginBottom:16}}>Exporte ton historique depuis ta plateforme et colle le contenu CSV ici.</div>
-          <Field label="Plateforme">
+          <div style={{fontSize:13,color:C.gray1,lineHeight:1.7,marginBottom:16}}>{L.tools.csvDesc}</div>
+          <Field label={L.tools.platform}>
             <div style={{display:"flex",gap:6}}>
               {[{k:"mt5",l:"MT4 / MT5 (FTMO, Lucid, FundedNext...)"},{k:"tradovate",l:"Tradovate"}].map(p=>(
                 <button key={p.k} onClick={()=>setCsvPlatform(p.k)} style={{flex:1,padding:"9px",borderRadius:6,border:`1px solid ${csvPlatform===p.k?C.accent:C.border}`,background:csvPlatform===p.k?"rgba(0,0,0,0.08)":"transparent",color:csvPlatform===p.k?C.accent:C.gray1,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:csvPlatform===p.k?600:300,cursor:"pointer",letterSpacing:"0.04em"}}>{p.l}</button>
@@ -4331,8 +4548,8 @@ ${recentTrades}`;
           <div style={{marginBottom:8,padding:"10px 12px",borderRadius:6,background:"rgba(0,0,0,0.03)",border:`1px solid ${C.border}`,fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.6}}>
             {csvPlatform==="mt5" ? L.csv.mt5Hint : L.csv.tradovateHint}
           </div>
-          <Field label="Contenu CSV">
-            <textarea rows={8} placeholder="Colle ici le contenu de ton fichier CSV..." value={csvText} onChange={e=>setCsvText(e.target.value)} style={{...iStyle,resize:"vertical",lineHeight:1.5,fontSize:12}}/>
+          <Field label={L.tools.csvContent}>
+            <textarea rows={8} placeholder={L.tools.csvPH} value={csvText} onChange={e=>setCsvText(e.target.value)} style={{...iStyle,resize:"vertical",lineHeight:1.5,fontSize:12}}/>
           </Field>
           {csvError && <div style={{padding:"10px 12px",borderRadius:6,marginBottom:10,background:csvResult?"rgba(42,110,58,0.08)":"rgba(192,57,43,0.06)",border:`1px solid ${csvResult?"rgba(42,110,58,0.25)":"rgba(192,57,43,0.2)"}`,fontSize:12,color:csvResult?"#2a6e3a":"#c0392b",fontFamily:"'Josefin Sans',sans-serif"}}>{csvError}</div>}
           {csvResult && (
@@ -4340,19 +4557,19 @@ ${recentTrades}`;
               <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",marginBottom:10}}><strong>{csvResult.trades.length}</strong> trade{csvResult.trades.length!==1?"s":""} détecté{csvResult.trades.length!==1?"s":""}. {csvResult.skipped>0?`(${csvResult.skipped} ligne${csvResult.skipped>1?"s":""} ignorée${csvResult.skipped>1?"s":""})`:""}
               </div>
               <div style={{display:"flex",gap:8}}>
-                <button onClick={confirmImport} style={{flex:2,padding:"11px",borderRadius:4,border:"none",background:"radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.95) 0%, rgba(215,215,215,0.88) 55%, rgba(230,230,230,0.92) 100%)",color:"#111",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>✓ Importer</button>
-                <button onClick={()=>setCsvResult(null)} style={{flex:1,padding:"11px",borderRadius:4,border:`1px solid ${C.gray3}`,background:"transparent",color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.1em"}}>Annuler</button>
+                <button onClick={confirmImport} style={{flex:2,padding:"11px",borderRadius:4,border:"none",background:"radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.95) 0%, rgba(215,215,215,0.88) 55%, rgba(230,230,230,0.92) 100%)",color:"#111",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>{L.tools.importBtn}</button>
+                <button onClick={()=>setCsvResult(null)} style={{flex:1,padding:"11px",borderRadius:4,border:`1px solid ${C.gray3}`,background:"transparent",color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",cursor:"pointer",textTransform:"uppercase",letterSpacing:"0.1em"}}>{L.btn.cancel}</button>
               </div>
             </div>
           )}
-          {!csvResult && <button onClick={importCSV} style={{width:"100%",padding:"14px",borderRadius:4,border:"none",background:"radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.95) 0%, rgba(215,215,215,0.88) 55%, rgba(230,230,230,0.92) 100%)",color:"#111",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",cursor:"pointer"}}>Analyser le CSV →</button>}
+          {!csvResult && <button onClick={importCSV} style={{width:"100%",padding:"14px",borderRadius:4,border:"none",background:"radial-gradient(ellipse 90% 90% at 50% 38%, rgba(245,245,245,0.95) 0%, rgba(215,215,215,0.88) 55%, rgba(230,230,230,0.92) 100%)",color:"#111",fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",cursor:"pointer"}}>{L.tools.analyzeBtn}</button>}
         </div>
       )}
 
       {/* POSITION CALCULATOR */}
       {toolTab==="calc" && (
         <div>
-          <div style={{fontSize:13,color:C.gray1,lineHeight:1.7,marginBottom:16}}>Entre ton prix d'entrée, stop loss et risque max — FYLTRA calcule le nombre de contrats adapté.</div>
+          <div style={{fontSize:13,color:C.gray1,lineHeight:1.7,marginBottom:16}}>{L.tools.calcDesc}</div>
           {/* Mode switch */}
           <div style={{display:"flex",gap:6,marginBottom:16}}>
             {[{k:"futures",l:"Futures"},{k:"forex",l:"Forex"}].map(m=>(
@@ -4504,9 +4721,9 @@ ${recentTrades}`;
 
         {/* ── Change password ── */}
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.22),0 0 0 1px rgba(255,255,255,0.09),inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
-          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>Mot de passe</div>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>{L.prof.pwdSection}</div>
           <div style={{position:"relative",marginBottom:10}}>
-            <input type={pwdForm.show?"text":"password"} placeholder="Nouveau mot de passe" value={pwdForm.newPwd} onChange={e=>setPwdForm(f=>({...f,newPwd:e.target.value}))}
+            <input type={pwdForm.show?"text":"password"} placeholder={L.prof.pwdNewPH} value={pwdForm.newPwd} onChange={e=>setPwdForm(f=>({...f,newPwd:e.target.value}))}
               style={{...pField,paddingRight:46}} />
             <button onClick={()=>setPwdForm(f=>({...f,show:!f.show}))} style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",cursor:"pointer",color:C.gray1,padding:0}}>
               {pwdForm.show
@@ -4515,39 +4732,39 @@ ${recentTrades}`;
             </button>
           </div>
           <div style={{position:"relative",marginBottom:14}}>
-            <input type={pwdForm.show?"text":"password"} placeholder="Confirmer le mot de passe" value={pwdForm.confirmPwd} onChange={e=>setPwdForm(f=>({...f,confirmPwd:e.target.value}))}
+            <input type={pwdForm.show?"text":"password"} placeholder={L.prof.pwdConfirmPH} value={pwdForm.confirmPwd} onChange={e=>setPwdForm(f=>({...f,confirmPwd:e.target.value}))}
               style={{...pField,paddingRight:46,borderColor:pwdForm.confirmPwd?(pwdForm.newPwd===pwdForm.confirmPwd?"rgba(74,222,128,0.5)":"rgba(229,100,100,0.5)"):undefined}} />
             {pwdForm.confirmPwd && <span style={{position:"absolute",right:14,top:"50%",transform:"translateY(-50%)",fontSize:13,color:pwdForm.newPwd===pwdForm.confirmPwd?"#4ade80":"rgba(229,100,100,0.9)"}}>{pwdForm.newPwd===pwdForm.confirmPwd?"✓":"✗"}</span>}
           </div>
-          {pwdMsg && <div style={{marginBottom:10,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",color:pwdMsg==="ok"?"#4ade80":"rgba(229,100,100,0.9)"}}>{pwdMsg==="ok"?"✓ Mot de passe mis à jour !":pwdMsg}</div>}
+          {pwdMsg && <div style={{marginBottom:10,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",color:pwdMsg==="ok"?"#4ade80":"rgba(229,100,100,0.9)"}}>{pwdMsg==="ok"?L.prof.pwdUpdated:pwdMsg}</div>}
           <button disabled={pwdSaving} onClick={async()=>{
-            if (!pwdForm.newPwd||!pwdForm.confirmPwd){setPwdMsg("Remplis les deux champs.");return;}
-            if (pwdForm.newPwd!==pwdForm.confirmPwd){setPwdMsg("Les mots de passe ne correspondent pas.");return;}
-            if (pwdForm.newPwd.length<6){setPwdMsg("Au moins 6 caractères.");return;}
+            if (!pwdForm.newPwd||!pwdForm.confirmPwd){setPwdMsg(L.prof.pwdFillBoth);return;}
+            if (pwdForm.newPwd!==pwdForm.confirmPwd){setPwdMsg(L.prof.pwdNoMatch);return;}
+            if (pwdForm.newPwd.length<6){setPwdMsg(L.prof.pwdMin);return;}
             setPwdSaving(true);setPwdMsg("");
             const{error}=await supabase.auth.updateUser({password:pwdForm.newPwd});
             if(error){setPwdMsg(error.message);}else{setPwdMsg("ok");setPwdForm({newPwd:"",confirmPwd:"",show:false});}
             setPwdSaving(false);
           }} style={{padding:"11px 24px",borderRadius:8,border:"none",background:pwdSaving?`rgba(255,255,255,0.06)`:`linear-gradient(135deg,${C.accent},#c9aa82)`,color:pwdSaving?C.gray1:"#000",fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,cursor:pwdSaving?"not-allowed":"pointer",transition:"all 0.2s"}}>
-            {pwdSaving?"···":"Changer le mot de passe"}
+            {pwdSaving?"···":L.prof.pwdChange}
           </button>
         </div>
 
         {/* ── Change email ── */}
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.22),0 0 0 1px rgba(255,255,255,0.09),inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
-          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>Adresse email</div>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>{L.prof.emailSection}</div>
           <div style={{marginBottom:10}}>
-            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Email actuel</div>
+            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>{L.prof.emailCurrentLabel}</div>
             <input value={user?.email||""} readOnly style={{...pField,color:C.gray1,cursor:"default",background:"transparent"}} />
           </div>
           <div style={{marginBottom:14}}>
-            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>Nouvel email</div>
-            <input type="email" value={emailNew} onChange={e=>{setEmailNew(e.target.value);setEmailMsg("");}} placeholder="nouveau@email.com" style={pField} />
+            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:5}}>{L.prof.emailNewLabel}</div>
+            <input type="email" value={emailNew} onChange={e=>{setEmailNew(e.target.value);setEmailMsg("");}} placeholder={L.prof.emailNewPH} style={pField} />
           </div>
-          {emailMsg && <div style={{marginBottom:10,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",color:emailMsg==="ok"?"#4ade80":"rgba(229,100,100,0.9)"}}>{emailMsg==="ok"?"✓ Email envoyé ! Confirme le lien reçu sur ta nouvelle adresse.":emailMsg}</div>}
+          {emailMsg && <div style={{marginBottom:10,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",color:emailMsg==="ok"?"#4ade80":"rgba(229,100,100,0.9)"}}>{emailMsg==="ok"?L.prof.emailChanged:emailMsg}</div>}
           <button disabled={emailSaving} onClick={async()=>{
-            if (!emailNew) { setEmailMsg("Entre un nouvel email."); return; }
-            if (emailNew === user?.email) { setEmailMsg("C'est déjà ton email actuel."); return; }
+            if (!emailNew) { setEmailMsg(L.prof.emailEnter); return; }
+            if (emailNew === user?.email) { setEmailMsg(L.auth.sameEmail); return; }
             setEmailSaving(true); setEmailMsg("");
             const { error } = await supabase.auth.updateUser({ email: emailNew }, { emailRedirectTo: "https://fyltra.app/app" });
             if (error) { setEmailMsg(error.message); } else {
@@ -4556,13 +4773,13 @@ ${recentTrades}`;
             }
             setEmailSaving(false);
           }} style={{padding:"11px 24px",borderRadius:8,border:"none",background:emailSaving?`rgba(255,255,255,0.06)`:`linear-gradient(135deg,${C.accent},#c9aa82)`,color:emailSaving?C.gray1:"#000",fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:13,cursor:emailSaving?"not-allowed":"pointer",transition:"all 0.2s"}}>
-            {emailSaving?"···":"Changer l'email"}
+            {emailSaving?"···":L.prof.emailChange}
           </button>
         </div>
 
         {/* ── Classement ── */}
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.22),0 0 0 1px rgba(255,255,255,0.09),inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
-          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>Classement global</div>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>{L.prof.rankSection}</div>
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
             {[
               { state: compete, setter: setCompete, key: "compete", label: L.sett.compete, desc: L.sett.competeDesc },
@@ -4588,29 +4805,29 @@ ${recentTrades}`;
 
         {/* ── Subscription ── */}
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6),0 1px 4px rgba(0,0,0,0.22),0 0 0 1px rgba(255,255,255,0.09),inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px"}}>
-          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>Abonnement</div>
+          <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:16}}>{L.prof.subSection}</div>
           {subLoading ? (
-            <div style={{color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif"}}>Chargement...</div>
+            <div style={{color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif"}}>{L.prof.subLoading}</div>
           ) : subData?.error ? (
-            <div style={{color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif"}}>{subData.error === "no subscription" ? "Aucun abonnement actif trouvé." : subData.error}</div>
+            <div style={{color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif"}}>{subData.error === "no subscription" ? L.prof.subNone : subData.error}</div>
           ) : subData ? (
             <>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
                 <div style={{background:C.bg3,borderRadius:8,padding:"12px 14px"}}>
-                  <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>Plan actuel</div>
+                  <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>{L.prof.planCurrent}</div>
                   <div style={{fontSize:15,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{subData.productName || "—"}</div>
                   <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{subData.variantName || ""}</div>
                 </div>
                 <div style={{background:C.bg3,borderRadius:8,padding:"12px 14px"}}>
-                  <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>{subData.cancelled?"Expire le":"Prochaine facture"}</div>
+                  <div style={{fontSize:9,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:4}}>{subData.cancelled?L.prof.subExpires:L.prof.subNextBilling}</div>
                   <div style={{fontSize:15,color:subData.cancelled?"rgba(192,57,43,0.9)":C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{fmtDate(subData.cancelled ? subData.endsAt : subData.renewsAt)}</div>
-                  <div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif",marginTop:2,color:subData.cancelled?"rgba(192,57,43,0.7)":"#4ade80"}}>{subData.cancelled?"Accès annulé":"Actif"}</div>
+                  <div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif",marginTop:2,color:subData.cancelled?"rgba(192,57,43,0.7)":"#4ade80"}}>{subData.cancelled?L.prof.subCancelled:L.prof.subActive}</div>
                 </div>
               </div>
               {!subData.cancelled && (
                 cancelConfirm ? (
                   <div style={{background:"rgba(192,57,43,0.08)",border:"1px solid rgba(192,57,43,0.25)",borderRadius:10,padding:"14px 16px"}}>
-                    <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",marginBottom:12,lineHeight:1.5}}>Confirmer la résiliation ? Ton accès restera actif jusqu'au {fmtDate(subData.renewsAt)}, puis sera coupé.</div>
+                    <div style={{fontSize:13,color:C.white,fontFamily:"'Josefin Sans',sans-serif",marginBottom:12,lineHeight:1.5}}>{L.prof.subCancelConfirm(fmtDate(subData.renewsAt))}</div>
                     <div style={{display:"flex",gap:8}}>
                       <button onClick={cancelSub} disabled={cancelLoading} style={{flex:1,padding:"10px",borderRadius:8,border:"none",background:"rgba(192,57,43,0.8)",color:"#fff",fontFamily:"'Josefin Sans',sans-serif",fontWeight:700,fontSize:12,cursor:cancelLoading?"not-allowed":"pointer"}}>
                         {cancelLoading?L.profile.cancelLoading:L.profile.cancelYes}
@@ -4658,7 +4875,7 @@ ${recentTrades}`;
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:14}}>{L.sett.language}</div>
         <div style={{display:"flex",gap:8}}>
-          {[{k:"fr",l:"Français"},{k:"en",l:"English"},{k:"es",l:"Español"}].map(lg=>(
+          {[{k:"fr",l:"Français"},{k:"en",l:"English"}].map(lg=>(
             <button key={lg.k} onClick={()=>setLang(lg.k)} style={{flex:1,padding:"10px",borderRadius:8,border:`1px solid ${lang===lg.k?C.accent:C.border}`,background:lang===lg.k?"rgba(0,0,0,0.08)":"transparent",color:lang===lg.k?C.accent:C.gray1,fontSize:12,cursor:"pointer",fontFamily:"'Josefin Sans',sans-serif",fontWeight:lang===lg.k?600:300,letterSpacing:"0.06em",transition:"all 0.2s"}}>
               {lg.l}
             </button>
@@ -5180,7 +5397,7 @@ ${recentTrades}`;
                       <ResponsiveContainer width="100%" height={70}>
                         <LineChart data={pd} margin={{top:4,right:4,left:0,bottom:0}}>
                           <ReferenceLine y={0} stroke="rgba(255,255,255,0.15)" strokeWidth={1}/>
-                          <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${fmtMoney(v)}${currency}`,"Cumulé"]} labelFormatter={l=>pd.find(d=>d.label===l)?.instrument||""}/>
+                          <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${fmtMoney(v)}${currency}`,L.stats.cumulated]} labelFormatter={l=>pd.find(d=>d.label===l)?.instrument||""}/>
                           <Line type="monotone" dataKey="v" stroke={dayTotalPnl>=0?"#4caf6e":"#e05a5a"} strokeWidth={2} dot={{r:2,fill:dayTotalPnl>=0?"#4caf6e":"#e05a5a",strokeWidth:0}} activeDot={{r:4,fill:dayTotalPnl>=0?"#4caf6e":"#e05a5a",strokeWidth:0}}/>
                         </LineChart>
                       </ResponsiveContainer>
@@ -5204,9 +5421,9 @@ ${recentTrades}`;
                   return (
                     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:12}}>
                       {[
-                        {l:"Profit Factor",v:dPF==="—"||dPF==="∞"?dPF:dPF+"x",c:parseFloat(dPF)>=1||dPF==="∞"?"#4caf6e":"#e05a5a"},
-                        {l:"RR Moyen",v:dRR==="—"?"—":dRR+":1",c:"rgba(255,255,255,0.5)"},
-                        {l:"Nb Trades",v:dTotal,c:"rgba(255,255,255,0.7)"},
+                        {l:L.stats.profitFactor,v:dPF==="—"||dPF==="∞"?dPF:dPF+"x",c:parseFloat(dPF)>=1||dPF==="∞"?"#4caf6e":"#e05a5a"},
+                        {l:L.stats.avgRR,v:dRR==="—"?"—":dRR+":1",c:"rgba(255,255,255,0.5)"},
+                        {l:lang==="en"?"Trades":"Nb Trades",v:dTotal,c:"rgba(255,255,255,0.7)"},
                         {l:"Long",v:dLong.length?dLW+"%":"—",c:dLW>=50?"#4caf6e":"#e05a5a",sub:dLong.length+"T"},
                         {l:"Short",v:dShort.length?dSW+"%":"—",c:dSW>=50?"#4caf6e":"#e05a5a",sub:dShort.length+"T"},
                       ].map(s=>(
@@ -5317,7 +5534,7 @@ ${recentTrades}`;
                         </div>
                       </div>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-                        {[{l:"Profit Factor",v:dPF==="—"||dPF==="∞"?dPF:dPF+"x",c:parseFloat(dPF)>=1||dPF==="∞"?"#4caf6e":"#e05a5a"},{l:"RR Moyen",v:dRR==="—"?"—":dRR+":1",c:"rgba(255,255,255,0.5)"},{l:"Nb Trades",v:dT,c:"rgba(255,255,255,0.7)"}].map(s=>(
+                        {[{l:L.stats.profitFactor,v:dPF==="—"||dPF==="∞"?dPF:dPF+"x",c:parseFloat(dPF)>=1||dPF==="∞"?"#4caf6e":"#e05a5a"},{l:L.stats.avgRR,v:dRR==="—"?"—":dRR+":1",c:"rgba(255,255,255,0.5)"},{l:lang==="en"?"Trades":"Nb Trades",v:dT,c:"rgba(255,255,255,0.7)"}].map(s=>(
                           <div key={s.l} style={{background:"rgba(255,255,255,0.05)",borderRadius:8,padding:"10px 12px"}}>
                             <div style={{fontSize:8,color:"rgba(255,255,255,0.3)",textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"'Josefin Sans',sans-serif",marginBottom:4}}>{s.l}</div>
                             <div style={{fontSize:16,fontWeight:300,color:s.c,fontFamily:"'Josefin Sans',sans-serif"}}>{s.v}</div>
@@ -5335,7 +5552,7 @@ ${recentTrades}`;
                             <ResponsiveContainer width="100%" height={80}>
                               <LineChart data={dpd} margin={{top:4,right:4,left:0,bottom:0}}>
                                 <ReferenceLine y={0} stroke="rgba(255,255,255,0.12)" strokeWidth={1}/>
-                                <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${fmtMoney(v)}${currency}`,"Cumulé"]} labelFormatter={l=>dpd.find(d=>d.label===l)?.instrument||""}/>
+                                <Tooltip contentStyle={{background:"rgba(20,20,20,0.95)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:6,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",color:"#fff"}} formatter={v=>[`${v>=0?"+":""}${fmtMoney(v)}${currency}`,L.stats.cumulated]} labelFormatter={l=>dpd.find(d=>d.label===l)?.instrument||""}/>
                                 <Line type="monotone" dataKey="v" stroke={dtPnl>=0?"#4caf6e":"#e05a5a"} strokeWidth={2} dot={{r:3,fill:dtPnl>=0?"#4caf6e":"#e05a5a",strokeWidth:0}} activeDot={{r:5,strokeWidth:0}}/>
                               </LineChart>
                             </ResponsiveContainer>
