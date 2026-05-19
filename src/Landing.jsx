@@ -1091,7 +1091,7 @@ export default function Landing() {
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState("login");
   const [lang, setLang] = useState(() => {
-    try { return localStorage.getItem("fyltra-lang") || "fr"; } catch { return "fr"; }
+    try { const s = localStorage.getItem("fyltra_lang"); return s === "en" ? "en" : "fr"; } catch { return "fr"; }
   });
   const [darkMode, setDarkMode] = useState(() => {
     try { return localStorage.getItem("fyltra-theme") !== "light"; } catch { return true; }
@@ -1105,7 +1105,7 @@ export default function Landing() {
   }, [darkMode, C.bg]);
 
   useEffect(() => {
-    try { localStorage.setItem("fyltra-lang", lang); } catch {}
+    try { localStorage.setItem("fyltra_lang", lang); } catch {}
   }, [lang]);
 
   // Handle Supabase PKCE code exchange when landing page receives a redirect

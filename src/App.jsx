@@ -181,6 +181,8 @@ const APP_T = {
       reconnect:"Reconnecter le compte →",
       sync:"Synchroniser les trades →",
       syncing:"Synchronisation...",
+      deploying:"◌  Connexion au compte MT5... (~1-2 min)",
+      deployTimeout:"Timeout — réessaie dans quelques minutes.",
       changeAccount:"Changer de compte",
       fieldLogin:"Numéro de compte (login)",
       fieldPwd:"Mot de passe investisseur",
@@ -396,6 +398,8 @@ const APP_T = {
       reconnect:"Reconnect account →",
       sync:"Sync trades →",
       syncing:"Syncing...",
+      deploying:"◌  Connecting to MT5 account... (~1-2 min)",
+      deployTimeout:"Timeout — please retry in a few minutes.",
       changeAccount:"Change account",
       fieldLogin:"Account number (login)",
       fieldPwd:"Investor password",
@@ -1440,6 +1444,7 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
   const [mt5Account, setMt5Account] = useState(null);
   const [mt5Loading,   setMt5Loading]   = useState(false);
   const [mt5Syncing,   setMt5Syncing]   = useState(false);
+  const [mt5Deploying, setMt5Deploying] = useState(false);
   const [mt5Status,    setMt5Status]    = useState("");
   const [mt5Error,     setMt5Error]     = useState("");
   const [mt5NotFound,  setMt5NotFound]  = useState(false);
@@ -1478,22 +1483,31 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
 
   const syncTrades = async () => {
     if (!mt5Account) return;
-    setMt5Syncing(true); setMt5Error(""); setMt5Status(""); setMt5NotFound(false);
-    try {
-      const res = await fetch("/api/sync-trades", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ accountId: mt5Account.metaapi_id }),
-      });
-      const data = await res.json();
-      if (res.status === 202) { setMt5Status(data.message); setMt5Syncing(false); return; }
-      if (res.status === 404 || (data.error || "").toLowerCase().includes("not found")) {
-        setMt5NotFound(true); setMt5Syncing(false); return;
-      }
-      if (!res.ok) throw new Error(data.error || "Sync error");
-      if (data.trades?.length > 0 && onTradesImported) onTradesImported(data.trades);
-      setMt5Status(L.mt5.tradesImported(data.total));
-    } catch(e) { setMt5Error(e.message); }
-    setMt5Syncing(false);
+    setMt5Syncing(true); setMt5Deploying(false); setMt5Error(""); setMt5Status(""); setMt5NotFound(false);
+    const MAX = 12;
+    for (let i = 0; i < MAX; i++) {
+      try {
+        const res = await fetch("/api/sync-trades", {
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({ accountId: mt5Account.metaapi_id }),
+        });
+        const data = await res.json();
+        if (data.status === "deploying") {
+          setMt5Deploying(true);
+          await new Promise(r => setTimeout(r, 15000));
+          continue;
+        }
+        setMt5Deploying(false);
+        if (res.status === 404 || (data.error || "").toLowerCase().includes("not found")) {
+          setMt5NotFound(true); break;
+        }
+        if (!res.ok) { setMt5Error(data.error || "Sync error"); break; }
+        if (data.trades?.length > 0 && onTradesImported) onTradesImported(data.trades);
+        setMt5Status(L.mt5.tradesImported(data.total));
+        break;
+      } catch(e) { setMt5Deploying(false); setMt5Error(e.message); break; }
+    }
+    setMt5Syncing(false); setMt5Deploying(false);
   };
 
   const reconnectMT5 = async () => {
@@ -1526,9 +1540,12 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
               </button>
             </div>
           ) : (
-            <button onClick={syncTrades} disabled={mt5Syncing} style={{width:"100%",padding:"11px",borderRadius:8,border:"none",background:mt5Syncing?"#333":C.accent,color:mt5Syncing?"#888":darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5Syncing?"not-allowed":"pointer",transition:"all 0.2s"}}>
-              {mt5Syncing ? L.mt5.syncing : L.mt5.sync}
-            </button>
+            <>
+              <button onClick={syncTrades} disabled={mt5Syncing} style={{width:"100%",padding:"11px",borderRadius:8,border:mt5Deploying?"1px solid rgba(232,205,169,0.3)":"none",background:mt5Syncing?"#333":C.accent,color:mt5Syncing?"#888":darkMode?"#111":"#fff",fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5Syncing?"not-allowed":"pointer",transition:"all 0.2s"}}>
+                {mt5Deploying ? L.mt5.deploying : mt5Syncing ? L.mt5.syncing : L.mt5.sync}
+              </button>
+              {mt5Deploying && <div style={{fontSize:10,color:"rgba(232,205,169,0.5)",fontFamily:"'Josefin Sans',sans-serif",textAlign:"center",marginTop:4}}>Les trades s'importeront automatiquement dès la connexion.</div>}
+            </>
           )}
           <button onClick={()=>{setMt5Account(null);setMt5NotFound(false);}} style={{width:"100%",marginTop:8,padding:"8px",borderRadius:8,border:`1px solid ${C.border}`,background:"transparent",color:C.gray2,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>
             {L.mt5.changeAccount}
@@ -1706,7 +1723,7 @@ export default function App() {
   document.documentElement.style.setProperty("--gold-rgb", darkMode?"232,205,169":"160,110,50");
   const [acctView, setAcctView] = useState("today");
   const [tabKey, setTabKey] = useState(0); // "today" | "global"
-  const [lang, setLang] = useState(() => localStorage.getItem("fyltra_lang")||"fr");
+  const [lang, setLang] = useState(() => { const s = localStorage.getItem("fyltra_lang"); return s === "en" ? "en" : "fr"; });
   L = APP_T[lang] || APP_T.fr;
   const [menuClosing, setMenuClosing] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null); // {date, trades, pnl}
@@ -1720,8 +1737,9 @@ export default function App() {
   const [capital,     setCapital]     = useState(() => load(KEYS.capital, ""));
   const [propfirms,   setPropfirms]   = useState(() => load(KEYS.propfirms, []));
   const [pfView,      setPfView]      = useState("list"); // list | add-type | add-propfirm | add-personal
-  const [mt5SyncingPf,setMt5SyncingPf]= useState(null); // pf.id en cours de sync
-  const [mt5SyncMsg,  setMt5SyncMsg]  = useState({});
+  const [mt5SyncingPf, setMt5SyncingPf]  = useState(null);
+  const [mt5DeployingPf,setMt5DeployingPf]= useState(null); // pf.id en phase de connexion MT5
+  const [mt5SyncMsg,   setMt5SyncMsg]   = useState({});
   const [pfListTab,   setPfListTab]   = useState("active"); // active | archived
   const [pfForm,      setPfForm]      = useState({ type:"propfirm", name:"", firm:"", capital:"", target:"", dailyLoss:"", maxLoss:"", consistency:"", consistencyPct:"", hasDailyLoss:false, hasConsistency:false, hasInactivity:false, inactivityDays:"", inactivityFrom:"", trailingDD:false });
   const [activePf,    setActivePf]    = useState(null);
@@ -1850,7 +1868,7 @@ export default function App() {
       if (d?.custom_bg2 !== undefined && d?.custom_bg2 !== null) setCustomBg2(d.custom_bg2);
       if (d?.custom_text_white !== undefined && d?.custom_text_white !== null) setCustomTextWhite(d.custom_text_white);
       if (d?.currency) setCurrency(d.currency);
-      if (d?.lang) setLang(d.lang);
+      if (d?.lang === "fr" || d?.lang === "en") setLang(d.lang);
       if (d?.acct_layout) setAcctLayout(d.acct_layout);
       if (d?.trade_settings) { setSavedTS(d.trade_settings); setTradeSettings(d.trade_settings); }
       if (d?.coach_instructions) setCoachInstructions(d.coach_instructions);
@@ -4344,23 +4362,37 @@ ${recentTrades}`;
         {pf.type === "mt5" && pf.metaapi_id && (
           <div style={{marginBottom:8}}>
             <button onClick={async()=>{
-              setMt5SyncingPf(pf.id); setMt5SyncMsg(m=>({...m,[pf.id]:""}));
-              try {
-                const res = await fetch("/api/sync-trades",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({accountId:pf.metaapi_id})});
-                const data = await res.json();
-                if(res.status===202){setMt5SyncMsg(m=>({...m,[pf.id]:data.message}));setMt5SyncingPf(null);return;}
-                if(!res.ok) throw new Error(data.error||"Erreur sync");
-                const newTrades=(data.trades||[]).map(t=>({...t,id:Date.now()+Math.random(),accountIds:[pf.id],createdAt:new Date().toISOString()}));
-                if(newTrades.length>0){
-                  const {error}=await supabase.from("trades").insert(newTrades.map(t=>tradeToDb(t)));
-                  if(!error) setTrades(p=>[...newTrades.filter(n=>!p.find(e=>e.id===n.id)),...p]);
-                }
-                setMt5SyncMsg(m=>({...m,[pf.id]:`✓ ${data.total} trades importés`}));
-              } catch(e){setMt5SyncMsg(m=>({...m,[pf.id]:`✗ ${e.message}`}));}
-              setMt5SyncingPf(null);
-            }} disabled={mt5SyncingPf===pf.id} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${C.border}`,background:"transparent",color:mt5SyncingPf===pf.id?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5SyncingPf===pf.id?"not-allowed":"pointer",transition:"all 0.3s"}}>
-              {mt5SyncingPf===pf.id?"◌  Synchronisation...":"⟳  Synchroniser depuis MT5"}
+              setMt5SyncingPf(pf.id); setMt5DeployingPf(null); setMt5SyncMsg(m=>({...m,[pf.id]:""}));
+              const MAX=12;
+              for(let i=0;i<MAX;i++){
+                try{
+                  const startDate=pf.lastMt5Sync?new Date(new Date(pf.lastMt5Sync).getTime()-2*24*60*60*1000).toISOString():undefined;
+                  const res=await fetch("/api/sync-trades",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({accountId:pf.metaapi_id,startDate})});
+                  const data=await res.json();
+                  if(data.status==="deploying"){
+                    setMt5DeployingPf(pf.id);
+                    setMt5SyncMsg(m=>({...m,[pf.id]:""}));
+                    await new Promise(r=>setTimeout(r,15000));
+                    continue;
+                  }
+                  setMt5DeployingPf(null);
+                  if(!res.ok){setMt5SyncMsg(m=>({...m,[pf.id]:`✗ ${data.error||"Erreur sync"}`}));break;}
+                  const existingTickets=new Set(trades.filter(t=>t.accountIds?.includes(pf.id)).map(t=>t.notes?.match(/ticket #(\w+)/)?.[1]).filter(Boolean));
+                  const newTrades=(data.trades||[]).filter(t=>{const tk=t.notes?.match(/ticket #(\w+)/)?.[1];return !tk||!existingTickets.has(tk);}).map(t=>({...t,id:Date.now()+Math.random(),accountIds:[pf.id],createdAt:new Date().toISOString()}));
+                  if(newTrades.length>0){
+                    const {error}=await supabase.from("trades").insert(newTrades.map(t=>tradeToDb(t)));
+                    if(!error) setTrades(p=>[...newTrades,...p]);
+                  }
+                  setPropfirms(prev=>prev.map(p=>p.id===pf.id?{...p,lastMt5Sync:new Date().toISOString()}:p));
+                  setMt5SyncMsg(m=>({...m,[pf.id]:`✓ ${newTrades.length} nouveau${newTrades.length!==1?"x":""} trade${newTrades.length!==1?"s":""} importé${newTrades.length!==1?"s":""}`}));
+                  break;
+                }catch(e){setMt5DeployingPf(null);setMt5SyncMsg(m=>({...m,[pf.id]:`✗ ${e.message}`}));break;}
+              }
+              setMt5SyncingPf(null); setMt5DeployingPf(null);
+            }} disabled={mt5SyncingPf===pf.id} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${mt5DeployingPf===pf.id?"rgba(232,205,169,0.3)":C.border}`,background:"transparent",color:mt5SyncingPf===pf.id?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5SyncingPf===pf.id?"not-allowed":"pointer",transition:"all 0.3s"}}>
+              {mt5DeployingPf===pf.id ? L.mt5.deploying : mt5SyncingPf===pf.id ? "◌  Importation des trades..." : "⟳  Synchroniser depuis MT5"}
             </button>
+            {mt5DeployingPf===pf.id && <div style={{marginTop:6,fontSize:10,color:"rgba(232,205,169,0.5)",fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>Les trades s'importeront automatiquement dès la connexion établie.</div>}
             {mt5SyncMsg[pf.id] && <div style={{marginTop:6,fontSize:11,color:mt5SyncMsg[pf.id].startsWith("✓")?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>{mt5SyncMsg[pf.id]}</div>}
           </div>
         )}
