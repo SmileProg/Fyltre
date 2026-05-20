@@ -638,11 +638,11 @@ function PageTitle({ sub, title }) {
 }
 
 /* ─── Mobile Pill Nav ────────────────────────────────────────────── */
-function PillNav({ view, setView, darkMode }) {
+function PillNav({ view, setView, darkMode, canUseAI }) {
   const [hovered, setHovered] = useState(null);
   return (
     <div style={{ position:"fixed", bottom:24, left:"50%", transform:"translateX(-50%)", zIndex:200, display:"flex", alignItems:"center", background:"linear-gradient(180deg, rgba(60,60,60,0.97) 0%, rgba(18,18,18,0.99) 55%, rgba(8,8,8,1) 100%)", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderRadius:50, padding:"6px 8px", gap:2, boxShadow:"0 6px 20px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.4), 0 0 60px rgba(255,255,255,0.11), 0 0 0 1px rgba(255,255,255,0.13), inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -2px 0 rgba(0,0,0,0.8)", border:"1px solid rgba(255,255,255,0.1)" }}>
-      {NAV().map(item => {
+      {NAV().filter(item => item.key !== "ai" || canUseAI).map(item => {
         const active = view === item.key;
         const isHovered = hovered === item.key && !active;
         return (
@@ -667,7 +667,7 @@ const FULL_NAV_KEYS = [
   { key:"profil",     icon:"◐",  lk:"profile" },
   { key:"settings",   icon:"◎",  lk:"settings" },
 ];
-function Sidebar({ view, setView, darkMode, onSignOut, nickname, firstName }) {
+function Sidebar({ view, setView, darkMode, onSignOut, nickname, firstName, canUseAI }) {
   const [hovered, setHovered] = useState(null);
   const pillStyle = { background:"linear-gradient(180deg, rgba(60,60,60,0.97) 0%, rgba(18,18,18,0.99) 55%, rgba(8,8,8,1) 100%)", backdropFilter:"blur(24px)", WebkitBackdropFilter:"blur(24px)", borderRadius:24, padding:"10px", display:"flex", flexDirection:"column", gap:4, boxShadow:"0 6px 20px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.4), 0 0 60px rgba(255,255,255,0.11), 0 0 0 1px rgba(255,255,255,0.13), inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -2px 0 rgba(0,0,0,0.8)", border:"1px solid rgba(255,255,255,0.1)" };
 
@@ -714,11 +714,13 @@ function Sidebar({ view, setView, darkMode, onSignOut, nickname, firstName }) {
       </div>
 
       {/* IA pill */}
-      <div style={{ padding:"0 12px 10px" }}>
-        <div style={pillStyle}>
-          <NavBtn item={{key:"ai",icon:"◆",label:L.nav.ai}} />
+      {canUseAI && (
+        <div style={{ padding:"0 12px 10px" }}>
+          <div style={pillStyle}>
+            <NavBtn item={{key:"ai",icon:"◆",label:L.nav.ai}} />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Settings pill */}
       <div style={{ padding:"0 12px 16px" }}>
@@ -1702,6 +1704,7 @@ export default function App() {
   const [calcStop, setCalcStop] = useState("");
   const [calcRisk, setCalcRisk] = useState("");
   const [calcInstrument, setCalcInstrument] = useState("MNQ");
+  const [userPlan, setUserPlan] = useState(() => localStorage.getItem("fyltra_plan") || null);
   const [eodLoading, setEodLoading] = useState(false);
   const [eodText, setEodText] = useState("");
   const [eodAccount, setEodAccount] = useState(null);
@@ -1725,6 +1728,8 @@ export default function App() {
   const [tabKey, setTabKey] = useState(0); // "today" | "global"
   const [lang, setLang] = useState(() => { const s = localStorage.getItem("fyltra_lang"); return s === "en" ? "en" : "fr"; });
   L = APP_T[lang] || APP_T.fr;
+  const canUseAI  = !userPlan || userPlan === "trader" || userPlan === "pro";
+  const canUseMT5 = !userPlan || userPlan === "pro";
   const [menuClosing, setMenuClosing] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null); // {date, trades, pnl}
   const [dayClosing, setDayClosing] = useState(false);
@@ -1844,6 +1849,15 @@ export default function App() {
     });
     return () => { subscription.unsubscribe(); clearTimeout(timeoutId); };
   }, []);
+
+  // ── Load plan when user logs in / clear on logout ──
+  useEffect(() => {
+    if (!user) { setUserPlan(null); localStorage.removeItem("fyltra_plan"); return; }
+    fetch(`/api/check-purchase?email=${encodeURIComponent(user.email)}`)
+      .then(r => r.json())
+      .then(d => { if (d.plan) { setUserPlan(d.plan); localStorage.setItem("fyltra_plan", d.plan); } })
+      .catch(() => {});
+  }, [user]);
 
   // Flag to block save effects while initial DB load is in progress
   const isLoadingDB = useRef(false);
@@ -4359,7 +4373,7 @@ ${recentTrades}`;
         {layoutOrder.map(id => wrapSection(id, sectionMap[id]))}
 
         {/* ── SYNC MT5 ── */}
-        {pf.type === "mt5" && pf.metaapi_id && (
+        {pf.type === "mt5" && pf.metaapi_id && canUseMT5 && (
           <div style={{marginBottom:8}}>
             <button onClick={async()=>{
               setMt5SyncingPf(pf.id); setMt5DeployingPf(null); setMt5SyncMsg(m=>({...m,[pf.id]:""}));
@@ -4399,10 +4413,10 @@ ${recentTrades}`;
         )}
 
         {/* ── EOD + ACTIONS ── */}
-        <button onClick={()=>{setEodText("");runEOD(pf);}} disabled={eodLoading} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${C.borderGold}`,background:eodLoading?"transparent":"rgba(0,0,0,0.04)",color:eodLoading?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:eodLoading?"not-allowed":"pointer",marginBottom:8,transition:"all 0.3s"}}>
+        {canUseAI && <button onClick={()=>{setEodText("");runEOD(pf);}} disabled={eodLoading} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${C.borderGold}`,background:eodLoading?"transparent":"rgba(0,0,0,0.04)",color:eodLoading?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:eodLoading?"not-allowed":"pointer",marginBottom:8,transition:"all 0.3s"}}>
           {eodLoading?L.btn.analyzing:L.btn.eod}
-        </button>
-        {eodText && <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:20,fontSize:12,lineHeight:1.8,color:C.white,whiteSpace:"pre-wrap",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.03em",marginBottom:10}}>{eodText}</div>}
+        </button>}
+        {canUseAI && eodText && <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:20,fontSize:12,lineHeight:1.8,color:C.white,whiteSpace:"pre-wrap",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.03em",marginBottom:10}}>{eodText}</div>}
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:4}}>
           <button onClick={()=>{setEditingPf({...pf});closeAccount();setPfView("list");}} style={{padding:"13px",borderRadius:8,border:`1px solid ${C.border}`,background:C.bg2,color:C.white,fontSize:11,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>✎ Modifier</button>
@@ -5280,7 +5294,18 @@ ${recentTrades}`;
     if (view === "history")     return historyContent;
     if (view === "trades")      return tradesContent;
     if (view === "strategy")    return strategyContent;
-    if (view === "ai")          return aiContent;
+    if (view === "ai")          return canUseAI ? aiContent : (
+      <div style={{ maxWidth:480, margin:"60px auto", textAlign:"center", padding:"0 24px" }}>
+        <div style={{ width:56, height:56, borderRadius:16, background:"linear-gradient(135deg,rgba(var(--gold-rgb),0.15),rgba(var(--gold-rgb),0.05))", border:"1px solid rgba(var(--gold-rgb),0.2)", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", fontSize:24 }}>◆</div>
+        <div style={{ fontSize:18, fontWeight:700, color:C.white, fontFamily:"'Josefin Sans',sans-serif", marginBottom:10 }}>IA Coach</div>
+        <div style={{ fontSize:13, color:C.dim, lineHeight:1.6, marginBottom:28, fontFamily:"'Josefin Sans',sans-serif" }}>
+          {lang==="fr" ? "L'analyse IA est disponible à partir du plan Trader (€24.99/mois)." : "AI analysis is available from the Trader plan (€24.99/month)."}
+        </div>
+        <a href="/#tarifs" style={{ display:"inline-block", padding:"12px 28px", borderRadius:10, background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#1a1208", fontFamily:"'Josefin Sans',sans-serif", fontWeight:700, fontSize:12, letterSpacing:"0.12em", textTransform:"uppercase", textDecoration:"none" }}>
+          {lang==="fr" ? "Voir les plans →" : "View plans →"}
+        </a>
+      </div>
+    );
     if (view === "profil")      return profileContent;
     if (view === "settings")    return settingsContent;
     if (view === "classement")  return classementContent;
@@ -5473,12 +5498,12 @@ ${recentTrades}`;
               </div>
             </div>
           )}
-          <PillNav view={view} setView={setView} darkMode={darkMode} />
+          <PillNav view={view} setView={setView} darkMode={darkMode} canUseAI={canUseAI} />
         </div>
       ) : (
         /* ── DESKTOP ── */
         <div style={{ display:"flex", minHeight:"100vh" }}>
-          <Sidebar view={view} setView={setView} darkMode={darkMode} onSignOut={() => setShowSignOutConfirm(true)} nickname={profileForm.nickname} firstName={profileForm.firstName} />
+          <Sidebar view={view} setView={setView} darkMode={darkMode} onSignOut={() => setShowSignOutConfirm(true)} nickname={profileForm.nickname} firstName={profileForm.firstName} canUseAI={canUseAI} />
           <div style={{ marginLeft:220, flex:1, display:"flex", flexDirection:"column" }}>
             <div style={{ padding:"20px 36px 18px", borderBottom:`1px solid ${C.border}`, background:C.bg, position:"sticky", top:0, zIndex:40, backdropFilter:"blur(12px)", display:"flex", alignItems:"flex-end", justifyContent:"space-between" }}>
               <div>
