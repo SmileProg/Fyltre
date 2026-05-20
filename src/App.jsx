@@ -4389,6 +4389,7 @@ ${recentTrades}`;
                 }catch(e){setMt5DeployingPf(null);setMt5SyncMsg(m=>({...m,[pf.id]:`✗ ${e.message}`}));break;}
               }
               setMt5SyncingPf(null); setMt5DeployingPf(null);
+              setMt5SyncMsg(m=>{if(!m[pf.id])return{...m,[pf.id]:"✗ Timeout — réessaie dans quelques minutes."};return m;});
             }} disabled={mt5SyncingPf===pf.id} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${mt5DeployingPf===pf.id?"rgba(232,205,169,0.3)":C.border}`,background:"transparent",color:mt5SyncingPf===pf.id?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5SyncingPf===pf.id?"not-allowed":"pointer",transition:"all 0.3s"}}>
               {mt5DeployingPf===pf.id ? L.mt5.deploying : mt5SyncingPf===pf.id ? "◌  Importation des trades..." : "⟳  Synchroniser depuis MT5"}
             </button>
