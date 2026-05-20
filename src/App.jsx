@@ -5061,14 +5061,27 @@ ${recentTrades}`;
         </button>
       </div>
       {/* ── MT5 CONNECT ── */}
-      <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
-        <MT5Connect user={user} darkMode={darkMode} onTradesImported={newTrades => setTrades(p => [...newTrades.filter(n => !p.find(e => e.id === n.id)), ...p])} onAccountConnected={newPf => {
-          const updated = [...propfirms, newPf];
-          setPropfirms(updated);
-          save(KEYS.propfirms, updated);
-          if (user) saveUserSettings({ propfirms: updated });
-        }} />
-      </div>
+      {canUseMT5 ? (
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
+          <MT5Connect user={user} darkMode={darkMode} onTradesImported={newTrades => setTrades(p => [...newTrades.filter(n => !p.find(e => e.id === n.id)), ...p])} onAccountConnected={newPf => {
+            const updated = [...propfirms, newPf];
+            setPropfirms(updated);
+            save(KEYS.propfirms, updated);
+            if (user) saveUserSettings({ propfirms: updated });
+          }} />
+        </div>
+      ) : (
+        <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,padding:"18px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:12}}>
+          <div style={{fontSize:18,opacity:0.4}}>🔒</div>
+          <div>
+            <div style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:3}}>MetaTrader 5</div>
+            <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5}}>
+              {lang==="fr" ? "Disponible avec le plan Pro (€29.99/mois)." : "Available with the Pro plan (€29.99/month)."}
+              {" "}<a href="/#tarifs" style={{color:"rgba(232,205,169,0.7)",textDecoration:"none"}}>{lang==="fr" ? "Voir les plans →" : "View plans →"}</a>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px"}}>
         <div style={{fontSize:10,color:C.dim,textTransform:"uppercase",letterSpacing:"0.15em",fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:4}}>Version</div>
