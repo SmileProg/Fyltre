@@ -56,7 +56,13 @@ module.exports = async function handler(req, res) {
       const histText = await histRes.text();
       try { histData = JSON.parse(histText); }
       catch { return res.status(502).json({ error: `MetaAPI history (région: ${region}): ${histText.slice(0, 120)}` }); }
-      if (!histRes.ok) return res.status(histRes.status).json({ error: histData.message || "Erreur récupération historique" });
+      if (!histRes.ok) {
+        const msg = histData.message || "";
+        if (msg.includes("not connected to broker") || msg.includes("account region") || msg.includes("does not match")) {
+          return res.status(202).json({ status: "deploying" });
+        }
+        return res.status(histRes.status).json({ error: msg || "Erreur récupération historique" });
+      }
     } catch (e) {
       return res.status(502).json({ error: `Connexion history impossible: ${e.message}` });
     }
