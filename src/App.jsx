@@ -1728,8 +1728,8 @@ export default function App() {
   const [tabKey, setTabKey] = useState(0); // "today" | "global"
   const [lang, setLang] = useState(() => { const s = localStorage.getItem("fyltra_lang"); return s === "en" ? "en" : "fr"; });
   L = APP_T[lang] || APP_T.fr;
-  const canUseAI  = !userPlan || userPlan === "trader" || userPlan === "pro";
-  const canUseMT5 = !userPlan || userPlan === "pro";
+  const canUseAI  = !userPlan || userPlan === "trader" || userPlan === "pro" || userPlan === "early_bird";
+  const canUseMT5 = !userPlan || userPlan === "pro" || userPlan === "early_bird";
   const [menuClosing, setMenuClosing] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null); // {date, trades, pnl}
   const [dayClosing, setDayClosing] = useState(false);
