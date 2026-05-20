@@ -64,8 +64,6 @@ const FONTS = `
     .l-stat-row   { grid-template-columns: repeat(2,1fr) !important; }
     .l-feat-grid  { grid-template-columns: 1fr !important; }
     .l-price-grid { grid-template-columns: 1fr !important; }
-    .l-price-left { border-radius: 20px 20px 0 0 !important; }
-    .l-price-right{ border-left: 1px solid var(--l-border) !important; border-top: none !important; border-radius: 0 0 20px 20px !important; }
     .l-stats-grid { grid-template-columns: repeat(2,1fr) !important; }
     .l-reveal-text{ font-size: clamp(20px, 5vw, 34px) !important; }
     .l-dash-card  { height: 460px !important; }
@@ -830,11 +828,20 @@ const T = {
     quote: { text:"Les meilleurs traders ne sont pas ceux qui ont les meilleures entrées. Ce sont ceux qui", highlight:"se connaissent le mieux." },
     pricing: {
       badge:"Tarifs", h2:"Simple.", h2span:"Transparent.",
-      earlyBadge:"50 Premiers Traders", perMonth:"PAR MOIS · MENSUEL", locked:"Prix verrouillé à vie ✓",
-      features:["Dashboard & statistiques avancées","IA Coach — analyse des patterns","Multi-comptes & Prop Firm","Sync temps réel","Plan de trading intégré","Résiliable à tout moment"],
-      earlyBtn:"Rejoindre — Early Bird →", proLabel:"Pro Trader", proBtn:"Commencer maintenant →", loading:"Chargement...",
+      perMonth:"PAR MOIS · MENSUEL", loading:"Chargement...",
+      plans:[
+        { id:"starter", label:"Starter", price:"19", cents:".99",
+          features:["Dashboard & statistiques avancées","Journal de trading","Multi-comptes & Prop Firm","Plan de trading intégré","Résiliable à tout moment"],
+          btn:"Commencer →" },
+        { id:"trader", label:"Trader", price:"24", cents:".99", badge:"Populaire",
+          features:["Tout le Starter","IA Coach — analyse des patterns","Bilan fin de journée IA","Recommandations personnalisées","Résiliable à tout moment"],
+          btn:"Choisir Trader →" },
+        { id:"pro", label:"Pro", price:"29", cents:".99",
+          features:["Tout le Trader","Sync MT5 automatique","Import depuis MetaTrader 5","Support prioritaire","Résiliable à tout moment"],
+          btn:"Choisir Pro →" },
+      ],
     },
-    cta: { h2a:"Votre journal.", h2b:"Votre progression.", sub:"À partir de $19.99 / mois · Résiliable à tout moment.", btn:"Voir les tarifs →" },
+    cta: { h2a:"Votre journal.", h2b:"Votre progression.", sub:"À partir de €19.99 / mois · Résiliable à tout moment.", btn:"Voir les tarifs →" },
     footer: { openApp:"Accéder à l'app →", legal:[["Mentions légales","/mentions-legales"],["CGV","/cgv"],["Confidentialité","/confidentialite"]] },
     auth: {
       title:"Bon retour 👋", sub:"Connecte-toi à ton journal de trading.",
@@ -885,11 +892,20 @@ const T = {
     quote: { text:"The best traders aren't the ones with the best entries. They're the ones who", highlight:"know themselves best." },
     pricing: {
       badge:"Pricing", h2:"Simple.", h2span:"Transparent.",
-      earlyBadge:"50 First Traders", perMonth:"PER MONTH · MONTHLY", locked:"Lifetime locked price ✓",
-      features:["Dashboard & advanced statistics","AI Coach — pattern analysis","Multi-accounts & Prop Firm","Real-time sync","Integrated trading plan","Cancel anytime"],
-      earlyBtn:"Join — Early Bird →", proLabel:"Pro Trader", proBtn:"Get started →", loading:"Loading...",
+      perMonth:"PER MONTH · MONTHLY", loading:"Loading...",
+      plans:[
+        { id:"starter", label:"Starter", price:"19", cents:".99",
+          features:["Dashboard & advanced statistics","Trading journal","Multi-accounts & Prop Firm","Integrated trading plan","Cancel anytime"],
+          btn:"Get started →" },
+        { id:"trader", label:"Trader", price:"24", cents:".99", badge:"Popular",
+          features:["Everything in Starter","AI Coach — pattern analysis","AI end-of-day review","Personalized recommendations","Cancel anytime"],
+          btn:"Choose Trader →" },
+        { id:"pro", label:"Pro", price:"29", cents:".99",
+          features:["Everything in Trader","Automatic MT5 sync","Import from MetaTrader 5","Priority support","Cancel anytime"],
+          btn:"Choose Pro →" },
+      ],
     },
-    cta: { h2a:"Your journal.", h2b:"Your progress.", sub:"Starting at $19.99 / month · Cancel anytime.", btn:"View pricing →" },
+    cta: { h2a:"Your journal.", h2b:"Your progress.", sub:"Starting at €19.99 / month · Cancel anytime.", btn:"View pricing →" },
     footer: { openApp:"Open app →", legal:[["Legal Notice","/mentions-legales"],["Terms","/cgv"],["Privacy","/confidentialite"]] },
     auth: {
       title:"Welcome back 👋", sub:"Sign in to your trading journal.",
@@ -1221,9 +1237,10 @@ export default function Landing() {
             </div>
           </R>
           <R delay={0.1}>
-            <div className="l-price-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:0 }}>
-              <PriceLeft C={C} lang={lang} />
-              <PriceRight C={C} lang={lang} />
+            <div className="l-price-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
+              {T[lang].pricing.plans.map(plan => (
+                <PriceCard key={plan.id} plan={plan} C={C} lang={lang} />
+              ))}
             </div>
           </R>
         </div>
@@ -1300,115 +1317,82 @@ async function goCheckout(plan, setLoading) {
   }
 }
 
-function PriceLeft({ C, lang = "fr" }) {
+function PriceCard({ plan, C, lang = "fr" }) {
   const [h, setH] = useState(false);
   const [loading, setLoading] = useState(false);
   const isDark = C.bg === "#060608";
   const tp = T[lang].pricing;
+  const isHL = !!plan.badge;
   return (
-    <div className="l-price-left" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{
-      padding:"44px 40px 48px",
-      background: isDark
-        ? h ? "rgba(232,205,169,0.055)" : "rgba(232,205,169,0.025)"
-        : h ? "rgba(180,140,80,0.07)" : "rgba(180,140,80,0.04)",
-      border:`1px solid ${h?"rgba(232,205,169,0.35)":"rgba(232,205,169,0.2)"}`,
-      borderRadius:"20px 0 0 20px",
-      position:"relative",
-      overflow:"hidden",
+    <div onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{
+      padding:"36px 28px 40px",
+      background: isHL
+        ? isDark ? (h?"rgba(232,205,169,0.065)":"rgba(232,205,169,0.03)") : (h?"rgba(180,140,80,0.09)":"rgba(180,140,80,0.05)")
+        : isDark ? (h?"rgba(255,255,255,0.04)":"transparent") : (h?"rgba(0,0,0,0.03)":"transparent"),
+      border: isHL
+        ? `1px solid ${h?"rgba(232,205,169,0.45)":"rgba(232,205,169,0.25)"}`
+        : `1px solid ${C.border}`,
+      borderRadius:16,
+      position:"relative", overflow:"hidden",
       transition:"all .4s cubic-bezier(.16,1,.3,1)",
-      boxShadow: h
-        ? `0 0 80px rgba(232,205,169,0.1), inset 0 1px 0 rgba(232,205,169,0.18)`
-        : `inset 0 1px 0 rgba(232,205,169,0.08)`,
+      boxShadow: isHL
+        ? h ? "0 0 60px rgba(232,205,169,0.12), inset 0 1px 0 rgba(232,205,169,0.18)" : "0 0 20px rgba(232,205,169,0.06), inset 0 1px 0 rgba(232,205,169,0.08)"
+        : "none",
     }}>
-      {/* glow orb */}
-      <div style={{ position:"absolute", top:-60, left:-30, width:220, height:220, borderRadius:"50%", background:"radial-gradient(circle,rgba(232,205,169,0.12) 0%,transparent 68%)", pointerEvents:"none", transition:"opacity .4s", opacity:h?1:0.6 }}/>
+      {isHL && <div style={{ position:"absolute", top:-60, left:-30, width:220, height:220, borderRadius:"50%", background:"radial-gradient(circle,rgba(232,205,169,0.12) 0%,transparent 68%)", pointerEvents:"none", opacity:h?1:0.6, transition:"opacity .4s" }}/>}
 
-      {/* badge */}
-      <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"linear-gradient(135deg,#e8cda9,#c9aa82)", borderRadius:100, padding:"4px 12px 4px 8px", marginBottom:28 }}>
-        <span style={{ fontSize:11 }}>⚡</span>
-        <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#1a1208", fontWeight:700, letterSpacing:"0.18em", textTransform:"uppercase" }}>{tp.earlyBadge}</span>
-      </div>
+      {/* top label / badge */}
+      {isHL ? (
+        <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:"linear-gradient(135deg,#e8cda9,#c9aa82)", borderRadius:100, padding:"4px 12px 4px 8px", marginBottom:28 }}>
+          <span style={{ fontSize:11 }}>⚡</span>
+          <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"#1a1208", fontWeight:700, letterSpacing:"0.18em", textTransform:"uppercase" }}>{plan.badge}</span>
+        </div>
+      ) : (
+        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.textDimmer, letterSpacing:"0.3em", textTransform:"uppercase", marginBottom:28, minHeight:28, display:"flex", alignItems:"center" }}>{plan.label}</div>
+      )}
 
+      {/* price */}
       <div style={{ display:"flex", alignItems:"flex-start", gap:3, marginBottom:2 }}>
-        <span style={{ fontSize:18, color:"rgba(232,205,169,0.6)", marginTop:14, fontWeight:300 }}>$</span>
-        <span style={{ fontWeight:800, fontSize:88, lineHeight:1, letterSpacing:"-0.04em", background:"linear-gradient(160deg,#e8cda9 30%,#c9aa82 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>19</span>
-        <span style={{ fontSize:28, color:"rgba(232,205,169,0.7)", marginTop:22, fontWeight:400 }}>.99</span>
+        <span style={{ fontSize:18, color:isHL?"rgba(232,205,169,0.6)":C.textDim, marginTop:14, fontWeight:300 }}>€</span>
+        <span style={{ fontWeight:800, fontSize:88, lineHeight:1, letterSpacing:"-0.04em",
+          ...(isHL ? { background:"linear-gradient(160deg,#e8cda9 30%,#c9aa82 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" } : { color:C.text })
+        }}>{plan.price}</span>
+        <span style={{ fontSize:28, color:isHL?"rgba(232,205,169,0.7)":C.textDim, marginTop:22, fontWeight:400 }}>{plan.cents}</span>
       </div>
-      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"rgba(232,205,169,0.5)", letterSpacing:"0.18em", textTransform:"uppercase", marginBottom:6 }}>{tp.perMonth}</div>
-      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:"rgba(232,205,169,0.75)", letterSpacing:"0.1em", marginBottom:36, padding:"6px 10px", background:"rgba(232,205,169,0.07)", borderRadius:6, display:"inline-block" }}>
-        {tp.locked}
-      </div>
+      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:isHL?"rgba(232,205,169,0.5)":C.textDimmer, letterSpacing:"0.18em", textTransform:"uppercase", marginBottom:32 }}>{tp.perMonth}</div>
 
       {/* features */}
-      <div style={{ display:"flex", flexDirection:"column", gap:11, marginBottom:36 }}>
-        {tp.features.map((f,i) => (
+      <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:32 }}>
+        {plan.features.map((f,i) => (
           <div key={i} style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <div style={{ width:16, height:16, borderRadius:"50%", background:"linear-gradient(135deg,rgba(232,205,169,0.25),rgba(232,205,169,0.1))", border:"1px solid rgba(232,205,169,0.35)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-              <div style={{ width:5, height:5, borderRadius:"50%", background:"#e8cda9" }}/>
+            <div style={{ width:16, height:16, borderRadius:"50%", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center",
+              background: isHL ? "linear-gradient(135deg,rgba(232,205,169,0.25),rgba(232,205,169,0.1))" : "transparent",
+              border: isHL ? "1px solid rgba(232,205,169,0.35)" : `1px solid ${C.border}`,
+            }}>
+              <div style={{ width:5, height:5, borderRadius:"50%", background:isHL?"#e8cda9":C.textDim }}/>
             </div>
-            <span style={{ fontSize:13, color:C.text, fontWeight:500, letterSpacing:"-0.01em" }}>{f}</span>
+            <span style={{ fontSize:13, color:isHL?C.text:C.textDim, fontWeight:500, letterSpacing:"-0.01em" }}>{f}</span>
           </div>
         ))}
       </div>
 
-      <button onClick={() => goCheckout("early_bird", setLoading)} disabled={loading}
-        style={{ width:"100%", background:"linear-gradient(135deg,#e8cda9,#c9aa82)", color:"#1a1208", border:"none", borderRadius:12, padding:"15px", fontFamily:"'Outfit',sans-serif", fontWeight:700, fontSize:14, cursor:loading?"not-allowed":"pointer", boxShadow:"0 0 36px rgba(232,205,169,0.25)", transition:"all .22s cubic-bezier(.16,1,.3,1)", letterSpacing:"-0.01em", opacity:loading?0.7:1 }}
-        onMouseEnter={e=>{ if(!loading){ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 0 56px rgba(232,205,169,0.45)"; }}}
-        onMouseLeave={e=>{ e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 0 36px rgba(232,205,169,0.25)"; }}>
-        {loading ? tp.loading : tp.earlyBtn}
-      </button>
-    </div>
-  );
-}
-
-/* ─── Price Right Card — Pro Trader ─────────────────────────────── */
-function PriceRight({ C, lang = "fr" }) {
-  const [h, setH] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const isDark = C.bg === "#060608";
-  const tp = T[lang].pricing;
-  return (
-    <div className="l-price-right" onMouseEnter={()=>setH(true)} onMouseLeave={()=>setH(false)} style={{
-      padding:"44px 40px 48px",
-      background: isDark
-        ? h ? "rgba(255,255,255,0.04)" : C.cardBg
-        : h ? "rgba(0,0,0,0.04)" : C.cardBg,
-      border:`1px solid ${C.border}`,
-      borderLeft: "none",
-      borderRadius:"0 20px 20px 0",
-      position:"relative",
-      overflow:"hidden",
-      transition:"all .4s cubic-bezier(.16,1,.3,1)",
-    }}>
-      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.textDimmer, letterSpacing:"0.3em", textTransform:"uppercase", display:"block", marginBottom:28, paddingTop:2 }}>{tp.proLabel}</div>
-
-      <div style={{ display:"flex", alignItems:"flex-start", gap:3, marginBottom:2 }}>
-        <span style={{ fontSize:18, color:C.textDim, marginTop:14, fontWeight:300 }}>$</span>
-        <span style={{ fontWeight:800, fontSize:88, lineHeight:1, letterSpacing:"-0.04em", color:C.text }}>24</span>
-        <span style={{ fontSize:28, color:C.textDim, marginTop:22, fontWeight:400 }}>.99</span>
-      </div>
-      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.textDimmer, letterSpacing:"0.18em", textTransform:"uppercase", marginBottom:6 }}>{tp.perMonth}</div>
-      <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:9, color:C.textDimmer, letterSpacing:"0.1em", marginBottom:36, padding:"6px 10px", background:"transparent", borderRadius:6, display:"inline-block", opacity:0 }}>
-        placeholder
-      </div>
-
-      {/* features */}
-      <div style={{ display:"flex", flexDirection:"column", gap:11, marginBottom:36 }}>
-        {tp.features.map((f,i) => (
-          <div key={i} style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <div style={{ width:16, height:16, borderRadius:"50%", background:"transparent", border:`1px solid ${C.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-              <div style={{ width:5, height:5, borderRadius:"50%", background:C.textDim }}/>
-            </div>
-            <span style={{ fontSize:13, color:C.textDim, fontWeight:500, letterSpacing:"-0.01em" }}>{f}</span>
-          </div>
-        ))}
-      </div>
-
-      <button onClick={() => goCheckout("pro", setLoading)} disabled={loading}
-        style={{ width:"100%", background:"transparent", color:C.text, border:`1px solid ${C.border}`, borderRadius:12, padding:"15px", fontFamily:"'Outfit',sans-serif", fontWeight:600, fontSize:14, cursor:loading?"not-allowed":"pointer", transition:"all .22s cubic-bezier(.16,1,.3,1)", letterSpacing:"-0.01em", opacity:loading?0.7:1 }}
-        onMouseEnter={e=>{ if(!loading){ e.currentTarget.style.background=isDark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.06)"; e.currentTarget.style.borderColor=C.textDim; }}}
-        onMouseLeave={e=>{ e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=C.border; }}>
-        {loading ? tp.loading : tp.proBtn}
+      {/* CTA */}
+      <button onClick={() => goCheckout(plan.id, setLoading)} disabled={loading}
+        style={{ width:"100%", borderRadius:12, padding:"15px", fontFamily:"'Outfit',sans-serif", fontWeight:isHL?700:600, fontSize:14, cursor:loading?"not-allowed":"pointer", transition:"all .22s cubic-bezier(.16,1,.3,1)", letterSpacing:"-0.01em", opacity:loading?0.7:1,
+          background: isHL ? "linear-gradient(135deg,#e8cda9,#c9aa82)" : "transparent",
+          color: isHL ? "#1a1208" : C.text,
+          border: isHL ? "none" : `1px solid ${C.border}`,
+          boxShadow: isHL ? "0 0 36px rgba(232,205,169,0.25)" : "none",
+        }}
+        onMouseEnter={e=>{ if(!loading){
+          if(isHL){ e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 0 56px rgba(232,205,169,0.45)"; }
+          else { e.currentTarget.style.background=isDark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.06)"; e.currentTarget.style.borderColor=C.textDim; }
+        }}}
+        onMouseLeave={e=>{ e.currentTarget.style.transform="none";
+          if(isHL) e.currentTarget.style.boxShadow="0 0 36px rgba(232,205,169,0.25)";
+          else { e.currentTarget.style.background="transparent"; e.currentTarget.style.borderColor=C.border; }
+        }}>
+        {loading ? tp.loading : plan.btn}
       </button>
     </div>
   );
