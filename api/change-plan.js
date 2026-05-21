@@ -13,8 +13,8 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).end();
 
-  const { subscriptionId, plan } = req.body || {};
-  if (!subscriptionId || !plan) return res.status(400).json({ error: "subscriptionId and plan required" });
+  const { plan, oldSubscriptionId } = req.body || {};
+  if (!plan) return res.status(400).json({ error: "plan required" });
 
   const priceId = PRICES[plan];
   if (!priceId) return res.status(400).json({ error: "Plan invalide" });
@@ -22,26 +22,18 @@ module.exports = async function handler(req, res) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-10-16" });
 
   try {
-    const sub = await stripe.subscriptions.retrieve(subscriptionId);
-    const itemId = sub.items.data[0]?.id;
-    if (!itemId) return res.status(400).json({ error: "Abonnement introuvable" });
-
-    // Changement au prochain cycle de facturation, prix plein
-    const updated = await stripe.subscriptions.update(subscriptionId, {
-      items: [{ id: itemId, price: priceId }],
-      proration_behavior: "none",
+    // Nouveau checkout — paiement immédiat du nouveau plan
+    // L'ancien abonnement sera annulé dans le webhook après paiement réussi
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `https://fyltra.app/setup?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://fyltra.app/dashboard`,
+      allow_promotion_codes: true,
+      metadata: { plan, oldSubscriptionId: oldSubscriptionId || "" },
     });
 
-    // Mettre à jour le plan dans Supabase
-    const SUPA_URL = process.env.SUPABASE_URL || "https://yxvkedyhykhajcivsgal.supabase.co";
-    const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
-    await fetch(`${SUPA_URL}/rest/v1/purchases?order_id=eq.${encodeURIComponent(subscriptionId)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, Prefer: "return=minimal" },
-      body: JSON.stringify({ plan }),
-    });
-
-    return res.status(200).json({ ok: true, plan, renewsAt: new Date(updated.current_period_end * 1000).toISOString() });
+    return res.status(200).json({ url: session.url });
   } catch (e) {
     console.error("change-plan error:", e.message);
     return res.status(500).json({ error: e.message });

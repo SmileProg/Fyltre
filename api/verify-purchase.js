@@ -42,6 +42,23 @@ module.exports = async function handler(req, res) {
 
     if (!email) return res.status(400).json({ error: "No email in session" });
 
+    // Si changement de plan → annuler l'ancien abonnement immédiatement
+    const oldSubscriptionId = session.metadata?.oldSubscriptionId;
+    if (oldSubscriptionId && oldSubscriptionId !== stripeSubscriptionId) {
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+        await stripe.subscriptions.cancel(oldSubscriptionId);
+        // Désactiver l'ancienne ligne dans Supabase
+        await fetch(`${SUPA_URL}/rest/v1/purchases?order_id=eq.${encodeURIComponent(oldSubscriptionId)}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}`, Prefer: "return=minimal" },
+          body: JSON.stringify({ active: false }),
+        });
+      } catch (e) {
+        console.error("Cancel old subscription error:", e.message);
+      }
+    }
+
     const resp = await fetch(`${SUPA_URL}/rest/v1/purchases`, {
       method: "POST",
       headers: {

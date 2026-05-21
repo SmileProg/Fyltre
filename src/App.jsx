@@ -4938,21 +4938,18 @@ ${recentTrades}`;
                   { id:"trader",  label:"Trader",  price:"24.99", feat: lang==="fr"?"Starter + IA Coach":"Starter + AI Coach" },
                   { id:"pro",     label:"Pro",     price:"29.99", feat: lang==="fr"?"Trader + Sync MT5":"Trader + MT5 Sync" },
                 ];
+                const PRICES_LABEL = { starter:"€19.99", trader:"€24.99", pro:"€29.99" };
                 const goChangePlan = async (planId) => {
+                  const msg = lang==="fr"
+                    ? `Vous serez facturé ${PRICES_LABEL[planId]} immédiatement. Votre plan actuel sera annulé. Continuer ?`
+                    : `You will be charged ${PRICES_LABEL[planId]} immediately. Your current plan will be cancelled. Continue?`;
+                  if (!window.confirm(msg)) return;
                   setPlanChanging(planId);
                   try {
-                    if (subData?.id) {
-                      // Abonnement Stripe existant → mise à jour
-                      const r = await fetch("/api/change-plan", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ subscriptionId: subData.id, plan: planId }) });
-                      const d = await r.json();
-                      if (d.ok) { setUserPlan(planId); localStorage.setItem("fyltra_plan", planId); setSubData(s=>({...s, productName: planId.charAt(0).toUpperCase()+planId.slice(1)})); setShowPlanChange(false); }
-                      else alert(d.error || "Erreur");
-                    } else {
-                      // Pas de subscription Stripe → nouveau checkout
-                      const r = await fetch("/api/create-checkout", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ plan: planId }) });
-                      const d = await r.json();
-                      if (d.url) window.location.href = d.url;
-                    }
+                    const r = await fetch("/api/change-plan", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ plan: planId, oldSubscriptionId: subData?.id || "" }) });
+                    const d = await r.json();
+                    if (d.url) window.location.href = d.url;
+                    else alert(d.error || "Erreur");
                   } catch {}
                   setPlanChanging(null);
                 };
