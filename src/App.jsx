@@ -649,7 +649,7 @@ function PillNav({ view, setView, darkMode, canUseAI }) {
         return (
           <button key={item.key} onClick={() => setView(item.key)} onMouseEnter={() => setHovered(item.key)} onMouseLeave={() => setHovered(null)} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:4, padding:"9px 16px", borderRadius:44, border:"none", cursor:"pointer", background:active ? "radial-gradient(ellipse 90% 90% at 50% 50%, rgba(252,252,252,0.93) 0%, rgba(225,225,225,0.85) 55%, rgba(200,200,200,0.75) 100%)" : isHovered ? "rgba(255,255,255,0.05)" : "transparent", boxShadow:active ? "0 0 26px 8px rgba(255,255,255,0.22), 0 0 50px 16px rgba(255,255,255,0.09), 0 6px 20px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3)" : "none", transition:"all 0.25s cubic-bezier(.4,0,.2,1)", position:"relative", zIndex:1, opacity: locked ? 0.45 : 1 }}>
             <span style={{ fontSize:9, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", color:active ? "#222" : "rgba(255,255,255,0.45)", transition:"color 0.2s", whiteSpace:"nowrap" }}>{item.label}</span>
-            {locked && <span style={{ fontSize:8, opacity:0.7 }}>🔒</span>}
+            {locked && <span style={{ fontSize:7, fontFamily:"'JetBrains Mono',monospace", fontWeight:700, letterSpacing:"0.1em", color:"rgba(232,205,169,0.5)", textTransform:"uppercase" }}>PRO</span>}
           </button>
         );
       })}
@@ -718,7 +718,7 @@ function Sidebar({ view, setView, darkMode, onSignOut, nickname, firstName, canU
       {/* IA pill */}
       <div style={{ padding:"0 12px 10px", opacity: canUseAI ? 1 : 0.45 }}>
         <div style={pillStyle}>
-          <NavBtn item={{key:"ai",icon:"◆",label:canUseAI ? L.nav.ai : `${L.nav.ai} 🔒`}} />
+          <NavBtn item={{key:"ai",icon:"◆",label:L.nav.ai}} />
         </div>
       </div>
 
@@ -4410,7 +4410,7 @@ ${recentTrades}`;
               setMt5SyncingPf(null); setMt5DeployingPf(null);
               setMt5SyncMsg(m=>{if(!m[pf.id])return{...m,[pf.id]:"✗ Timeout — réessaie dans quelques minutes."};return m;});
             }} disabled={mt5SyncingPf===pf.id||!canUseMT5} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${!canUseMT5?C.border:mt5DeployingPf===pf.id?"rgba(232,205,169,0.3)":C.border}`,background:"transparent",color:mt5SyncingPf===pf.id||!canUseMT5?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:canUseMT5&&mt5SyncingPf!==pf.id?"pointer":"not-allowed",transition:"all 0.3s",opacity:canUseMT5?1:0.5}}>
-              {!canUseMT5 ? `🔒  ${lang==="fr"?"Synchroniser depuis MT5":"Sync from MT5"}` : mt5DeployingPf===pf.id ? L.mt5.deploying : mt5SyncingPf===pf.id ? "◌  Importation des trades..." : "⟳  Synchroniser depuis MT5"}
+              {mt5DeployingPf===pf.id ? L.mt5.deploying : mt5SyncingPf===pf.id ? "◌  Importation des trades..." : "⟳  Synchroniser depuis MT5"}
             </button>
             {!canUseMT5 && <div style={{marginTop:4,fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>
               {lang==="fr"?"Disponible avec le plan Pro.":"Available with the Pro plan."}{" "}
@@ -4423,7 +4423,7 @@ ${recentTrades}`;
 
         {/* ── EOD + ACTIONS ── */}
         <button onClick={()=>{ if(!canUseAI){ return; } setEodText("");runEOD(pf); }} disabled={eodLoading} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${canUseAI?C.borderGold:C.border}`,background:eodLoading?"transparent":"rgba(0,0,0,0.04)",color:eodLoading?C.gray2:canUseAI?C.dim:C.gray2,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:canUseAI&&!eodLoading?"pointer":"not-allowed",marginBottom:8,transition:"all 0.3s",opacity:canUseAI?1:0.5}}>
-          {eodLoading?L.btn.analyzing: canUseAI ? L.btn.eod : `🔒  ${L.btn.eod}`}
+          {eodLoading?L.btn.analyzing:L.btn.eod}
         </button>
         {!canUseAI && <div style={{marginTop:-4,marginBottom:8,fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>
           {lang==="fr"?"Disponible à partir du plan Trader.":"Available from the Trader plan."}{" "}
@@ -5085,7 +5085,7 @@ ${recentTrades}`;
         </div>
       ) : (
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,padding:"18px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:12}}>
-          <div style={{fontSize:18,opacity:0.4}}>🔒</div>
+          <div style={{fontSize:10,fontFamily:"'JetBrains Mono',monospace",fontWeight:700,letterSpacing:"0.15em",color:"rgba(232,205,169,0.4)",textTransform:"uppercase"}}>PRO</div>
           <div>
             <div style={{fontSize:11,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,marginBottom:3}}>MetaTrader 5</div>
             <div style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5}}>
