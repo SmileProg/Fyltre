@@ -258,39 +258,6 @@ function DashboardMockup({ lang = "fr" }) {
   const BDR = "rgba(255,255,255,0.08)";
   const DIM2 = "rgba(240,237,232,0.2)";
 
-  const PILL = { background:"linear-gradient(180deg,rgba(60,60,60,0.97) 0%,rgba(18,18,18,0.99) 55%,rgba(8,8,8,1) 100%)", borderRadius:18, padding:"8px", display:"flex", flexDirection:"column", gap:3, boxShadow:"0 6px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.12),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -2px 0 rgba(0,0,0,0.8)" };
-
-  const navItems = td.nav.map((label, i) => ({
-    icon: ["◉","＋","≡","◈"][i], label, active: i === 0,
-  }));
-
-  const emo = td.emotions;
-  const trades = [
-    {pair:"NQ",    dir:"LONG",  emo:emo.Confiant, sess:"London",   pnl:"+312$", r:"+2.4R", ok:true },
-    {pair:"XAUUSD",dir:"SHORT", emo:emo.Neutre,   sess:"New York", pnl:"+241$", r:"+1.8R", ok:true },
-    {pair:"MNQ",   dir:"LONG",  emo:emo.Anxieux,  sess:"London",   pnl:"-134$", r:"-1.0R", ok:false},
-    {pair:"EUR/USD",dir:"LONG", emo:emo.Confiant, sess:"Overlap",  pnl:"+417$", r:"+3.1R", ok:true },
-    {pair:"BTC",   dir:"SHORT", emo:emo.Patient,  sess:"Asia",     pnl:"+122$", r:"+0.9R", ok:true },
-  ];
-
-  const pts = [[0,92],[55,80],[110,74],[165,62],[220,68],[275,52],[330,42],[385,34],[440,22],[495,30],[550,12],[600,6]];
-  const pathD = pts.map((p,i)=>`${i===0?"M":"L"}${p[0]},${p[1]}`).join(" ");
-
-  const calDays = [
-    {d:1,v:null},{d:2,v:1},{d:3,v:-1},{d:4,v:null},{d:5,v:1},
-    {d:6,v:null},{d:7,v:null},{d:8,v:1},{d:9,v:1},{d:10,v:-1},
-    {d:11,v:1},{d:12,v:null},{d:13,v:1},{d:14,v:-1},{d:15,v:1},
-    {d:16,v:1},{d:17,v:null},{d:18,v:1},{d:19,v:1},{d:20,v:null},
-    {d:21,v:-1},{d:22,v:1},{d:23,v:null},{d:24,v:1},{d:25,v:1},
-    {d:26,v:null},{d:27,v:-1},{d:28,v:1},{d:29,v:1},{d:30,v:null},
-  ];
-
-  const sessions = [
-    {name:"London",  wr:78, pnl:"+$2 140"},
-    {name:"New York",wr:55, pnl:"+$893"},
-    {name:"Asia",    wr:40, pnl:"-$210"},
-    {name:"Overlap", wr:66, pnl:"+$580"},
-  ];
 
   return (
     <div className="l-dash-card" style={{ width:"100%", height:860, background:BG, borderRadius:"16px 16px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", boxShadow:"0 -2px 0 rgba(255,255,255,0.07),0 40px 120px rgba(0,0,0,0.85)" }}>
