@@ -642,12 +642,14 @@ function PillNav({ view, setView, darkMode, canUseAI }) {
   const [hovered, setHovered] = useState(null);
   return (
     <div style={{ position:"fixed", bottom:24, left:"50%", transform:"translateX(-50%)", zIndex:200, display:"flex", alignItems:"center", background:"linear-gradient(180deg, rgba(60,60,60,0.97) 0%, rgba(18,18,18,0.99) 55%, rgba(8,8,8,1) 100%)", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", borderRadius:50, padding:"6px 8px", gap:2, boxShadow:"0 6px 20px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.4), 0 0 60px rgba(255,255,255,0.11), 0 0 0 1px rgba(255,255,255,0.13), inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -2px 0 rgba(0,0,0,0.8)", border:"1px solid rgba(255,255,255,0.1)" }}>
-      {NAV().filter(item => item.key !== "ai" || canUseAI).map(item => {
+      {NAV().map(item => {
         const active = view === item.key;
         const isHovered = hovered === item.key && !active;
+        const locked = item.key === "ai" && !canUseAI;
         return (
-          <button key={item.key} onClick={() => setView(item.key)} onMouseEnter={() => setHovered(item.key)} onMouseLeave={() => setHovered(null)} style={{ display:"flex", alignItems:"center", justifyContent:"center", padding:"9px 16px", borderRadius:44, border:"none", cursor:"pointer", background:active ? "radial-gradient(ellipse 90% 90% at 50% 50%, rgba(252,252,252,0.93) 0%, rgba(225,225,225,0.85) 55%, rgba(200,200,200,0.75) 100%)" : isHovered ? "rgba(255,255,255,0.05)" : "transparent", boxShadow:active ? "0 0 26px 8px rgba(255,255,255,0.22), 0 0 50px 16px rgba(255,255,255,0.09), 0 6px 20px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3)" : "none", transition:"all 0.25s cubic-bezier(.4,0,.2,1)", position:"relative", zIndex:1 }}>
+          <button key={item.key} onClick={() => setView(item.key)} onMouseEnter={() => setHovered(item.key)} onMouseLeave={() => setHovered(null)} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:4, padding:"9px 16px", borderRadius:44, border:"none", cursor:"pointer", background:active ? "radial-gradient(ellipse 90% 90% at 50% 50%, rgba(252,252,252,0.93) 0%, rgba(225,225,225,0.85) 55%, rgba(200,200,200,0.75) 100%)" : isHovered ? "rgba(255,255,255,0.05)" : "transparent", boxShadow:active ? "0 0 26px 8px rgba(255,255,255,0.22), 0 0 50px 16px rgba(255,255,255,0.09), 0 6px 20px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3)" : "none", transition:"all 0.25s cubic-bezier(.4,0,.2,1)", position:"relative", zIndex:1, opacity: locked ? 0.45 : 1 }}>
             <span style={{ fontSize:9, fontFamily:"'Josefin Sans',sans-serif", fontWeight:600, letterSpacing:"0.14em", textTransform:"uppercase", color:active ? "#222" : "rgba(255,255,255,0.45)", transition:"color 0.2s", whiteSpace:"nowrap" }}>{item.label}</span>
+            {locked && <span style={{ fontSize:8, opacity:0.7 }}>🔒</span>}
           </button>
         );
       })}
@@ -714,13 +716,11 @@ function Sidebar({ view, setView, darkMode, onSignOut, nickname, firstName, canU
       </div>
 
       {/* IA pill */}
-      {canUseAI && (
-        <div style={{ padding:"0 12px 10px" }}>
-          <div style={pillStyle}>
-            <NavBtn item={{key:"ai",icon:"◆",label:L.nav.ai}} />
-          </div>
+      <div style={{ padding:"0 12px 10px", opacity: canUseAI ? 1 : 0.45 }}>
+        <div style={pillStyle}>
+          <NavBtn item={{key:"ai",icon:"◆",label:canUseAI ? L.nav.ai : `${L.nav.ai} 🔒`}} />
         </div>
-      )}
+      </div>
 
       {/* Settings pill */}
       <div style={{ padding:"0 12px 16px" }}>
@@ -4378,7 +4378,7 @@ ${recentTrades}`;
         {layoutOrder.map(id => wrapSection(id, sectionMap[id]))}
 
         {/* ── SYNC MT5 ── */}
-        {pf.type === "mt5" && pf.metaapi_id && canUseMT5 && (
+        {pf.type === "mt5" && pf.metaapi_id && (
           <div style={{marginBottom:8}}>
             <button onClick={async()=>{
               setMt5SyncingPf(pf.id); setMt5DeployingPf(null); setMt5SyncMsg(m=>({...m,[pf.id]:""}));
@@ -4409,18 +4409,26 @@ ${recentTrades}`;
               }
               setMt5SyncingPf(null); setMt5DeployingPf(null);
               setMt5SyncMsg(m=>{if(!m[pf.id])return{...m,[pf.id]:"✗ Timeout — réessaie dans quelques minutes."};return m;});
-            }} disabled={mt5SyncingPf===pf.id} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${mt5DeployingPf===pf.id?"rgba(232,205,169,0.3)":C.border}`,background:"transparent",color:mt5SyncingPf===pf.id?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:mt5SyncingPf===pf.id?"not-allowed":"pointer",transition:"all 0.3s"}}>
-              {mt5DeployingPf===pf.id ? L.mt5.deploying : mt5SyncingPf===pf.id ? "◌  Importation des trades..." : "⟳  Synchroniser depuis MT5"}
+            }} disabled={mt5SyncingPf===pf.id||!canUseMT5} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${!canUseMT5?C.border:mt5DeployingPf===pf.id?"rgba(232,205,169,0.3)":C.border}`,background:"transparent",color:mt5SyncingPf===pf.id||!canUseMT5?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:canUseMT5&&mt5SyncingPf!==pf.id?"pointer":"not-allowed",transition:"all 0.3s",opacity:canUseMT5?1:0.5}}>
+              {!canUseMT5 ? `🔒  ${lang==="fr"?"Synchroniser depuis MT5":"Sync from MT5"}` : mt5DeployingPf===pf.id ? L.mt5.deploying : mt5SyncingPf===pf.id ? "◌  Importation des trades..." : "⟳  Synchroniser depuis MT5"}
             </button>
-            {mt5DeployingPf===pf.id && <div style={{marginTop:6,fontSize:10,color:"rgba(232,205,169,0.5)",fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>Les trades s'importeront automatiquement dès la connexion établie.</div>}
-            {mt5SyncMsg[pf.id] && <div style={{marginTop:6,fontSize:11,color:mt5SyncMsg[pf.id].startsWith("✓")?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>{mt5SyncMsg[pf.id]}</div>}
+            {!canUseMT5 && <div style={{marginTop:4,fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>
+              {lang==="fr"?"Disponible avec le plan Pro.":"Available with the Pro plan."}{" "}
+              <a href="/#tarifs" style={{color:"rgba(232,205,169,0.6)",textDecoration:"none"}}>{lang==="fr"?"Voir →":"See →"}</a>
+            </div>}
+            {canUseMT5 && mt5DeployingPf===pf.id && <div style={{marginTop:6,fontSize:10,color:"rgba(232,205,169,0.5)",fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>Les trades s'importeront automatiquement dès la connexion établie.</div>}
+            {canUseMT5 && mt5SyncMsg[pf.id] && <div style={{marginTop:6,fontSize:11,color:mt5SyncMsg[pf.id].startsWith("✓")?"#4caf6e":"#e05a5a",fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>{mt5SyncMsg[pf.id]}</div>}
           </div>
         )}
 
         {/* ── EOD + ACTIONS ── */}
-        {canUseAI && <button onClick={()=>{setEodText("");runEOD(pf);}} disabled={eodLoading} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${C.borderGold}`,background:eodLoading?"transparent":"rgba(0,0,0,0.04)",color:eodLoading?C.gray2:C.dim,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:eodLoading?"not-allowed":"pointer",marginBottom:8,transition:"all 0.3s"}}>
-          {eodLoading?L.btn.analyzing:L.btn.eod}
-        </button>}
+        <button onClick={()=>{ if(!canUseAI){ return; } setEodText("");runEOD(pf); }} disabled={eodLoading} style={{width:"100%",padding:"13px",borderRadius:8,border:`1px solid ${canUseAI?C.borderGold:C.border}`,background:eodLoading?"transparent":"rgba(0,0,0,0.04)",color:eodLoading?C.gray2:canUseAI?C.dim:C.gray2,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",cursor:canUseAI&&!eodLoading?"pointer":"not-allowed",marginBottom:8,transition:"all 0.3s",opacity:canUseAI?1:0.5}}>
+          {eodLoading?L.btn.analyzing: canUseAI ? L.btn.eod : `🔒  ${L.btn.eod}`}
+        </button>
+        {!canUseAI && <div style={{marginTop:-4,marginBottom:8,fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center"}}>
+          {lang==="fr"?"Disponible à partir du plan Trader.":"Available from the Trader plan."}{" "}
+          <a href="/#tarifs" style={{color:"rgba(232,205,169,0.6)",textDecoration:"none"}}>{lang==="fr"?"Voir →":"See →"}</a>
+        </div>}
         {canUseAI && eodText && <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:20,fontSize:12,lineHeight:1.8,color:C.white,whiteSpace:"pre-wrap",fontFamily:"'Josefin Sans',sans-serif",fontWeight:300,letterSpacing:"0.03em",marginBottom:10}}>{eodText}</div>}
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:4}}>
