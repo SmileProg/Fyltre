@@ -4873,7 +4873,50 @@ ${recentTrades}`;
           {subLoading ? (
             <div style={{color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif"}}>{L.prof.subLoading}</div>
           ) : subData?.error ? (
-            <div style={{color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif"}}>{subData.error === "no subscription" ? L.prof.subNone : subData.error}</div>
+            <>
+              <div style={{color:C.gray1,fontSize:12,fontFamily:"'Josefin Sans',sans-serif",marginBottom:14}}>{subData.error === "no subscription" ? L.prof.subNone : subData.error}</div>
+              {(() => {
+                const PLANS = [
+                  { id:"starter", label:"Starter", price:"19.99", feat: lang==="fr"?"Journal · Stats · Multi-comptes":"Journal · Stats · Multi-accounts" },
+                  { id:"trader",  label:"Trader",  price:"24.99", feat: lang==="fr"?"Starter + IA Coach":"Starter + AI Coach" },
+                  { id:"pro",     label:"Pro",     price:"29.99", feat: lang==="fr"?"Trader + Sync MT5":"Trader + MT5 Sync" },
+                ];
+                const goNewPlan = async (planId) => {
+                  setPlanChanging(planId);
+                  try {
+                    const r = await fetch("/api/create-checkout", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ plan: planId }) });
+                    const d = await r.json();
+                    if (d.url) window.location.href = d.url;
+                  } catch {}
+                  setPlanChanging(null);
+                };
+                return (
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {PLANS.map(plan => {
+                      const isCurrent = userPlan === plan.id;
+                      const isLoading = planChanging === plan.id;
+                      return (
+                        <div key={plan.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 12px",borderRadius:8,border:`1px solid ${isCurrent?"rgba(232,205,169,0.35)":C.border}`,background:isCurrent?"rgba(232,205,169,0.05)":C.bg3}}>
+                          <div>
+                            <div style={{display:"flex",alignItems:"center",gap:8}}>
+                              <span style={{fontSize:12,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{plan.label}</span>
+                              <span style={{fontSize:11,color:"rgba(232,205,169,0.7)",fontFamily:"'JetBrains Mono',monospace"}}>€{plan.price}</span>
+                              {isCurrent && <span style={{fontSize:8,color:"rgba(232,205,169,0.6)",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",background:"rgba(232,205,169,0.08)",border:"1px solid rgba(232,205,169,0.2)",borderRadius:4,padding:"1px 5px"}}>{L.prof.currentPlanBadge}</span>}
+                            </div>
+                            <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{plan.feat}</div>
+                          </div>
+                          {!isCurrent && (
+                            <button onClick={()=>goNewPlan(plan.id)} disabled={!!planChanging} style={{padding:"7px 14px",borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:isLoading?C.gray2:C.dim,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",cursor:planChanging?"not-allowed":"pointer",flexShrink:0,marginLeft:10}}>
+                              {isLoading?"…":L.prof.selectPlan}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </>
           ) : subData ? (
             <>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
@@ -4898,9 +4941,18 @@ ${recentTrades}`;
                 const goChangePlan = async (planId) => {
                   setPlanChanging(planId);
                   try {
-                    const r = await fetch("/api/create-checkout", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ plan: planId }) });
-                    const d = await r.json();
-                    if (d.url) window.location.href = d.url;
+                    if (subData?.id) {
+                      // Abonnement Stripe existant → mise à jour
+                      const r = await fetch("/api/change-plan", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ subscriptionId: subData.id, plan: planId }) });
+                      const d = await r.json();
+                      if (d.ok) { setUserPlan(planId); localStorage.setItem("fyltra_plan", planId); setSubData(s=>({...s, productName: planId.charAt(0).toUpperCase()+planId.slice(1)})); setShowPlanChange(false); }
+                      else alert(d.error || "Erreur");
+                    } else {
+                      // Pas de subscription Stripe → nouveau checkout
+                      const r = await fetch("/api/create-checkout", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ plan: planId }) });
+                      const d = await r.json();
+                      if (d.url) window.location.href = d.url;
+                    }
                   } catch {}
                   setPlanChanging(null);
                 };
@@ -4933,6 +4985,9 @@ ${recentTrades}`;
                             </div>
                           );
                         })}
+                        <div style={{fontSize:10,color:C.gray2,fontFamily:"'Josefin Sans',sans-serif",lineHeight:1.5,paddingTop:2}}>
+                          {lang==="fr"?"Le changement prend effet au prochain cycle de facturation.":"Change takes effect at the next billing cycle."}
+                        </div>
                       </div>
                     )}
                   </div>
