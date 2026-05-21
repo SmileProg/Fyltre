@@ -1855,7 +1855,7 @@ export default function App() {
     if (!user) { setUserPlan(null); localStorage.removeItem("fyltra_plan"); return; }
     fetch(`/api/check-purchase?email=${encodeURIComponent(user.email)}`)
       .then(r => r.json())
-      .then(d => { if (d.plan) { setUserPlan(d.plan); localStorage.setItem("fyltra_plan", d.plan); } })
+      .then(d => { const p = d.plan || null; setUserPlan(p); if (p) localStorage.setItem("fyltra_plan", p); else localStorage.removeItem("fyltra_plan"); })
       .catch(() => {});
   }, [user]);
 
