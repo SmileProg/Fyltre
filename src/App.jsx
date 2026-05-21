@@ -1439,7 +1439,7 @@ function AuthScreen() {
 }
 
 /* ─── MT5 CONNECT ────────────────────────────────────────────────── */
-function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
+function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected, mt5Count = 0, mt5Limit = 5 }) {
   const isDark = darkMode;
   const [mt5Form, setMt5Form] = useState({ login:"", password:"", server:"", name:"", platform:"mt5" });
   const [showMt5Pwd, setShowMt5Pwd] = useState(false);
@@ -1458,6 +1458,7 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
   }, [user]);
 
   const connectMT5 = async () => {
+    if (mt5Count >= mt5Limit) { setMt5Error(lang === "en" ? `Limit of ${mt5Limit} MT5 accounts reached.` : `Limite de ${mt5Limit} comptes MT5 atteinte.`); return; }
     if (!mt5Form.login || !mt5Form.password || !mt5Form.server) { setMt5Error(L.mt5.fillFields); return; }
     setMt5Loading(true); setMt5Error(""); setMt5Status("");
     try {
@@ -1552,6 +1553,10 @@ function MT5Connect({ user, darkMode, onTradesImported, onAccountConnected }) {
           <button onClick={()=>{setMt5Account(null);setMt5NotFound(false);}} style={{width:"100%",marginTop:8,padding:"8px",borderRadius:8,border:`1px solid ${C.border}`,background:"transparent",color:C.gray2,fontSize:10,fontFamily:"'Josefin Sans',sans-serif",letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>
             {L.mt5.changeAccount}
           </button>
+        </div>
+      ) : mt5Count >= mt5Limit ? (
+        <div style={{fontSize:12,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",textAlign:"center",padding:"12px 0"}}>
+          {lang==="en" ? `Limit of ${mt5Limit} MT5 accounts reached.` : `Limite de ${mt5Limit} comptes MT5 atteinte.`}
         </div>
       ) : (
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
@@ -5063,7 +5068,7 @@ ${recentTrades}`;
       {/* ── MT5 CONNECT ── */}
       {canUseMT5 ? (
         <div style={{background:C.bg2,border:`1px solid ${C.border}`,borderRadius:12,boxShadow:"0 4px 28px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.09), 0 -2px 24px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.32)",padding:"18px 16px",marginBottom:12}}>
-          <MT5Connect user={user} darkMode={darkMode} onTradesImported={newTrades => setTrades(p => [...newTrades.filter(n => !p.find(e => e.id === n.id)), ...p])} onAccountConnected={newPf => {
+          <MT5Connect user={user} darkMode={darkMode} mt5Count={propfirms.filter(p=>p.type==="mt5").length} mt5Limit={5} onTradesImported={newTrades => setTrades(p => [...newTrades.filter(n => !p.find(e => e.id === n.id)), ...p])} onAccountConnected={newPf => {
             const updated = [...propfirms, newPf];
             setPropfirms(updated);
             save(KEYS.propfirms, updated);
