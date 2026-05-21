@@ -249,6 +249,7 @@ const APP_T = {
       planCurrent:"Plan actuel", subExpires:"Expire le", subNextBilling:"Prochaine facture",
       subCancelled:"Accès annulé", subActive:"Actif",
       subCancelConfirm:(date)=>`Confirmer la résiliation ? Ton accès restera actif jusqu'au ${date}, puis sera coupé.`,
+      changePlan:"Changer de plan", currentPlanBadge:"Plan actuel", selectPlan:"Choisir",
     },
     csv: {
       noTrades:"Aucun trade détecté. Vérifie le format.",
@@ -466,6 +467,7 @@ const APP_T = {
       planCurrent:"Current plan", subExpires:"Expires on", subNextBilling:"Next billing",
       subCancelled:"Cancelled", subActive:"Active",
       subCancelConfirm:(date)=>`Confirm cancellation? Your access will remain active until ${date}, then be cut.`,
+      changePlan:"Change plan", currentPlanBadge:"Current plan", selectPlan:"Select",
     },
     csv: {
       noTrades:"No trades detected. Check the file format.",
@@ -1768,6 +1770,8 @@ export default function App() {
   const [subData,     setSubData]     = useState(null);
   const [subLoading,  setSubLoading]  = useState(false);
   const [cancelConfirm, setCancelConfirm] = useState(false);
+  const [showPlanChange, setShowPlanChange] = useState(false);
+  const [planChanging, setPlanChanging] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [pwdForm, setPwdForm] = useState({ newPwd:"", confirmPwd:"", show:false });
   const [colorSaving,  setColorSaving]  = useState(null);
@@ -4884,6 +4888,56 @@ ${recentTrades}`;
                   <div style={{fontSize:11,fontFamily:"'Josefin Sans',sans-serif",marginTop:2,color:subData.cancelled?"rgba(192,57,43,0.7)":"#4ade80"}}>{subData.cancelled?L.prof.subCancelled:L.prof.subActive}</div>
                 </div>
               </div>
+              {/* ── Change plan ── */}
+              {!subData.cancelled && (() => {
+                const PLANS = [
+                  { id:"starter", label:"Starter", price:"19.99", feat: lang==="fr"?"Journal · Stats · Multi-comptes":"Journal · Stats · Multi-accounts" },
+                  { id:"trader",  label:"Trader",  price:"24.99", feat: lang==="fr"?"Starter + IA Coach":"Starter + AI Coach" },
+                  { id:"pro",     label:"Pro",     price:"29.99", feat: lang==="fr"?"Trader + Sync MT5":"Trader + MT5 Sync" },
+                ];
+                const goChangePlan = async (planId) => {
+                  setPlanChanging(planId);
+                  try {
+                    const r = await fetch("/api/create-checkout", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ plan: planId }) });
+                    const d = await r.json();
+                    if (d.url) window.location.href = d.url;
+                  } catch {}
+                  setPlanChanging(null);
+                };
+                return (
+                  <div style={{marginBottom:14}}>
+                    <button onClick={()=>setShowPlanChange(v=>!v)} style={{background:"transparent",border:"none",cursor:"pointer",padding:0,display:"flex",alignItems:"center",gap:6,marginBottom: showPlanChange?12:0}}>
+                      <span style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase"}}>{L.prof.changePlan}</span>
+                      <span style={{fontSize:10,color:C.gray2,transition:"transform .2s",display:"inline-block",transform:showPlanChange?"rotate(180deg)":"none"}}>▾</span>
+                    </button>
+                    {showPlanChange && (
+                      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                        {PLANS.map(plan => {
+                          const isCurrent = userPlan === plan.id || (!userPlan && plan.id==="starter");
+                          const isLoading = planChanging === plan.id;
+                          return (
+                            <div key={plan.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 12px",borderRadius:8,border:`1px solid ${isCurrent?"rgba(232,205,169,0.35)":C.border}`,background:isCurrent?"rgba(232,205,169,0.05)":C.bg3,transition:"all .2s"}}>
+                              <div>
+                                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                  <span style={{fontSize:12,color:C.white,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600}}>{plan.label}</span>
+                                  <span style={{fontSize:11,color:"rgba(232,205,169,0.7)",fontFamily:"'JetBrains Mono',monospace"}}>€{plan.price}</span>
+                                  {isCurrent && <span style={{fontSize:8,color:"rgba(232,205,169,0.6)",fontFamily:"'JetBrains Mono',monospace",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",background:"rgba(232,205,169,0.08)",border:"1px solid rgba(232,205,169,0.2)",borderRadius:4,padding:"1px 5px"}}>{L.prof.currentPlanBadge}</span>}
+                                </div>
+                                <div style={{fontSize:10,color:C.gray1,fontFamily:"'Josefin Sans',sans-serif",marginTop:2}}>{plan.feat}</div>
+                              </div>
+                              {!isCurrent && (
+                                <button onClick={()=>goChangePlan(plan.id)} disabled={!!planChanging} style={{padding:"7px 14px",borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:isLoading?C.gray2:C.dim,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",cursor:planChanging?"not-allowed":"pointer",flexShrink:0,marginLeft:10,transition:"all .2s"}}>
+                                  {isLoading?"…":L.prof.selectPlan}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               {!subData.cancelled && (
                 cancelConfirm ? (
                   <div style={{background:"rgba(192,57,43,0.08)",border:"1px solid rgba(192,57,43,0.25)",borderRadius:10,padding:"14px 16px"}}>
