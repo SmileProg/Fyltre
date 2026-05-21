@@ -4959,7 +4959,7 @@ ${recentTrades}`;
                       <span style={{fontSize:11,color:C.dim,fontFamily:"'Josefin Sans',sans-serif",fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase"}}>{L.prof.changePlan}</span>
                       <span style={{fontSize:10,color:C.gray2,transition:"transform .2s",display:"inline-block",transform:showPlanChange?"rotate(180deg)":"none"}}>▾</span>
                     </button>
-                    {showPlanChange && (
+                    {(showPlanChange || subData.cancelled) && (
                       <div style={{display:"flex",flexDirection:"column",gap:6}}>
                         {PLANS.map(plan => {
                           const isCurrent = userPlan === plan.id || (!userPlan && plan.id==="starter");
