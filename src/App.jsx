@@ -4932,7 +4932,7 @@ ${recentTrades}`;
                 </div>
               </div>
               {/* ── Change plan ── */}
-              {!subData.cancelled && (() => {
+              {(() => {
                 const PLANS = [
                   { id:"starter", label:"Starter", price:"19.99", feat: lang==="fr"?"Journal · Stats · Multi-comptes":"Journal · Stats · Multi-accounts" },
                   { id:"trader",  label:"Trader",  price:"24.99", feat: lang==="fr"?"Starter + IA Coach":"Starter + AI Coach" },
