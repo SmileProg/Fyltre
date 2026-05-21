@@ -254,15 +254,9 @@ function ContainerScroll({ titleComponent, children, C }) {
 
 /* ─── Dashboard Mockup ───────────────────────────────────────────── */
 function DashboardMockup({ lang = "fr" }) {
-  const BG   = "#0f0f0f";
-  const BG2  = "#1a1a1a";
-  const BG3  = "#242424";
-  const TXT  = "#f0ede8";
-  const DIM  = "rgba(240,237,232,0.45)";
+  const BG  = "#0f0f0f";
+  const BDR = "rgba(255,255,255,0.08)";
   const DIM2 = "rgba(240,237,232,0.2)";
-  const BDR  = "rgba(255,255,255,0.08)";
-  const ACC  = "#e8cda9";
-  const td   = T[lang].dash;
 
   const PILL = { background:"linear-gradient(180deg,rgba(60,60,60,0.97) 0%,rgba(18,18,18,0.99) 55%,rgba(8,8,8,1) 100%)", borderRadius:18, padding:"8px", display:"flex", flexDirection:"column", gap:3, boxShadow:"0 6px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.12),inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -2px 0 rgba(0,0,0,0.8)" };
 
@@ -299,7 +293,7 @@ function DashboardMockup({ lang = "fr" }) {
   ];
 
   return (
-    <div className="l-dash-card" style={{ width:"100%", height:860, background:BG, borderRadius:"16px 16px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", boxShadow:"0 -2px 0 rgba(255,255,255,0.07),0 40px 120px rgba(0,0,0,0.85)", fontFamily:"'Josefin Sans','Outfit',sans-serif" }}>
+    <div className="l-dash-card" style={{ width:"100%", height:860, background:BG, borderRadius:"16px 16px 0 0", overflow:"hidden", display:"flex", flexDirection:"column", boxShadow:"0 -2px 0 rgba(255,255,255,0.07),0 40px 120px rgba(0,0,0,0.85)" }}>
 
       {/* ── macOS window bar ── */}
       <div style={{ padding:"10px 16px", borderBottom:`1px solid ${BDR}`, display:"flex", alignItems:"center", justifyContent:"space-between", background:"rgba(255,255,255,0.015)", flexShrink:0 }}>
@@ -310,151 +304,12 @@ function DashboardMockup({ lang = "fr" }) {
         <div style={{width:52}}/>
       </div>
 
-      {/* ── main layout ── */}
-      <div style={{ flex:1, display:"flex", overflow:"hidden" }}>
-
-        {/* sidebar */}
-        <div className="l-dash-right" style={{ width:188, background:BG2, borderRight:`1px solid ${BDR}`, display:"flex", flexDirection:"column", padding:"16px 10px", gap:8, flexShrink:0 }}>
-          {/* logo */}
-          <div style={{ padding:"4px 8px 14px", borderBottom:`1px solid ${BDR}`, marginBottom:4 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <div>
-                <img src="/fyltra-logo-black.svg" style={{ height:22, width:"auto" }} alt="Fyltra"/>
-              </div>
-            </div>
-          </div>
-
-          {/* main pill */}
-          <div style={PILL}>
-            {navItems.map(item=>(
-              <div key={item.label} style={{ display:"flex", alignItems:"center", gap:10, padding:item.active?"8px 12px":"8px 10px", borderRadius:12, background:item.active?"radial-gradient(ellipse at 50% 35%,rgba(252,252,252,0.92) 0%,rgba(215,215,215,0.85) 55%,rgba(200,200,200,0.75) 100%)":"transparent", boxShadow:item.active?"0 0 24px 6px rgba(255,255,255,0.18),0 4px 14px rgba(0,0,0,0.4)":"none", transition:"all .2s" }}>
-                <span style={{ fontSize:13, color:item.active?"#111":"rgba(255,255,255,0.35)", width:18, textAlign:"center", lineHeight:1 }}>{item.icon}</span>
-                <span style={{ fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", fontWeight:item.active?700:300, color:item.active?"#222":"rgba(255,255,255,0.35)", whiteSpace:"nowrap" }}>{item.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* IA pill */}
-          <div style={PILL}>
-            <div style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 10px", borderRadius:12 }}>
-              <span style={{ fontSize:13, color:"rgba(255,255,255,0.35)", width:18, textAlign:"center" }}>◆</span>
-              <span style={{ fontSize:9, letterSpacing:"0.1em", textTransform:"uppercase", fontWeight:300, color:"rgba(255,255,255,0.35)" }}>IA</span>
-            </div>
-          </div>
-
-        </div>
-
-        {/* main content */}
-        <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
-          {/* header */}
-          <div style={{ padding:"10px 16px 0", flexShrink:0 }}>
-            <div style={{ fontSize:8, color:DIM2, letterSpacing:"0.2em", textTransform:"uppercase", marginBottom:2 }}>{td.header}</div>
-            <div style={{ fontSize:14, fontWeight:700, color:TXT, letterSpacing:"-0.01em" }}>{td.perf}</div>
-          </div>
-
-          {/* scroll area */}
-          <div style={{ flex:1, padding:"10px 16px 14px", overflowY:"auto", display:"flex", gap:12, flexDirection:"column" }}>
-
-            {/* stat cards */}
-            <div className="l-stat-row" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:8, flexShrink:0 }}>
-              {td.stats.map(s=>(
-                <div key={s.l} style={{ background:BG3, border:`1px solid ${BDR}`, borderRadius:8, padding:"9px 10px", boxShadow:"0 4px 16px rgba(0,0,0,0.45),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.22)" }}>
-                  <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:3 }}>{s.l}</div>
-                  <div style={{ fontSize:13, fontWeight:700, color:s.color, lineHeight:1 }}>{s.v}</div>
-                  <div style={{ fontSize:7, color:DIM2, marginTop:2 }}>{s.sub}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* chart + calendar row */}
-            <div style={{ display:"grid", gridTemplateColumns:"1.4fr 1fr", gap:10, flexShrink:0 }}>
-              {/* equity curve */}
-              <div style={{ background:BG2, border:`1px solid ${BDR}`, borderRadius:10, padding:"12px", boxShadow:"0 4px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.18)" }}>
-                <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:8 }}>{td.pnl}</div>
-                <svg width="100%" height="72" viewBox="0 0 600 100" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="rgba(232,205,169,0.22)"/>
-                      <stop offset="100%" stopColor="rgba(232,205,169,0)"/>
-                    </linearGradient>
-                  </defs>
-                  <path d={`${pathD} L600,100 L0,100 Z`} fill="url(#cg2)"/>
-                  <path d={pathD} fill="none" stroke={ACC} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="800" style={{ animation:"lChartLine 2.2s ease forwards" }}/>
-                  {pts.filter((_,i)=>i%3===0).map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3.5" fill={ACC} opacity="0.5"/>)}
-                </svg>
-              </div>
-
-              {/* calendar */}
-              <div style={{ background:BG2, border:`1px solid ${BDR}`, borderRadius:10, padding:"10px 12px", boxShadow:"0 4px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.18)" }}>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:7 }}>
-                  <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.14em" }}>{td.calTitle}</div>
-                  <div style={{ display:"flex", gap:6 }}>
-                    <span style={{ fontSize:9, color:DIM2, cursor:"default" }}>‹</span>
-                    <span style={{ fontSize:9, color:DIM2, cursor:"default" }}>›</span>
-                  </div>
-                </div>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:2 }}>
-                  {td.calDays.map((d,i)=><div key={i} style={{ fontSize:6, color:DIM2, textAlign:"center", paddingBottom:2 }}>{d}</div>)}
-                  {/* 2 empty cells (Tue start) */}
-                  <div/><div/>
-                  {calDays.map(({d,v})=>(
-                    <div key={d} style={{ aspectRatio:"1", borderRadius:3, display:"flex", alignItems:"center", justifyContent:"center", fontSize:6, fontWeight:600, background:v===1?"rgba(74,222,128,0.18)":v===-1?"rgba(248,113,113,0.18)":"rgba(255,255,255,0.04)", color:v===1?"#4ade80":v===-1?"#f87171":DIM2, border:`1px solid ${v===1?"rgba(74,222,128,0.15)":v===-1?"rgba(248,113,113,0.15)":"transparent"}` }}>{d}</div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* sessions + trades row */}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, flexShrink:0 }}>
-              {/* sessions */}
-              <div style={{ background:BG2, border:`1px solid ${BDR}`, borderRadius:10, padding:"12px", boxShadow:"0 4px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.18)" }}>
-                <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:9 }}>{td.sessTitle}</div>
-                {sessions.map(s=>(
-                  <div key={s.name} style={{ marginBottom:8 }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:3 }}>
-                      <span style={{ fontSize:8, color:TXT, letterSpacing:"0.06em", textTransform:"uppercase" }}>{s.name}</span>
-                      <span style={{ fontSize:8, color:s.pnl.startsWith("+")?"#4ade80":"#f87171", fontWeight:600 }}>{s.wr}% · {s.pnl}</span>
-                    </div>
-                    <div style={{ height:2, background:"rgba(255,255,255,0.06)", borderRadius:2 }}>
-                      <div style={{ width:`${s.wr}%`, height:"100%", borderRadius:2, background:s.wr>=60?"#4ade80":"rgba(248,113,113,0.7)", transition:"width .8s" }}/>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* trades */}
-              <div style={{ background:BG2, border:`1px solid ${BDR}`, borderRadius:10, padding:"12px", boxShadow:"0 4px 20px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06),inset 0 1px 0 rgba(255,255,255,0.18)" }}>
-                <div style={{ fontSize:7, color:DIM2, textTransform:"uppercase", letterSpacing:"0.14em", marginBottom:9 }}>{td.tradesTitle}</div>
-                {trades.map((t,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", paddingBottom:6, marginBottom:6, borderBottom:`1px solid ${i<trades.length-1?BDR:"transparent"}` }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                      <div style={{ width:5,height:5,borderRadius:"50%",background:t.ok?"#4ade80":"#f87171",flexShrink:0 }}/>
-                      <div>
-                        <div style={{ fontSize:9, fontWeight:600, color:TXT, lineHeight:1 }}>{t.pair} · <span style={{ color:DIM, fontWeight:300 }}>{t.dir}</span></div>
-                        <div style={{ fontSize:7, color:DIM2, marginTop:1 }}>{t.sess} · {t.emo}</div>
-                      </div>
-                    </div>
-                    <div style={{ textAlign:"right" }}>
-                      <div style={{ fontSize:9, fontWeight:600, color:t.ok?"#4ade80":"#f87171", lineHeight:1 }}>{t.pnl}</div>
-                      <div style={{ fontSize:7, color:DIM2, marginTop:1 }}>{t.r}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* IA coach banner */}
-            <div style={{ background:`rgba(232,205,169,0.05)`, border:`1px solid rgba(232,205,169,0.14)`, borderRadius:10, padding:"10px 14px", display:"flex", alignItems:"flex-start", gap:10, flexShrink:0 }}>
-              <span style={{ fontSize:12, color:ACC, lineHeight:1, marginTop:1 }}>◆</span>
-              <div>
-                <div style={{ fontSize:8, color:ACC, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", marginBottom:3 }}>{td.iaBadge}</div>
-                <div style={{ fontSize:9, color:DIM, lineHeight:1.55 }}>{td.iaCoach.prefix}<strong style={{color:TXT}}>{td.iaCoach.mood}</strong>{td.iaCoach.wr}{td.iaCoach.avoid}<strong style={{color:"#f87171"}}>{td.iaCoach.day}</strong>{td.iaCoach.rest}</div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
+      {/* ── real app screenshot ── */}
+      <img
+        src="/app-screenshot.png"
+        alt="Fyltra app"
+        style={{ width:"100%", flex:1, objectFit:"cover", objectPosition:"top left", display:"block" }}
+      />
     </div>
   );
 }
